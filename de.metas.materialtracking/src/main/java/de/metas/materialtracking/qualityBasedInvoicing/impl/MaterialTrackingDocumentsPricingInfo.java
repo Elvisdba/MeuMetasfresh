@@ -235,7 +235,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 					// note that this shall actually be prevented by the system in the first place
 					Check.errorIf(
 							true,
-							"For an earlier inOutLine the priceListVersion {} was retreived, but for inOutLine {}, the priceListVersion {} was retrieved;\npricingSystem: {};\nppOrder",
+							"For an earlier inOutLine the priceListVersion {} was retrieved, but for inOutLine {}, the priceListVersion {} was retrieved;\npricingSystem: {};\nppOrder",
 							plv, inOutLine, inOutLinePLV, getM_PricingSystem(), ppOrder);
 				}
 			}
