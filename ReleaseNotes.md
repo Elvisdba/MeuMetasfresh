@@ -20,8 +20,11 @@ Here come the actual release notes:
 ## Fixes
  - #153 PaymentRule = S in Invoice
  - #220 Do not load pricelist and pricelist version  on login
+ - FRESH-402 Procurement bidding
+   * minor jasper fix
+ - #232 Separate c_flatrate_terms from the normal procurement and RfQ in procurement Excel
 
-# metasfresh 4.27.26 (2016-29, RC)
+# metasfresh 4.27.26 (2016-29)
 
 ## Features
  - #152 Improvements in  counter documents view and window
