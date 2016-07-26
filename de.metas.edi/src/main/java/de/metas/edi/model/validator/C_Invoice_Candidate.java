@@ -10,12 +10,12 @@ package de.metas.edi.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,11 +25,11 @@ package de.metas.edi.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
+import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.edi.api.IEDIInvoiceCandBL;
 import de.metas.edi.model.I_C_Invoice_Candidate;
 
@@ -50,9 +50,8 @@ public class C_Invoice_Candidate
 
 		// Make sure the IsEDIRecipient flag is up to date in the invoice candidate
 		// It shall always be the same as in the bill BPartner
-		final de.metas.edi.model.I_C_BPartner ediPartner = InterfaceWrapperHelper.create(billBPartner, de.metas.edi.model.I_C_BPartner.class);
-
-		final boolean isEDIRecipient = ediPartner.isEdiRecipient();
+		final IEDIBPartnerService edibPartnerService = Services.get(IEDIBPartnerService.class);
+		final boolean isEDIRecipient = edibPartnerService.isEDIRecipient(billBPartner, invoiceCandidate.getDateOrdered());
 		invoiceCandidate.setIsEdiRecipient(isEDIRecipient);
 
 	}

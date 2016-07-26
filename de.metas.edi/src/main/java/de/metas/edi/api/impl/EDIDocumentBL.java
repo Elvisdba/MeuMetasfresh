@@ -1,5 +1,7 @@
 package de.metas.edi.api.impl;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.edi
@@ -10,12 +12,12 @@ package de.metas.edi.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,6 +52,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -64,6 +67,7 @@ import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
 import de.metas.edi.process.export.impl.M_InOutExport;
+import de.metas.esb.edi.model.I_EDI_BPartner_Config;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
@@ -92,16 +96,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			return document.isEdiEnabled();
 		}
 
+		// return the document's unchanged value.
 		return document.isEdiEnabled();
-		// final I_C_BPartner bpartner = InterfaceWrapperHelper.create(document.getC_BPartner(), I_C_BPartner.class);
-		// if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
-		// {
-		// // BPartner was not set yet, nothing to do
-		// return document.isEdiEnabled();
-		// }
-		//
-		// document.setIsEdiEnabled(bpartner.isEdiRecipient());
-		// return bpartner.isEdiRecipient();
 	}
 
 	@Override
@@ -114,7 +110,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			return feedback;
 		}
 
-		feedback.addAll(isValidPartner(invoice.getC_BPartner()));
+		feedback.addAll(isValidPartner(invoice.getC_BPartner(), invoice.getDateOrdered()));
 		feedback.addAll(isValidBPLocation(invoice.getC_BPartner_Location()));
 
 		// TODO not used right now
@@ -214,13 +210,13 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 		final org.compiere.model.I_C_BPartner bPartner = inOut.getC_BPartner();
 
-		feedback.addAll(isValidPartner(bPartner));
+		feedback.addAll(isValidPartner(bPartner, date));
 		feedback.addAll(isValidBPLocation(inOut.getC_BPartner_Location()));
 
 		final org.compiere.model.I_C_BPartner dropShipPartner = inOut.getDropShip_BPartner();
 		if (dropShipPartner != null && dropShipPartner.getC_BPartner_ID() > 0)
 		{
-			feedback.addAll(isValidPartner(dropShipPartner));
+			feedback.addAll(isValidPartner(dropShipPartner, date));
 		}
 
 		final org.compiere.model.I_C_BPartner_Location dropShipLocation = inOut.getDropShip_Location();
@@ -246,7 +242,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		{
 			final org.compiere.model.I_C_BPartner handOverPartner = InterfaceWrapperHelper.create(
 					ctx, handOverPartnerId, org.compiere.model.I_C_BPartner.class, trxName);
-			feedback.addAll(isValidPartner(handOverPartner));
+			feedback.addAll(isValidPartner(handOverPartner, date));
 		}
 
 		final int handOverLocationId = order.getHandOver_Location_ID();
@@ -265,7 +261,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final org.compiere.model.I_C_BPartner billBPartner = order.getBill_BPartner();
 		if (billBPartner != null && billBPartner.getC_BPartner_ID() > 0)
 		{
-			feedback.addAll(isValidPartner(billBPartner));
+			feedback.addAll(isValidPartner(billBPartner, date));
 		}
 
 		final org.compiere.model.I_C_BPartner_Location billLocation = order.getBill_Location();
@@ -320,7 +316,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			}
 
 			final I_M_Product product = inOutLine.getM_Product();
-			
+
 			final int orgId = product.getAD_Org_ID();
 
 			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
@@ -356,7 +352,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	}
 
 	@Override
-	public List<Exception> isValidPartner(final org.compiere.model.I_C_BPartner partner)
+	public List<Exception> isValidPartner(
+			final org.compiere.model.I_C_BPartner partner,
+			final Timestamp date)
 	{
 		Check.assumeNotNull(partner, "C_BPartner not null when validating it");
 
@@ -369,9 +367,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getEdiRecipientGLN(), true))
+		final String ediRecipientGLN = Services.get(IEDIBPartnerService.class).getEdiRecipientGLN(partner, date);
+		if (Check.isEmpty(ediRecipientGLN, true))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiRecipientGLN);
+			missingFields.add(I_EDI_BPartner_Config.COLUMNNAME_EdiRecipientGLN);
 		}
 
 		//

@@ -10,18 +10,17 @@ package de.metas.edi.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -35,6 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Order;
@@ -44,12 +44,11 @@ import de.metas.edi.model.I_M_InOut;
 @Validator(I_M_InOut.class)
 public class M_InOut
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
 	public void updateEdiStatus(final I_M_InOut document)
 	{
 		// make sure the inout is initialized with the ediEnabled flag from order, if the order is set
-		setEdiEnabledFromOrder(document);
+		setEdiEnabledFromOrderAndBPartner(document);
 
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 		if (!ediDocumentBL.updateEdiEnabled(document))
@@ -70,29 +69,29 @@ public class M_InOut
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_InOut.COLUMNNAME_C_Order_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_Order_ID)
 	public void updateEdiEnabled(final I_M_InOut inout)
 	{
-		setEdiEnabledFromOrder(inout);
+		setEdiEnabledFromOrderAndBPartner(inout);
 	}
 
-	private void setEdiEnabledFromOrder(final I_M_InOut inout)
+	private void setEdiEnabledFromOrderAndBPartner(final I_M_InOut inout)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(inout.getC_Order(), de.metas.edi.model.I_C_Order.class);
 		if (order == null || order.getC_Order_ID() <= 0)
 		{
 			// nothing to do
-
 			return;
 		}
 
-		final boolean isEdiEnabled = order.isEdiEnabled();
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+
+		final boolean isEdiEnabled = order.isEdiEnabled() &&
+				ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDateOrdered());
 
 		inout.setIsEdiEnabled(isEdiEnabled);
 
 		// Also update the EDI Export Status to "DontSend"
-
 		if (!isEdiEnabled)
 		{
 			inout.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_DontSend);
@@ -104,7 +103,7 @@ public class M_InOut
 // Commenting this out for now because we don't have real validation code for DESADVs we send it to the ESB which does the evaluation.
 //	/**
 //	 * If the given inOut is associated with the a DESADV and if it is invalid, then also change the DESADV's status accordingly.
-//	 * 
+//	 *
 //	 * @param inOut
 //	 */
 //	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
@@ -122,7 +121,7 @@ public class M_InOut
 
 	/**
 	 * Checks if the given inOut can be reverted, voided etc. The goal is to prevent such changes for InOuts that were already sent via EDI.
-	 * 
+	 *
 	 * @param inOut
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
@@ -169,18 +168,19 @@ public class M_InOut
 		}
 
 		if (inOut.getEDI_Desadv_ID() <= 0
-				&& !Check.isEmpty(inOut.getPOReference(), true)) // task 08619: only try if we have a POReference and thus can succeed
+				&& !Check.isEmpty(inOut.getPOReference(), true))     // task 08619: only try if we have a POReference and thus can succeed
 		{
-			Services.get(IDesadvBL.class).addToDesadvCreateForInOutIfNotExist(inOut);
+			final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+			desadvBL.addToDesadvCreateIfNotExistForInOut(inOut);
 		}
 	}
 
 	/**
 	 * Calls {@link IDesadvBL#removeInOutFromDesadv(I_M_InOut)} to detach the given inout from it's desadv (if any) when it is reversed, reactivated etc. Also see
 	 * {@link #assertReActivationAllowed(I_M_InOut)}. Note that this method will also be fired if the inout's <code>C_Order</code> is reactivated.
-	 * 
+	 *
 	 * @param inOut
-	 * 
+	 *
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,

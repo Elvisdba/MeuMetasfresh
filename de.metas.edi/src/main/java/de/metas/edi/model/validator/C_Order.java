@@ -13,15 +13,14 @@ package de.metas.edi.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -33,7 +32,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.edi.api.IEDIInputDataSourceBL;
+import de.metas.edi.api.IOrdrspBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
@@ -86,19 +87,23 @@ public class C_Order
 		{
 			return;
 		}
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiRecipient())
-		{
-			return;
-		}
 
 		if (!order.isEdiEnabled())
 		{
-			// do not add to desadv if not edi enabled
+			// do not add to ordrsp/desadv if not edi enabled
 			return;
 		}
 
-		Services.get(IDesadvBL.class).addToDesadvCreateForOrderIfNotExist(order);
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+		if(ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDatePromised()))
+		{
+			Services.get(IDesadvBL.class).addToDesadvCreateIfNotExistForOrder(order);
+		}
+		if(ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDatePromised()))
+		{
+			Services.get(IOrdrspBL.class).addToOrdrspCreateIfNotExistForOrder(order);
+		}
+
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
@@ -117,10 +122,8 @@ public class C_Order
 	 * @param order
 	 * @task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID }
-			)
-	public void updateEdiEnabled(final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID })
+	public void setIsEdiEnabled(final I_C_Order order)
 	{
 
 		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
@@ -138,9 +141,14 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
-	public void onPartnerChange(final I_C_Order order)
+	/**
+	 * If the given <code>order</code>'s <code>C_BPartner</code> changes and the new one is not an EDI receiver,
+	 * then this method sets {@value I_C_Order#COLUMNNAME_IsEdiEnabled} to <code>false</code>.
+	 *
+	 * @param order
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void unsetIsEdiEnabled(final I_C_Order order)
 	{
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
@@ -160,6 +168,5 @@ public class C_Order
 			order.setIsEdiEnabled(false);
 		}
 	}
-
 
 }

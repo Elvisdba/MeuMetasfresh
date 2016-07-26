@@ -10,18 +10,17 @@ package de.metas.edi.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -33,6 +32,7 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_M_InOutLine;
 
+import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.api.IEDIInvoiceCandBL;
 import de.metas.edi.model.I_C_Invoice_Candidate;
@@ -57,7 +57,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 			return;
 		}
 
-		final boolean isEdiEnabled;
+		final boolean referencedDocumentIsEdiEnabled;
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
 		final String trxName = InterfaceWrapperHelper.getTrxName(candidate);
@@ -65,7 +65,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 		// purchase side not relevant
 		if (!candidate.isSOTrx())
 		{
-			isEdiEnabled = false;
+			referencedDocumentIsEdiEnabled = false;
 		}
 
 		// case Order
@@ -76,8 +76,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 			Check.assumeNotNull(orderLine, "Invoice candidate {} has a record ID that points to an invalid order line", candidate);
 
 			final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), de.metas.edi.model.I_C_Order.class);
-
-			isEdiEnabled = order.isEdiEnabled();
+			referencedDocumentIsEdiEnabled = order.isEdiEnabled();
 		}
 
 		// case order candidate
@@ -88,7 +87,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 			Check.assumeNotNull(olcand, "Invoice candidate {} has a record ID that points to an invalid order candidate", candidate);
 
 			final I_AD_InputDataSource inputDataSource = olcand.getAD_InputDataSource();
-			isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(inputDataSource);
+			referencedDocumentIsEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(inputDataSource);
 		}
 
 		// case inout
@@ -97,31 +96,32 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 			final I_M_InOut inout = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOut.class, trxName);
 
 			Check.assumeNotNull(inout, "Invoice candidate {} has a record ID that points to an invalid inout", candidate);
-
-			isEdiEnabled = inout.isEdiEnabled();
+			referencedDocumentIsEdiEnabled = inout.isEdiEnabled();
 		}
 
 		else if (X_M_InOutLine.Table_Name.equals(adTable.getTableName()))
 		{
-			final I_M_InOutLine ioline =  InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
-			
-			Check.assumeNotNull(ioline,  "Invoice candidate {} has a record ID that points to an invalid inout line", candidate);
-			
+			final I_M_InOutLine ioline = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
+
+			Check.assumeNotNull(ioline, "Invoice candidate {} has a record ID that points to an invalid inout line", candidate);
+
 			final I_M_InOut inout = InterfaceWrapperHelper.create(ioline.getM_InOut(), de.metas.edi.model.I_M_InOut.class);
-			
+
 			Check.assumeNotNull(inout, "Inout Line {}  cannot have M_InOut =  null", ioline);
-			
-			isEdiEnabled = inout.isEdiEnabled();
+
+			referencedDocumentIsEdiEnabled = inout.isEdiEnabled();
 		}
+
 		// no other case covered yet
 		else
 		{
-			isEdiEnabled = false;
+			referencedDocumentIsEdiEnabled = false;
 		}
 
-		// no other case covered yet
+		final IEDIBPartnerService edibPartnerService = Services.get(IEDIBPartnerService.class);
+		final boolean configIsEdiEnabled = edibPartnerService.isInvoicRecipient(candidate.getBill_BPartner(), candidate.getDateOrdered());
 
-		candidate.setIsEdiEnabled(isEdiEnabled);
+		candidate.setIsEdiEnabled(referencedDocumentIsEdiEnabled & configIsEdiEnabled);
 	}
 
 }

@@ -150,7 +150,7 @@ public class EDI_Desadv_Aggregate_M_InOuts extends SvrProcess
 				{
 					EDI_Desadv_Aggregate_M_InOuts.this.addLog("@Added@: @M_InOut_ID@ " + item.getDocumentNo());
 					InterfaceWrapperHelper.setTrxName(item, processorCtx.getTrxName());
-					final I_EDI_Desadv desadv = desadvBL.addToDesadvCreateForInOutIfNotExist(item);
+					final I_EDI_Desadv desadv = desadvBL.addToDesadvCreateIfNotExistForInOut(item);
 					if (desadv == null)
 					{
 						EDI_Desadv_Aggregate_M_InOuts.this.addLog("Could not create desadv for M_InOut=" + item);

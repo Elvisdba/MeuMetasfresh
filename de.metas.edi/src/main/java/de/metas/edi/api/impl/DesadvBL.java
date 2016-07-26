@@ -48,7 +48,7 @@ import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.model.I_C_BPartner;
+import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -71,7 +71,7 @@ public class DesadvBL implements IDesadvBL
 	private static final String AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print = "EDI_DesadvLine_SSCC_Print";
 
 	@Override
-	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
+	public I_EDI_Desadv addToDesadvCreateIfNotExistForOrder(final I_C_Order order)
 	{
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
@@ -135,8 +135,8 @@ public class DesadvBL implements IDesadvBL
 		if (orderLineItemCapacity.signum() <= 0)
 		{
 			// task 09776
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(desadv.getC_BPartner(), I_C_BPartner.class);
-			lineItemCapacity = bpartner.getEdiDESADVDefaultItemCapacity();
+			final IEDIBPartnerService edibPartnerService = Services.get(IEDIBPartnerService.class);
+			lineItemCapacity = edibPartnerService.getEdiDESADVDefaultItemCapacity(desadv.getC_BPartner(), order.getDateOrdered());
 		}
 		else
 		{
@@ -225,7 +225,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(final I_M_InOut inOut)
+	public I_EDI_Desadv addToDesadvCreateIfNotExistForInOut(final I_M_InOut inOut)
 	{
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
@@ -244,7 +244,7 @@ public class DesadvBL implements IDesadvBL
 			}
 			else
 			{
-				desadv = addToDesadvCreateForOrderIfNotExist(order);
+				desadv = addToDesadvCreateIfNotExistForOrder(order);
 				InterfaceWrapperHelper.save(order);
 			}
 		}

@@ -52,7 +52,7 @@ public interface IDesadvBL extends ISingletonService
 	 * @param inOut
 	 * @return
 	 */
-	I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(I_C_Order order);
+	I_EDI_Desadv addToDesadvCreateIfNotExistForOrder(I_C_Order order);
 
 	/**
 	 * Removes the given <code>order</code> from its desadv (if any) and also removes its order lines from the desadv lines.
@@ -77,7 +77,7 @@ public interface IDesadvBL extends ISingletonService
 	 * @param inOut
 	 * @return
 	 */
-	I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(I_M_InOut inOut);
+	I_EDI_Desadv addToDesadvCreateIfNotExistForInOut(I_M_InOut inOut);
 
 	/**
 	 * Removes the given <code>inOut</code> from its desadv (if any) and also removes its inOut lines from the desadv lines.

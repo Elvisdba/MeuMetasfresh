@@ -1,6 +1,10 @@
 package de.metas.edi.api;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 
 /*
  * #%L
@@ -24,13 +28,24 @@ import org.adempiere.util.ISingletonService;
  * #L%
  */
 
-public interface IEDIInputDataSourceBL extends ISingletonService
+public interface IEDIBPartnerService extends ISingletonService
 {
+	boolean isEDIRecipient(I_C_BPartner bpartner, Timestamp date);
+
 	/**
-	 * Determines if the given <code>inputDataSource</code> is EDI related.
 	 *
-	 * @param inputDataSource
-	 * @return
+	 * @param bpartner
+	 * @param date
+	 * @return return zero if there is no bpartner config or the partner is not a desadv receiver at the given date.
 	 */
-	boolean isEDIInputDataSource(final de.metas.impex.model.I_AD_InputDataSource inputDataSource);
+	BigDecimal getEdiDESADVDefaultItemCapacity(I_C_BPartner bpartner, Timestamp date);
+
+	String getEdiRecipientGLN(I_C_BPartner bpartner, Timestamp date);
+
+	boolean isDesadvRecipient(I_C_BPartner bpartner, Timestamp date);
+
+	boolean isOrdrspRecipient(I_C_BPartner bpartner, Timestamp date);
+
+	boolean isInvoicRecipient(I_C_BPartner bpartner, Timestamp date);
+
 }

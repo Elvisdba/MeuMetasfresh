@@ -1,5 +1,7 @@
 package de.metas.edi.api;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.edi
@@ -10,18 +12,17 @@ package de.metas.edi.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -41,10 +42,10 @@ public interface IEDIDocumentBL extends ISingletonService
 	String MSG_Allow_Consolidate_Invoice_Error = "de.metas.edi.AllowConsolidateInvoiceError";
 
 	/**
-	 * Update EDI status, but do not save
+	 * Update the given <code>document</code>'s {@value I_EDI_Document_Extension#COLUMNNAME_IsEdiEnabled} value, but do not save it.
 	 *
 	 * @param document
-	 * @return true if document.IsEdiEnabled=Y, false otherwise
+	 * @return <code>true</code> if <code>document.IsEdiEnabled=Y</code>, <code>false</code> otherwise
 	 */
 	boolean updateEdiEnabled(I_EDI_Document_Extension document);
 
@@ -53,8 +54,15 @@ public interface IEDIDocumentBL extends ISingletonService
 	List<Exception> isValidInOut(I_M_InOut inOut);
 
 	List<Exception> isValidDesAdv(I_EDI_Desadv desadv);
-	
-	List<Exception> isValidPartner(org.compiere.model.I_C_BPartner partner);
+
+	/**
+	 * Checks if the given <code>bpartner</code> is configured to receive EDI files at the given date.
+	 *
+	 * @param partner
+	 * @param date
+	 * @return
+	 */
+	List<Exception> isValidPartner(org.compiere.model.I_C_BPartner partner, Timestamp date);
 
 	/**
 	 * @param document
@@ -67,8 +75,8 @@ public interface IEDIDocumentBL extends ISingletonService
 	 */
 	ValidationState updateInvalid(I_EDI_Document document, String EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
 
-//	ValidationState updateInvalid(I_EDI_Desadv document, String EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
-	
+	// ValidationState updateInvalid(I_EDI_Desadv document, String EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
+
 	/**
 	 * @param ctx
 	 * @param clientId

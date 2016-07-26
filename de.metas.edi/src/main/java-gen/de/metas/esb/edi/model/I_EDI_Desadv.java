@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.esb.edi.model;
 
 
@@ -331,8 +315,10 @@ public interface I_EDI_Desadv
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage);
 
 	/**
@@ -340,8 +326,10 @@ public interface I_EDI_Desadv
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getEDI_DESADV_SumPercentage();
 
     /** Column definition for EDI_DESADV_SumPercentage */
@@ -502,7 +490,7 @@ public interface I_EDI_Desadv
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setProcessed (boolean Processed);
@@ -512,7 +500,7 @@ public interface I_EDI_Desadv
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public boolean isProcessed();
@@ -574,4 +562,29 @@ public interface I_EDI_Desadv
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User>(I_EDI_Desadv.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserFlag.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUserFlag (java.lang.String UserFlag);
+
+	/**
+	 * Get UserFlag.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUserFlag();
+
+    /** Column definition for UserFlag */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_UserFlag = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "UserFlag", null);
+    /** Column name UserFlag */
+    public static final String COLUMNNAME_UserFlag = "UserFlag";
 }

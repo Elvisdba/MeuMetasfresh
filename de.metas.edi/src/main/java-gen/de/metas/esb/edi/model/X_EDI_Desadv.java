@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
@@ -32,7 +16,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2143092490L;
+	private static final long serialVersionUID = 729382375L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -43,6 +27,8 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 			setEDI_Desadv_ID (0);
 			setEDI_ExportStatus (null);
 // P
+			setProcessed (false);
+// N
 			setProcessing (false);
 // N
         } */
@@ -295,8 +281,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	@Override
 	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage)
 	{
-		set_Value (COLUMNNAME_EDI_DESADV_SumPercentage, EDI_DESADV_SumPercentage);
-	}
+		throw new IllegalArgumentException ("EDI_DESADV_SumPercentage is virtual column");	}
 
 	/** Get Geliefert %.
 		@return Geliefert %	  */
@@ -480,5 +465,24 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set UserFlag.
+		@param UserFlag 
+		Can be used to flag records and thus make them selectable from the UI via advanced search.
+	  */
+	@Override
+	public void setUserFlag (java.lang.String UserFlag)
+	{
+		set_Value (COLUMNNAME_UserFlag, UserFlag);
+	}
+
+	/** Get UserFlag.
+		@return Can be used to flag records and thus make them selectable from the UI via advanced search.
+	  */
+	@Override
+	public java.lang.String getUserFlag () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UserFlag);
 	}
 }

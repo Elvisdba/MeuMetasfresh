@@ -1,7 +1,5 @@
 package de.metas.edi.model;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.edi
@@ -31,17 +29,5 @@ public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartn
 	String COLUMNNAME_IsEdiRecipient = "IsEdiRecipient";
 	boolean isEdiRecipient();
 	void setIsEdiRecipient(boolean IsEdiRecipient);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiRecipientGLN = "EdiRecipientGLN";
-	String getEdiRecipientGLN();
-	void setEdiRecipientGLN(String EdiRecipientGLN);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiDESADVDefaultItemCapacity = "EdiDESADVDefaultItemCapacity";
-	BigDecimal getEdiDESADVDefaultItemCapacity();
-	void setEdiDESADVDefaultItemCapacity(BigDecimal EdiDESADVDefaultItemCapacity);
 	// @formatter:on
 }
