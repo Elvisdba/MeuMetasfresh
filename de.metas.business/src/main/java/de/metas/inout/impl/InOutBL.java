@@ -1,5 +1,7 @@
 package de.metas.inout.impl;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package de.metas.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -317,7 +318,7 @@ public class InOutBL implements IInOutBL
 						? nextLine.getC_OrderLine().getC_Order_ID()
 						: 0;
 
-				if (nextID != 0) // If this is a valid ID, put it into the Map.
+				if (nextID != 0)  // If this is a valid ID, put it into the Map.
 				{
 					valueIdToUse = nextID;
 					break;
@@ -394,7 +395,6 @@ public class InOutBL implements IInOutBL
 		}
 	}
 
-
 	@Override
 	public void deleteMatchInvsForInOutLine(final I_M_InOutLine iol)
 	{
@@ -405,5 +405,17 @@ public class InOutBL implements IInOutBL
 			matchInv.setProcessed(false); // delete it even if it's processed, because all M_MatchInv are processed on save new.
 			InterfaceWrapperHelper.delete(matchInv);
 		}
+	}
+
+	@Override
+	public Timestamp getEffectiveDateOrdered(I_M_InOut inOut)
+	{
+		//
+		// This logic is taken from de.metas.invoicecandidate.spi.impl.M_InOutLine_Handler.setOrderedData()
+		if (inOut.getC_Order_ID() > 0)
+		{
+			return inOut.getC_Order().getDateOrdered();
+		}
+		return inOut.getMovementDate();
 	}
 }

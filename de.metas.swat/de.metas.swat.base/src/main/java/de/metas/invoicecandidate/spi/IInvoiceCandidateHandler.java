@@ -44,7 +44,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  *
  * NOTE: because the API will create a new instance each time a handler is needed, it's safe to have status/field variables.
  *
- * @author ts
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @see IInvoiceCandidateHandlerBL
  */

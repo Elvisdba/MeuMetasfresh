@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,13 +82,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	// Services
 	private static final transient M_InOutLine_HandlerDAO dao = new M_InOutLine_HandlerDAO();
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	
+
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
@@ -124,7 +124,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * 
+	 *
 	 * @param inOutLine
 	 * @return created invoice candidate or <code>null</code> if there was no need to create an invoice candidate
 	 */
@@ -253,19 +253,19 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				, isSOTrx
 				, trxName);
 		ic.setC_Tax_ID(taxId);
-		
+
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		InterfaceWrapperHelper.save(ic);
-		
+
 
 		// set Quality Issue Percentage Override
-		
+
 		final I_M_AttributeSetInstance asi = inOutLine.getM_AttributeSetInstance();
 		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
-		
+
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
@@ -300,10 +300,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLineQuery(inoutLine);
-		
+
 		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
 	}
-	
+
 	@Override
 	public String getSourceTable()
 	{
@@ -355,18 +355,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
 
-		final I_C_Order order = inOut.getC_Order();
-
 		if (inOut.getC_Order_ID() > 0)
 		{
+			final I_C_Order order = inOut.getC_Order();
 			ic.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
-			ic.setDateOrdered(order.getDateOrdered());
 		}
 		else
 		{
 			ic.setC_Order(null);
-			ic.setDateOrdered(inOut.getMovementDate());
 		}
+
+		final Timestamp effectiveDateOrdered = Services.get(IInOutBL.class).getEffectiveDateOrdered(inOut);
+		ic.setDateOrdered(effectiveDateOrdered);
 
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 

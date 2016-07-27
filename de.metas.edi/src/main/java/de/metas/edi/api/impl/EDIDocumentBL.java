@@ -70,6 +70,7 @@ import de.metas.edi.process.export.impl.M_InOutExport;
 import de.metas.esb.edi.model.I_EDI_BPartner_Config;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -209,6 +210,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 
 		final org.compiere.model.I_C_BPartner bPartner = inOut.getC_BPartner();
+
+		final Timestamp date = Services.get(IInOutBL.class).getEffectiveDateOrdered(inOut);
 
 		feedback.addAll(isValidPartner(bPartner, date));
 		feedback.addAll(isValidBPLocation(inOut.getC_BPartner_Location()));

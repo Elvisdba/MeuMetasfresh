@@ -1,5 +1,7 @@
 package de.metas.inout;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +12,12 @@ package de.metas.inout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,10 +59,19 @@ public interface IInOutBL extends ISingletonService
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
 
 	/**
+	 * Return <code>C_Order.DateOrdered</code> if the given <code>inOut</code> references one.
+	 * If there is no order for the inOut, then return the inOut's <code>MovementDate</code>.
+	 *
+	 * @param inOut
+	 * @return
+	 */
+	Timestamp getEffectiveDateOrdered(I_M_InOut inOut);
+
+	/**
 	 * @param inOut
 	 * @return the pricing system fir for the inout,
 	 *         Otherwise, throws exception when throwEx = true and return null if it is false
-	 * 
+	 *
 	 */
 	I_M_PricingSystem getPricingSystem(I_M_InOut inOut, boolean throwEx);
 
@@ -129,14 +140,14 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
-	 * 
+	 *
 	 * @param inout
 	 */
 	void deleteMatchInvs(I_M_InOut inout);
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
-	 * 
+	 *
 	 * @param iol
 	 */
 	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
