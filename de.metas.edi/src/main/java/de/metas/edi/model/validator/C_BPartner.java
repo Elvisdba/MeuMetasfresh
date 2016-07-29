@@ -10,12 +10,12 @@ package de.metas.edi.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IEDIDocumentBL;
@@ -46,7 +47,7 @@ public class C_BPartner
 			return;
 		}
 
-		final List<Exception> feedback = Services.get(IEDIDocumentBL.class).isValidPartner(bpartner);
+		final List<Exception> feedback = Services.get(IEDIDocumentBL.class).isValidPartner(bpartner, SystemTime.asTimestamp());
 		if (feedback == null || feedback.isEmpty())
 		{
 			return;
@@ -63,7 +64,7 @@ public class C_BPartner
 
 	/**
 	 * Make sure the IsEDIRecipient flag from the invoice candidates of a partner is always up to date
-	 * 
+	 *
 	 * @param partner
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
