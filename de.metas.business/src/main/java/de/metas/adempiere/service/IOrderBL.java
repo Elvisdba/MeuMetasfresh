@@ -13,11 +13,11 @@ package de.metas.adempiere.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -100,6 +100,26 @@ public interface IOrderBL extends ISingletonService
 	I_AD_User getShipToUser(I_C_Order order);
 
 	/**
+	 * Returns the given order's <code>C_BPartner</code>, or if set and <code>IsUseHandOver_Location = true</code> then returns the <code>HandOver_Partner</code>.
+	 * <p>
+	 * Note: in the EDI-world, the hand-over location is the one with the <code>DP</code> (delivery party) party qualifier.
+	 *
+	 * @param order
+	 * @return never returns <code>null</code>
+	 */
+	I_C_BPartner getHandoverPartner(I_C_Order order);
+
+	/**
+	 * Returns the given order's <code>C_BPartner_Location</code>, or if set and <code>IsUseHandOver_Location = true</code> then returns the <code>HandOver_Location</code>.
+	 * <p>
+	 * Note: in the EDI-world, the hand-over location is the one with the <code>DP</code> (delivery party) party qualifier.
+	 *
+	 * @param order
+	 * @return never returns <code>null</code>
+	 */
+	I_C_BPartner_Location getHandoverLocation(I_C_Order order);
+
+	/**
 	 * Returns the given order's <code>C_BPartner_Location</code>, or if set then returns the <code>Bill_Location</code>.
 	 *
 	 * @param order
@@ -109,9 +129,9 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
-	 * 
+	 *
 	 * In case there is any error, this method will throw an exception.
-	 * 
+	 *
 	 * NOTE: in case the bpartner location or the pricing system is not set, this method will skip the validation and no exception will be thrown.
 	 *
 	 * @param order

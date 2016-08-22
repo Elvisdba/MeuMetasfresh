@@ -1,10 +1,13 @@
-package org.adempiere.util.lang;
+package org.adempiere.server.rpl.api;
+
+import org.adempiere.server.rpl.interfaces.I_EXP_Format;
+import org.adempiere.util.ISingletonService;
 
 /*
  * #%L
- * de.metas.util
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,28 +25,9 @@ package org.adempiere.util.lang;
  * #L%
  */
 
-
-/**
- * A pair consisting of two elements. Hint: use {@link ImmutablePair#of(Object, Object)} to get an instance.
- *
- * @author tsa
- *
- * @param <LT> left element type
- * @param <RT> right element type
- */
-public interface IPair<LT, RT>
+public interface IExportFormatDAO extends ISingletonService
 {
-	/**
-	 * Gets the left element from this pair.
-	 *
-	 * @return the left element, may be null
-	 */
-	public LT getLeft();
 
-	/**
-	 * Gets the right element from this pair.
-	 *
-	 * @return the right element, may be null
-	 */
-	public RT getRight();
+	int deleteAllLines(I_EXP_Format format);
+
 }

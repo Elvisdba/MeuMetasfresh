@@ -10,12 +10,12 @@ package de.metas.commission.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,9 +44,9 @@ import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Period;
@@ -116,10 +116,10 @@ import de.metas.logging.MetasfreshLastError;
 
 /**
  * Commission Module Main Validator
- * 
+ *
  * @author ts
  * @author Cris
- * 
+ *
  * @see "<a href='http://dewiki908/mediawiki/index.php/Sponsor_(2009_0023_G107)'>(2009 0023 G107)</a>"
  * @see "<a href='http://dewiki908/mediawiki/index.php/Sponsor_(2009_0023_G108)'>(2009 0023 G108)</a>"
  */
@@ -195,27 +195,27 @@ public class CommissionValidator implements ModelValidator
 			engine.addModelValidator(new C_InvoiceLine(), client);
 			engine.addModelValidator(new C_Invoice(), client);
 			engine.addModelValidator(new M_InOut(), client);
-			
+
 			Services.get(IPriceListBL.class).addPlvCreationListener(new CommissionPlvCreationListener());
 
 			Services.get(ICopyHandlerBL.class).registerCopyHandler(
-					org.compiere.model.I_C_Order.class, 
-					new IQueryFilter<Pair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order>>()
+					org.compiere.model.I_C_Order.class,
+					new IQueryFilter<IPair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order>>()
 					{
 						@Override
-						public boolean accept(Pair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order> model)
+						public boolean accept(IPair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order> model)
 						{
 							return true;
 						}
 					},
 					new CommissionOrderCopyHandler());
-			
+
 			Services.get(ICopyHandlerBL.class).registerCopyHandler(
-					org.compiere.model.I_C_Invoice.class, 
-					new IQueryFilter<Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
+					org.compiere.model.I_C_Invoice.class,
+					new IQueryFilter<IPair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
 					{
 						@Override
-						public boolean accept(Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
+						public boolean accept(IPair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
 						{
 							return true;
 						}
@@ -473,7 +473,7 @@ public class CommissionValidator implements ModelValidator
 			invoice.setBPartnerAddress(addressField);
 
 			// TODO: get the payment rule from commission contract
-			// FRESH-488: Set the payment rule 
+			// FRESH-488: Set the payment rule
 			final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 			invoice.setPaymentRule(paymentRuleToUse);
 

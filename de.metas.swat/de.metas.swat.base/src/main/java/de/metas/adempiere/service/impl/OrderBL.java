@@ -27,8 +27,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -65,6 +63,7 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IOrderBL;
@@ -73,6 +72,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductPA;
 
@@ -935,6 +935,30 @@ public class OrderBL implements IOrderBL
 			return order.getDropShip_User_ID() > 0 ? order.getDropShip_User() : order.getAD_User();
 		}
 		return order.getAD_User();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getHandoverPartner(I_C_Order order)
+	{
+		final de.metas.adempiere.model.I_C_Order orderExt = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
+		if (orderExt.getIsUseHandOver_Location())
+		{
+			// check for isDropShip to avoid returning a "stale" dropship-partner
+			return orderExt.getHandOver_Partner_ID() > 0 ? orderExt.getHandOver_Partner() : order.getC_BPartner();
+		}
+		return orderExt.getC_BPartner();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getHandoverLocation(I_C_Order order)
+	{
+		final de.metas.adempiere.model.I_C_Order orderExt = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
+		if (orderExt.getIsUseHandOver_Location())
+		{
+			// check for isDropShip to avoid returning a "stale" dropship-partner
+			return orderExt.getHandOver_Location_ID() > 0 ? orderExt.getHandOver_Location() : order.getC_BPartner_Location();
+		}
+		return orderExt.getC_BPartner_Location();
 	}
 
 	@Override

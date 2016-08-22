@@ -1,6 +1,11 @@
 package de.metas.edi.api;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 
 import de.metas.edi.model.I_C_Order;
 import de.metas.esb.edi.model.I_EDI_Ordrsp;
@@ -28,25 +33,15 @@ import de.metas.esb.edi.model.I_EDI_OrdrspLine;
  * #L%
  */
 
-public interface IOrdrspBL extends ISingletonService
+public interface IOrdrspDAO extends ISingletonService
 {
-	/**
-	 * Create a new ordrsp for the given <code>order</code>'s <code>POReference</code>, or retrieve and update an existing one.<br>
-	 * If a new one is created, then take the values from this order.<br>
-	 * Also iterate the order's lines and create {@link I_EDI_OrdrspLine}s for their respective line numbers unless such ordrsp lines already exist.
-	 * <p>
-	 * Notes:
-	 * <ul>
-	 * <li>modify the order and its lines (their referencing/FK columns are set), but only save the lines! This is because we call this method from a C_Order model interceptor.
-	 * <li>assume that the given order has a non-empty <code>POReference</code>.
-	 * </ul>
-	 *
-	 * @param inOut
-	 * @return
-	 */
-	I_EDI_Ordrsp addToOrdrspCreateIfNotExistForOrder(I_C_Order order);
 
-	void removeOrderFromOrdrsp(I_C_Order order);
+	List<I_EDI_OrdrspLine> retrieveAllOrdrspLines(I_EDI_Ordrsp ordrsp);
 
-	void setMinimumPercentage(I_EDI_Ordrsp ordrsp);
+	List<I_C_Order> retrieveAllOrders(I_EDI_Ordrsp ordrsp);
+
+	I_EDI_Ordrsp retrieveMatchingOrdrspOrNull(I_C_BPartner c_BPartner, String poReference, IContextAware ctxAware);
+
+	BigDecimal retrieveMinimumSumPercentage();
+
 }

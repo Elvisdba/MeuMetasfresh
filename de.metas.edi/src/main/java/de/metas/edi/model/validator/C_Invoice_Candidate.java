@@ -53,7 +53,6 @@ public class C_Invoice_Candidate
 		final IEDIBPartnerService edibPartnerService = Services.get(IEDIBPartnerService.class);
 		final boolean isEDIRecipient = edibPartnerService.isEDIRecipient(billBPartner, invoiceCandidate.getDateOrdered());
 		invoiceCandidate.setIsEdiRecipient(isEDIRecipient);
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW},

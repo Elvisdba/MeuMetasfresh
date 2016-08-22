@@ -26,8 +26,8 @@ package de.metas.edi.model;
 public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartner
 {
 	// @formatter:off
-	String COLUMNNAME_IsEdiRecipient = "IsEdiRecipient";
-	boolean isEdiRecipient();
-	void setIsEdiRecipient(boolean IsEdiRecipient);
+	String COLUMNNAME_HasEdiConfig = "HasEdiConfig";
+	boolean getHasEdiConfig();
+	void setHasEdiConfig(boolean HasEdiConfig);
 	// @formatter:on
 }

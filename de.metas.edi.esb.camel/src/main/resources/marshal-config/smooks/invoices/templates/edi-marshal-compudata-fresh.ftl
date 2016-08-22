@@ -25,7 +25,7 @@
 ${"H000"?right_pad(4)?substring(0, 4)}<#lt><#t>
 ${cctopInvoice.cctop000V.senderGln?right_pad(35)?substring(0, 35)}<#lt><#t>
 ${"14"?right_pad(4)?substring(0, 4)}<#lt><#t>
-${cctopInvoice.cctop000V.gln?right_pad(35)?substring(0, 35)}<#lt><#t>
+${cctopInvoice.cctop000V.receiverGln?right_pad(35)?substring(0, 35)}<#lt><#t>
 ${"14"?right_pad(4)?substring(0, 4)}<#lt><#t>
 ${cctopInvoice.cctop000V.interchangeReferenceNo?right_pad(35)?substring(0, 35)}<#lt><#t>
 ${"INHEDI"?right_pad(6)?substring(0, 6)}<#lt><#t>
@@ -48,7 +48,7 @@ ${cctopInvoice.cctop000V.isTest?right_pad(1)?substring(0, 1)}<#lt><#t>
 
 <#-- H100 -->
 <#-- StartPosition=0001 -->${"H100"?right_pad(4)?substring(0, 4)}<#lt><#t>
-<#-- StartPosition=0005 -->${cctopInvoice.cctop000V.gln?right_pad(35)?substring(0, 35)}<#lt><#t>
+<#-- StartPosition=0005 -->${cctopInvoice.cctop000V.receiverGln?right_pad(35)?substring(0, 35)}<#lt><#t>
 <#-- StartPosition=0040 -->${"1"?right_pad(14)?substring(0, 14)}<#lt><#t>
 <#-- StartPosition=0054 -->${"INVOIC"?right_pad(6)?substring(0, 6)}<#lt><#t>
 <#-- StartPosition=0060 -->${"D"?right_pad(3)?substring(0, 3)}<#lt><#t>
@@ -277,7 +277,7 @@ ${cctopInvoice.cctop000V.isTest?right_pad(1)?substring(0, 1)}<#lt><#t>
 <#-- P100 -->
 <#list cctopInvoice.cctopInvoice500V! as cctopInvoice500V>
 	${"P100"?right_pad(4)?substring(0, 4)}<#lt><#t>
-	${cctopInvoice.cctop000V.gln?right_pad(35)?substring(0, 35)}<#lt><#t>
+	${cctopInvoice.cctop000V.receiverGln?right_pad(35)?substring(0, 35)}<#lt><#t>
 	${MessageNoP100?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${cctopInvoice500V.line?right_pad(6)?substring(0, 6)}<#lt><#t>
 	${cctopInvoice500V.upc?right_pad(35)?substring(0, 35)}<#lt><#t>
@@ -326,7 +326,7 @@ ${cctopInvoice.cctop000V.isTest?right_pad(1)?substring(0, 1)}<#lt><#t>
 <#-- T100 -->
 <#list cctopInvoice.cctop901991V! as cctop901991V>
 	${"T100"?right_pad(4)?substring(0, 4)}<#lt><#t>
-	${cctopInvoice.cctop000V.gln?right_pad(35)?substring(0, 35)}<#lt><#t>
+	${cctopInvoice.cctop000V.receiverGln?right_pad(35)?substring(0, 35)}<#lt><#t>
 	${MessageNoT100?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${cctop901991V.totalAmt?number?string("0.00")?left_pad(15)?substring(0, 15)}<#lt><#t>
 	${""?left_pad(15)?substring(0, 15)}<#lt><#t><#-- {0?number?string("0.00") -->

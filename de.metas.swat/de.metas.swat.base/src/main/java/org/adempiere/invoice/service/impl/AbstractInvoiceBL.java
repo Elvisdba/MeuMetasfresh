@@ -48,9 +48,9 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -108,7 +108,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// System configurations (public for testing)
 	public static final String SYSCONFIG_AutoPayZeroAmt = "org.compiere.model.MInvoice.AutoPayZeroAmt";
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
-	
+
 	//FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
@@ -1268,7 +1268,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void registerCopyHandler(
-			final IQueryFilter<Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>> filter,
+			final IQueryFilter<IPair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>> filter,
 			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyhandler)
 	{
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(org.compiere.model.I_C_Invoice.class, filter, copyhandler);
@@ -1276,7 +1276,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void registerLineCopyHandler(
-			final IQueryFilter<Pair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
+			final IQueryFilter<IPair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
 			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler)
 	{
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(org.compiere.model.I_C_InvoiceLine.class, filter, copyhandler);
@@ -1355,7 +1355,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
-		
+
 		//
 		// allocate the invoice against the credit memo
 		// @formatter:off
@@ -1380,7 +1380,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			.create(true); // completeIt = true
 		// @formatter:on
 	}
-	
+
 	@Override
 	public String getDefaultPaymentRule()
 	{

@@ -80,7 +80,7 @@ public class SmooksTest
 		invoice.setIsoCode("test-iso");
 
 		final Cctop000V cctop000V = new Cctop000V();
-		cctop000V.setGln("test-gln");
+		cctop000V.setReceiverGln("test-gln");
 
 		invoice.setCctop000V(cctop000V);
 

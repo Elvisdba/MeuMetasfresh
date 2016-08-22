@@ -15,11 +15,11 @@ import java.sql.Timestamp;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,7 +66,6 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
-import de.metas.edi.process.export.impl.M_InOutExport;
 import de.metas.esb.edi.model.I_EDI_BPartner_Config;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -308,7 +307,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(),
 					de.metas.handlingunits.model.I_C_OrderLine.class);
 
-			if (orderLine.getQtyItemCapacity() == null) // may be 0
+			if (orderLine.getQtyItemCapacity() == null)  // may be 0
 			{
 				olMissingFields.add(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
 			}
@@ -365,29 +364,38 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final List<String> missingFields = new ArrayList<String>();
 
 		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(partner, I_C_BPartner.class);
-		if (!ediPartner.isEdiRecipient())
+//		if (!ediPartner.isEdiRecipient())
+//		{
+//			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
+//		}
+
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+
+		if(!ediBPartnerService.isEDIRecipient(ediPartner, date))
 		{
-			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
+			return feedback;
 		}
 
-		final String ediRecipientGLN = Services.get(IEDIBPartnerService.class).getEdiRecipientGLN(partner, date);
+		final String ediRecipientGLN = ediBPartnerService.getEdiRecipientGLN(partner, date);
 		if (Check.isEmpty(ediRecipientGLN, true))
 		{
 			missingFields.add(I_EDI_BPartner_Config.COLUMNNAME_EdiRecipientGLN);
 		}
 
-		//
-		// Explicitly check inside the partner and see how it was allowed (as opposed to checking with IAggregationBL.isAllowConsolidateInvoiceEffective())
-		if (!hasValidInvoiceAggregation(ediPartner))
+		if (ediBPartnerService.isInvoicRecipient(ediPartner, date))
 		{
-			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Allow_Consolidate_Invoice_Error)));
-		}
+			//
+			// Explicitly check inside the partner and see how it was allowed (as opposed to checking with IAggregationBL.isAllowConsolidateInvoiceEffective())
+			if (!hasValidInvoiceAggregation(ediPartner))
+			{
+				feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Allow_Consolidate_Invoice_Error)));
+			}
 
-		if (Check.isEmpty(ediPartner.getVATaxID(), true))
-		{
-			missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
+			if (Check.isEmpty(ediPartner.getVATaxID(), true))
+			{
+				missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
+			}
 		}
-
 		if (!missingFields.isEmpty())
 		{
 			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, partner.getValue(), missingFields));
@@ -469,14 +477,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 			final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, recordId, I_C_Invoice.class, trxName);
 			export = new C_InvoiceExport(invoice, tableIdentifier, clientId);
-		}
-		else if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName))
-		{
-			final String tableIdentifier = org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
-			verifyRecordId(recordId, tableIdentifier);
-
-			final I_M_InOut inOut = InterfaceWrapperHelper.create(ctx, recordId, I_M_InOut.class, trxName);
-			export = new M_InOutExport(inOut, tableIdentifier, clientId);
 		}
 		else if (I_EDI_Desadv.Table_Name.equals(tableName))
 		{

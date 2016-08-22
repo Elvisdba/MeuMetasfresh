@@ -1,5 +1,49 @@
-﻿--DROP VIEW IF EXISTS EDI_Cctop_INVOIC_v;
+﻿
 
+CREATE OR REPLACE FUNCTION "de.metas.edi".get_edi_gln(
+    p_CBPartner_ID numeric,
+    P_date date)
+  RETURNS character varying AS
+$BODY$
+
+SELECT c.EDIRecipientGLN
+FROM EDI_BPartner_Config c
+	-- anti-left-join an older config that is still after p_date
+	LEFT JOIN EDI_BPartner_Config c2 ON c2.C_BPartner_ID=c.C_BPartner_ID AND c2.IsActive='Y' AND c2.IsEdiRecipient='Y' AND c2.ValidFrom<=$2 AND c2.ValidFrom<c.ValidFrom 
+WHERE true
+	AND c.C_BPartner_ID=$1 
+	AND c.IsActive='Y' 
+	AND c.IsEdiRecipient='Y' 
+	AND c.ValidFrom<=$2
+	AND c2.EDI_BPartner_Config_ID IS NULL
+
+$BODY$
+	LANGUAGE sql STABLE;
+COMMENT ON FUNCTION "de.metas.edi".get_edi_gln(numeric, date) IS 'Selects the EDI particpant identifier to a given party and date.
+see https://github.com/metasfresh/metasfresh/issues/307';
+
+DROP VIEW IF EXISTS edi_cctop_000_v;
+CREATE OR REPLACE VIEW edi_cctop_000_v AS 
+SELECT 
+	i.C_Invoice_ID,
+	i.C_Invoice_ID AS edi_cctop_000_v_id, 
+	"de.metas.edi".get_edi_gln(i.C_BPartner_ID, i.DateOrdered::date) AS EdiReceiverIdentification, 
+	"de.metas.edi".get_edi_gln(bp_sender.C_BPartner_ID, i.DateOrdered::date) AS EdiSenderIdentification, 
+	i.AD_Client_ID, 
+	i.AD_Org_ID, 
+	i.Created, 
+	i.CreatedBy, 
+	i.Updated, 
+	i.Updatedby, 
+	i.IsActive
+ FROM C_Invoice i
+	INNER JOIN C_BPartner bp_sender ON bp_sender.AD_OrgBP_ID=i.AD_Org_ID
+;
+COMMENT ON VIEW edi_cctop_000_v IS 'The view calls "de.metas.edi".get_edi_gln to return the EdiPartnerIdentification (EDI GLN Identifier) of both the invoic''s recipient and sender.
+The returned GLNs are the ones which are valid right now().
+As of task https://github.com/metasfresh/metasfresh/issues/307 this view is not based on C_BPartner_Location andmove, but directly on C_Invoice.';
+
+DROP VIEW IF EXISTS EDI_Cctop_INVOIC_v;
 CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
 SELECT
 	i.C_Invoice_ID AS EDI_Cctop_INVOIC_v_ID
@@ -72,4 +116,3 @@ LEFT JOIN (
 ) t ON t.C_Invoice_ID = i.C_Invoice_ID
 LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
 ;
-

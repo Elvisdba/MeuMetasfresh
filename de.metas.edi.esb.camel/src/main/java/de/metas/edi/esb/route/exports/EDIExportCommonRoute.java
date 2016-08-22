@@ -10,12 +10,12 @@ package de.metas.edi.esb.route.exports;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import org.apache.camel.spi.DataFormat;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.EDIExpMInOutType;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
@@ -58,11 +57,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.to(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
 					//
-					// Single InOut DESADV
-					.when(body().isInstanceOf(EDIExpMInOutType.class))
-						.to(EDIDesadvRoute.EP_EDI_DESADV_SINGLE_CONSUMER)
-					//
-					// Aggregated InOut DESADV
+					// DESADV (exported EDI_Desadv record)
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						.to(EDIDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
 				.end();

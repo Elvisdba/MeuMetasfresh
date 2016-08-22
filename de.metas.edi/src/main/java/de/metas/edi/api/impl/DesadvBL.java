@@ -13,16 +13,17 @@ package de.metas.edi.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -38,12 +39,14 @@ import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.edi.api.IDesadvBL;
@@ -98,8 +101,7 @@ public class DesadvBL implements IDesadvBL
 					"EDI_DesadvLine {} of EDI_Desadv {} has M_Product_ID {} and C_OrderLine {} of C_Order {} has M_Product_ID {}, but both have POReference {} and Line {} ",
 					desadvLine, desadv, desadvLine.getM_Product_ID(),
 					orderLine, order, orderLine.getM_Product_ID(),
-					order.getPOReference(), orderLine.getLine()
-					);
+					order.getPOReference(), orderLine.getLine());
 
 			orderLine.setEDI_DesadvLine(desadvLine);
 			InterfaceWrapperHelper.save(orderLine);
@@ -204,14 +206,20 @@ public class DesadvBL implements IDesadvBL
 	{
 		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final IEDIBPartnerService edibPartnerService = Services.get(IEDIBPartnerService.class);
+		final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
 		if (desadv == null)
 		{
+			final I_C_BPartner shipToPartner = orderBL.getShipToPartner(order);
+			final I_C_BPartner orgBPartner = bPartnerOrgBL.retrieveLinkedBPartner(order.getAD_Org());
+			final Timestamp partnerConfigDate = order.getDateOrdered();
+
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
 
 			desadv.setPOReference(order.getPOReference());
-			desadv.setC_BPartner(orderBL.getShipToPartner(order));
+			desadv.setC_BPartner(shipToPartner);
 			desadv.setC_BPartner_Location(orderBL.getShipToLocation(order));
 
 			desadv.setDateOrdered(order.getDateOrdered());
@@ -219,6 +227,10 @@ public class DesadvBL implements IDesadvBL
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
 			desadv.setBill_Location(orderBL.getBillToLocation(order));
+
+			desadv.setEDISenderIdentification(edibPartnerService.getEdiRecipientGLN(orgBPartner, partnerConfigDate));
+			desadv.setEDIReceiverIdentification(edibPartnerService.getEdiRecipientGLN(shipToPartner, partnerConfigDate));
+
 			InterfaceWrapperHelper.save(desadv);
 		}
 		return desadv;
@@ -448,10 +460,10 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Execute the actual printing process
 		ProcessCtl.process(
-				null, // ASyncProcess parent = null => run synchronous
-				0, // WindowNo
-				null, // IProcessParameter
-				processInfo, // ProcessInfo
+				null,  // ASyncProcess parent = null => run synchronous
+				0,  // WindowNo
+				null,  // IProcessParameter
+				processInfo,  // ProcessInfo
 				ITrx.TRX_None);
 
 		//

@@ -10,12 +10,12 @@ package de.metas.edi.esb.bean.desadv;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -100,17 +100,17 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	{
 		final H000 h000 = new H000();
 		h000.setMessageDate(SystemTime.asDate());
-		h000.setReceiver(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		h000.setReceiver(xmlDesadv.getEdiReceiverIdentification());
+		h000.setSender(xmlDesadv.getEdiSenderIdentification());
 
 		h000.setReference(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		h000.setTestFlag(testFlag);
 
 		final List<H100> h100Lines = new ArrayList<H100>();
-		// for (final EDIExpMInOutType xmlInOut : xmlDesadv.getEDIExpMInOut())
-		// {
+
 		final List<H100> partialH100Lines = createH100LinesFromXmlDesadv(xmlDesadv, decimalFormat);
 		h100Lines.addAll(partialH100Lines);
-		// }
+
 		h000.setH100Lines(h100Lines);
 
 		return h000;
@@ -142,7 +142,9 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		validateObject(xmlDesadv.getCCurrencyID(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @C_Currency_ID@");
 
 		// validate strings (not null or empty)
-		validateString(xmlDesadv.getCBPartnerID().getEdiRecipientGLN(), "@FillMandatory@ @C_BPartner_ID@=" + xmlDesadv.getCBPartnerID().getValue() + " @EdiRecipientGLN@");
+		validateString(xmlDesadv.getEdiReceiverIdentification(), "@FillMandatory@ @EDI_DESADV_ID@="  + xmlDesadv.getDocumentNo() + " @EdiReceiverIdentification@");
+		validateString(xmlDesadv.getEdiSenderIdentification(), "@FillMandatory@ @EDI_DESADV_ID@="  + xmlDesadv.getDocumentNo() + " @EdiSenderIdentification@");
+
 		validateString(xmlDesadv.getCBPartnerLocationID().getGLN(), "@FillMandatory@ @C_BPartner_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
 		validateObject(xmlDesadv.getBillLocationID().getGLN(), "@FillMandatory@ @Bill_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
 
@@ -215,7 +217,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		}
 
 		final EDIExpCBPartnerType partner = xmlDesadv.getCBPartnerID();
-		h100.setPartner(partner.getEdiRecipientGLN());
+		h100.setPartner(xmlDesadv.getEdiReceiverIdentification());
 
 		h100.setProdGrpCode(voidString);
 		h100.setRampeID(voidString);
@@ -242,7 +244,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	{
 		final P050 p050 = new P050();
 
-		p050.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		p050.setPartner(xmlDesadv.getEdiReceiverIdentification());
 		p050.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 
 		final List<P102> p102Lines = new ArrayList<P102>();
@@ -300,7 +302,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
 
-		p060.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		p060.setPartner(xmlDesadv.getEdiReceiverIdentification());
 
 		final String sscc18Value = Util.removePrecedingZeros(xmlDesadvLine.getIPASSCC18());
 		p060.setNormalSSCC(sscc18Value);
@@ -363,7 +365,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		}
 
 		p100.setOrderPosNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
-		p100.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		p100.setPartner(xmlDesadv.getEdiReceiverIdentification());
 		p100.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p100.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p100.setProductionDate(EDIDesadvBean.voidDate);
@@ -429,7 +431,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 			p102.setOrderNo(Util.mkOwnOrderNumber(xmlDesadv.getDocumentNo()));
 		}
 		p102.setOrderPosNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
-		p102.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		p102.setPartner(xmlDesadv.getEdiReceiverIdentification());
 		p102.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p102.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p102.setProductionDate(EDIDesadvBean.voidDate);

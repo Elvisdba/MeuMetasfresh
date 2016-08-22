@@ -92,7 +92,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new org.adempiere.ad.callout.model.validator.AD_ColumnCallout(), client);
 		engine.addModelValidator(new org.adempiere.model.validator.AD_InfoColumn(), client);
-		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor(), client);
+
+		engine.addModelValidator(org.adempiere.server.rpl.model.interceptor.IMP_Processor.INSTANCE, client);
+		engine.addModelValidator(org.adempiere.server.rpl.model.interceptor.EXP_Format.INSTANCE, client);
 
 		engine.addModelValidator(new org.compiere.wf.model.validator.AD_Workflow(), client);
 

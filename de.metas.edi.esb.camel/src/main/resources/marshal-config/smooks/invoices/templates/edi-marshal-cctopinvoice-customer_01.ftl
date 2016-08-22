@@ -1,4 +1,4 @@
-000;${(cctopInvoice.cctop000V.senderGln)!""};${(cctopInvoice.cctop000V.gln)!""};${(cctopInvoice.currentDate?string("yyyyMMdd"))!""};${(cctopInvoice.currentDate?string("HHmm"))!""};${(cctopInvoice.cctop000V.interchangeReferenceNo)!""};;;${(cctopInvoice.cctop000V.isTest)!""};4.5;;
+000;${(cctopInvoice.cctop000V.senderGln)!""};${(cctopInvoice.cctop000V.receiverGln)!""};${(cctopInvoice.currentDate?string("yyyyMMdd"))!""};${(cctopInvoice.currentDate?string("HHmm"))!""};${(cctopInvoice.cctop000V.interchangeReferenceNo)!""};;;${(cctopInvoice.cctop000V.isTest)!""};4.5;;
 100;1;INVOIC;D;96A;HE;;${cctopInvoice.eancomDoctype!""};9;${cctopInvoice.invoiceDocumentno!""};${(cctopInvoice.dateInvoiced?string("yyyyMMdd"))!""};;;;;;
 111;;;;;${(cctopInvoice.cctop111V.poReference)!""};${(cctopInvoice.cctop111V.dateOrdered?string("yyyyMMdd"))!""};;;${(cctopInvoice.cctop111V.movementDate?string("yyyyMMdd"))!""};${(cctopInvoice.cctop111V.shipmentDocumentno)!""};${(cctopInvoice.cctop111V.movementDate?string("yyyyMMdd"))!""};1;${(cctopInvoice.currentDate?string("yyyyMMdd"))!""};;;;;;;;;
 <#list cctopInvoice.cctop119V! as cctop119V>
@@ -17,7 +17,7 @@
 <#list cctopInvoice.cctop901991V! as cctop901991V>
 901;${(cctop901991V.taxAmtSumTaxBaseAmt?string("0.00"))!""};${cctop901991V.taxAmt?string("0.00")!""};${(cctop901991V.taxBaseAmt?string("0.00"))!""};${(cctop901991V.taxBaseAmt?string("0.00"))!""};${(cctop901991V.taxAmtSumTaxBaseAmt?string("0.00"))!""};;${(cctop901991V.rate?string("0.00"))!""};;
 </#list>
-990;393;1;${(cctopInvoice.currentDate?string("yyyyMMdd"))!""};;${(cctopInvoice.cctop000V.senderGln)!""};;${(cctopInvoice.cctop000V.gln)!""};${(cctopInvoice.cctop000V.senderGln)!""};${(cctopInvoice.cctop000V.gln)!""};${cctopInvoice.isoCode!""};;;${(cctopInvoice.grandTotal?string("0.00"))!""};${(cctopInvoice.totalvat?string("0.00"))!""};${(cctopInvoice.totalLines?string("0.00"))!""};${(cctopInvoice.totaltaxbaseamt?string("0.00"))!""};;;;;;;
+990;393;1;${(cctopInvoice.currentDate?string("yyyyMMdd"))!""};;${(cctopInvoice.cctop000V.senderGln)!""};;${(cctopInvoice.cctop000V.receiverGln)!""};${(cctopInvoice.cctop000V.senderGln)!""};${(cctopInvoice.cctop000V.receiverGln)!""};${cctopInvoice.isoCode!""};;;${(cctopInvoice.grandTotal?string("0.00"))!""};${(cctopInvoice.totalvat?string("0.00"))!""};${(cctopInvoice.totalLines?string("0.00"))!""};${(cctopInvoice.totaltaxbaseamt?string("0.00"))!""};;;;;;;
 <#list cctopInvoice.cctop901991V! as cctop901991V>
 991;${(cctop901991V.taxAmtSumTaxBaseAmt?string("0.00"))!""};${cctop901991V.taxAmt?string("0.00")!""};${(cctop901991V.taxBaseAmt?string("0.00"))!""};${(cctop901991V.taxBaseAmt?string("0.00"))!""};;;${(cctop901991V.rate?string("0.00"))!""};;
 </#list>

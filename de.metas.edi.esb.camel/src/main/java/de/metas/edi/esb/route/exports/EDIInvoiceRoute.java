@@ -49,7 +49,6 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
 
-	public static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 	public static final String EDI_INVOICE_IS_TEST = "edi.props.invoice.isTest";
 
 	public final static QName EDIInvoiceFeedback_QNAME = new QName("", "EDI_Invoice_Feedback"); // FIXME see how to take it from object factory!
@@ -71,14 +70,12 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 
 		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_FILENAME_PATTERN);
 
-		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN);
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_IS_TEST);
 
 		from(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST).constant(isTest)
 
 		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")

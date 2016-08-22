@@ -10,59 +10,43 @@ package de.metas.edi.esb.pojo.invoice.cctop;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.Serializable;
 
 public class Cctop000V implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8166470101903850154L;
 
 	/*
-	 * ADempiere-mapped fields
-	 */
-	private String cbPartnerLocationID;
-	private String gln;
-
-	/*
 	 * EDI-specific fields
 	 */
+	private String receiverGln;
 	private String senderGln;
 	private String interchangeReferenceNo;
 	private String isTest;
 
-	public final String getCbPartnerLocationID()
+	public String getReceiverGln()
 	{
-		return cbPartnerLocationID;
+		return receiverGln;
 	}
 
-	public final void setCbPartnerLocationID(final String cbPartnerLocationID)
+	public void setReceiverGln(final String receiverGln)
 	{
-		this.cbPartnerLocationID = cbPartnerLocationID;
-	}
-
-	public String getGln()
-	{
-		return gln;
-	}
-
-	public void setGln(final String gln)
-	{
-		this.gln = gln;
+		this.receiverGln = receiverGln;
 	}
 
 	public String getSenderGln()
@@ -100,93 +84,58 @@ public class Cctop000V implements Serializable
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (cbPartnerLocationID == null ? 0 : cbPartnerLocationID.hashCode());
-		result = prime * result + (gln == null ? 0 : gln.hashCode());
-		result = prime * result + (interchangeReferenceNo == null ? 0 : interchangeReferenceNo.hashCode());
-		result = prime * result + (isTest == null ? 0 : isTest.hashCode());
-		result = prime * result + (senderGln == null ? 0 : senderGln.hashCode());
+		result = prime * result + ((interchangeReferenceNo == null) ? 0 : interchangeReferenceNo.hashCode());
+		result = prime * result + ((isTest == null) ? 0 : isTest.hashCode());
+		result = prime * result + ((receiverGln == null) ? 0 : receiverGln.hashCode());
+		result = prime * result + ((senderGln == null) ? 0 : senderGln.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(final Object obj)
+	public boolean equals(Object obj)
 	{
 		if (this == obj)
-		{
 			return true;
-		}
 		if (obj == null)
-		{
 			return false;
-		}
 		if (getClass() != obj.getClass())
-		{
 			return false;
-		}
-		final Cctop000V other = (Cctop000V)obj;
-		if (cbPartnerLocationID == null)
-		{
-			if (other.cbPartnerLocationID != null)
-			{
-				return false;
-			}
-		}
-		else if (!cbPartnerLocationID.equals(other.cbPartnerLocationID))
-		{
-			return false;
-		}
-		if (gln == null)
-		{
-			if (other.gln != null)
-			{
-				return false;
-			}
-		}
-		else if (!gln.equals(other.gln))
-		{
-			return false;
-		}
+		Cctop000V other = (Cctop000V)obj;
 		if (interchangeReferenceNo == null)
 		{
 			if (other.interchangeReferenceNo != null)
-			{
 				return false;
-			}
 		}
 		else if (!interchangeReferenceNo.equals(other.interchangeReferenceNo))
-		{
 			return false;
-		}
 		if (isTest == null)
 		{
 			if (other.isTest != null)
-			{
 				return false;
-			}
 		}
 		else if (!isTest.equals(other.isTest))
-		{
 			return false;
+		if (receiverGln == null)
+		{
+			if (other.receiverGln != null)
+				return false;
 		}
+		else if (!receiverGln.equals(other.receiverGln))
+			return false;
 		if (senderGln == null)
 		{
 			if (other.senderGln != null)
-			{
 				return false;
-			}
 		}
 		else if (!senderGln.equals(other.senderGln))
-		{
 			return false;
-		}
 		return true;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "Cctop000V [cbPartnerLocationID=" + cbPartnerLocationID + ", gln=" + gln + ", senderGln=" + senderGln + ", interchangeReferenceNo=" + interchangeReferenceNo
-				+ ", isTest=" + isTest
-				+ "]";
+		return "Cctop000V [receiverGln=" + receiverGln + ", senderGln=" + senderGln + ", interchangeReferenceNo=" + interchangeReferenceNo + ", isTest=" + isTest + "]";
 	}
+
 }

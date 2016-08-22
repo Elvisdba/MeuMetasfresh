@@ -49,7 +49,7 @@ public class DesadvDAO implements IDesadvDAO
 	/**
 	 * System configuration to tell the minimum sum percentage (QtyDeliveredInUOM/QtyEntered) that is accepted for a desadv entry
 	 */
-	private static final String SYS_CONFIG_DefaultMinimumPercentage = "de.metas.esb.edi.DefaultMinimumPercentage";
+	private static final String SYS_CONFIG_MinimumPercentage = "de.metas.edi.DESADV.MinimumPercentage";
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 
 	@Override
@@ -236,14 +236,14 @@ public class DesadvDAO implements IDesadvDAO
 	public BigDecimal retrieveMinimumSumPercentage()
 	{
 		final String minimumPercentageAccepted_Value = Services.get(ISysConfigBL.class).getValue(
-				SYS_CONFIG_DefaultMinimumPercentage, SYS_CONFIG_DefaultMinimumPercentage_DEFAULT);
+				SYS_CONFIG_MinimumPercentage, SYS_CONFIG_DefaultMinimumPercentage_DEFAULT);
 		try
 		{
 			return new BigDecimal(minimumPercentageAccepted_Value);
 		}
 		catch (NumberFormatException e)
 		{
-			Check.errorIf(true, "AD_SysConfig {} = {} can't be parsed as a number", SYS_CONFIG_DefaultMinimumPercentage, minimumPercentageAccepted_Value);
+			Check.errorIf(true, "AD_SysConfig {} = {} can't be parsed as a number", SYS_CONFIG_MinimumPercentage, minimumPercentageAccepted_Value);
 			return null; // shall not be reached
 		}
 	}

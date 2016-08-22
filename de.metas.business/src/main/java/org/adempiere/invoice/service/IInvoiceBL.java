@@ -29,7 +29,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Pair;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -329,7 +329,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param copyHandler
 	 */
 	void registerCopyHandler(
-			IQueryFilter<Pair<I_C_Invoice, I_C_Invoice>> filter,
+			IQueryFilter<IPair<I_C_Invoice, I_C_Invoice>> filter,
 			IDocCopyHandler<I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyHandler);
 
 	/**
@@ -340,7 +340,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param copyHandler
 	 */
 	void registerLineCopyHandler(
-			IQueryFilter<Pair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
+			IQueryFilter<IPair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler);
 
 	/**
@@ -396,7 +396,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Value set in the system configuration "de.metas.invoice.C_Invoice_PaymentRule".
-	 * 
+	 *
 	 * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
 	 */
 	String getDefaultPaymentRule();

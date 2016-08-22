@@ -10,12 +10,12 @@ package de.metas.edi.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,8 +24,8 @@ package de.metas.edi.model.validator;
 
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -51,8 +51,11 @@ public class Main implements ModelValidator
 		engine.addModelValidator(C_OrderLine.INSTANCE, client);
 		engine.addModelValidator(new C_OLCand(), client);
 
+		engine.addModelValidator(EDI_Ordrsp.INSTANCE, client);
+
 		engine.addModelValidator(EDI_Desadv.INSTANCE, client);
 		engine.addModelValidator(EDI_DesadvLine.INSTANCE, client);
+
 		engine.addModelValidator(new M_InOut(), client);
 		engine.addModelValidator(M_InOutLine.INSTANCE, client);
 
@@ -66,13 +69,12 @@ public class Main implements ModelValidator
 
 		// task 08926
 		// invoice copy handler
-
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(
 				org.compiere.model.I_C_Invoice.class,
-				new IQueryFilter<Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
+				new IQueryFilter<IPair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
 				{
 					@Override
-					public boolean accept(Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
+					public boolean accept(IPair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
 					{
 						return true;
 					}

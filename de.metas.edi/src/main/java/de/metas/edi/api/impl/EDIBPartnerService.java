@@ -88,7 +88,7 @@ public class EDIBPartnerService implements IEDIBPartnerService
 	private I_EDI_BPartner_Config retrieve(I_C_BPartner bpartner, Timestamp date)
 	{
 		final de.metas.edi.model.I_C_BPartner bpartnerExt = InterfaceWrapperHelper.create(bpartner, de.metas.edi.model.I_C_BPartner.class);
-		if (!bpartnerExt.isEdiRecipient())
+		if (!bpartnerExt.getHasEdiConfig())
 		{
 			return null;
 		}

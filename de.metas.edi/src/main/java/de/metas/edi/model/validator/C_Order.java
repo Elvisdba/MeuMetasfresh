@@ -70,7 +70,7 @@ public class C_Order
 	}
 
 	/**
-	 * If the given <code>inOut</code> is OK to be send as EDI, then we add it to a {@link de.metas.esb.edi.model.I_EDI_Desadv}.
+	 * If the given <code>order</code> is OK to be send as EDI, then we add it to a {@link de.metas.esb.edi.model.I_EDI_Desadv}.
 	 * <p>
 	 * Note that if the EDI-status changes to something else later on, the inOut shall remain assigned. Its not this MV's problem.
 	 *
@@ -95,15 +95,18 @@ public class C_Order
 		}
 
 		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+		final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+		final IOrdrspBL ordrspBL = Services.get(IOrdrspBL.class);
+
 		if(ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDatePromised()))
 		{
-			Services.get(IDesadvBL.class).addToDesadvCreateIfNotExistForOrder(order);
-		}
-		if(ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDatePromised()))
-		{
-			Services.get(IOrdrspBL.class).addToOrdrspCreateIfNotExistForOrder(order);
+			desadvBL.addToDesadvCreateIfNotExistForOrder(order);
 		}
 
+		if(ediBPartnerService.isOrdrspRecipient(order.getC_BPartner(), order.getDatePromised()))
+		{
+			ordrspBL.addToOrdrspCreateIfNotExistForOrder(order);
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
@@ -115,6 +118,10 @@ public class C_Order
 		if (order.getEDI_Desadv_ID() > 0)
 		{
 			Services.get(IDesadvBL.class).removeOrderFromDesadv(order);
+		}
+		if (order.getEDI_Ordrsp_ID() > 0)
+		{
+			Services.get(IOrdrspBL.class).removeOrderFromOrdrsp(order);
 		}
 	}
 
@@ -158,7 +165,8 @@ public class C_Order
 			return;
 		}
 
-		final boolean isEdiRecipient = partner.isEdiRecipient();
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+		final boolean isEdiRecipient = ediBPartnerService.isEDIRecipient(partner, order.getDatePromised());
 
 		// in case the partner was changed and the new one is not an edi recipient, the order will not be edi enabled
 		// If the new bp is edi recipient, we leave it to the user to set the flag or not

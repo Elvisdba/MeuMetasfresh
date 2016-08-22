@@ -10,18 +10,17 @@ package de.metas.document.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +28,8 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.Util;
 
 import de.metas.document.ICopyHandler;
@@ -46,7 +46,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 	final Map<ICopyHandler<?>, Class<?>> handler2Class = new LinkedHashMap<ICopyHandler<?>, Class<?>>();
 
 	@Override
-	public <T> void registerCopyHandler(final Class<T> clazz, final IQueryFilter<Pair<T, T>> filter, final ICopyHandler<? extends T> handler)
+	public <T> void registerCopyHandler(final Class<T> clazz, final IQueryFilter<IPair<T, T>> filter, final ICopyHandler<? extends T> handler)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(clazz);
 		if (Check.isEmpty(tableName))
@@ -78,11 +78,11 @@ public class CopyHandlerBL implements ICopyHandlerBL
 
 			@SuppressWarnings("unchecked")
 			final Class<T> supportedItemsClass = (Class<T>)handler.getSupportedItemsClass();
-			
-			// note: we use the handler's SupportedItemsClass and InterfaceWrapperHelper so make sure that the handler will be called with the correct subtype of 'T'. 
+
+			// note: we use the handler's SupportedItemsClass and InterfaceWrapperHelper so make sure that the handler will be called with the correct subtype of 'T'.
 			castedHandler.copyPreliminaryValues(
-					(T)InterfaceWrapperHelper.create(from, supportedItemsClass), 
-					(T)InterfaceWrapperHelper.create(to, supportedItemsClass));
+					InterfaceWrapperHelper.create(from, supportedItemsClass),
+					InterfaceWrapperHelper.create(to, supportedItemsClass));
 		}
 	}
 
@@ -102,16 +102,16 @@ public class CopyHandlerBL implements ICopyHandlerBL
 
 			@SuppressWarnings("unchecked")
 			final Class<T> supportedItemsClass = (Class<T>)handler.getSupportedItemsClass();
-			
-			// note: we use the handler's SupportedItemsClass and InterfaceWrapperHelper so make sure that the handler will be called with the correct subtype of 'T'. 
+
+			// note: we use the handler's SupportedItemsClass and InterfaceWrapperHelper so make sure that the handler will be called with the correct subtype of 'T'.
 			castedHandler.copyValues(
-					(T)InterfaceWrapperHelper.create(from, supportedItemsClass), 
-					(T)InterfaceWrapperHelper.create(to, supportedItemsClass));
+					InterfaceWrapperHelper.create(from, supportedItemsClass),
+					InterfaceWrapperHelper.create(to, supportedItemsClass));
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @param handler
 	 * @param from
 	 * @param to
@@ -120,7 +120,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 	 *         <li>the given <code>from</code> and <code>to</code> have a table name (see {@link InterfaceWrapperHelper#getModelTableNameOrNull(Object)}), which is equal to the table name of the class
 	 *         the given <code>handler</code> has registered with.
 	 *         <li>the class the given <code>handler</code> was registered with is a super class/interface or the same as the class of the given <code>from</code> and <code>to</code>
-	 * 
+	 *
 	 *         </ul>
 	 */
 	private <T> boolean isApplicable(final ICopyHandler<?> handler, final T from, final T to)
@@ -136,7 +136,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 		{
 			return false; // we are dealing with the null handler. Nothing to do.
 		}
-		
+
 		final String handlerTableName = InterfaceWrapperHelper.getTableNameOrNull(handlerClazz);
 
 		if (!Check.equals(handlerTableName, tTypeTableName))
@@ -147,12 +147,12 @@ public class CopyHandlerBL implements ICopyHandlerBL
 		if (!handlerClazz.isAssignableFrom(from.getClass()))
 		{
 			return false; // not applicable, because the handler was registered for a class that is (despite having the same table!) not compatible with the class of 'from' and 'to' example: handler
-							// has registered for the "commission" order line and 'from' and 'to' are "HU" order lines.
+ // has registered for the "commission" order line and 'from' and 'to' are "HU" order lines.
 		}
 
 		@SuppressWarnings("unchecked")
 		// if reached this point we made sure that the cast won't fail.
-		final IQueryFilter<Pair<T, T>> filter = (IQueryFilter<Pair<T, T>>)handler2Filter.get(handler);
+		final IQueryFilter<IPair<T, T>> filter = (IQueryFilter<IPair<T, T>>)handler2Filter.get(handler);
 
 		if (!filter.accept(mkTuple(from, to)))
 		{
@@ -162,9 +162,9 @@ public class CopyHandlerBL implements ICopyHandlerBL
 		return true;
 	}
 
-	private <T> Pair<T, T> mkTuple(final T from, final T to)
+	private <T> IPair<T, T> mkTuple(final T from, final T to)
 	{
-		return new Pair<T, T>(from, to);
+		return ImmutablePair.<T, T> of(from, to);
 	}
 
 	@SuppressWarnings("unchecked")

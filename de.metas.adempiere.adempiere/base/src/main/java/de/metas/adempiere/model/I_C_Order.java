@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.interfaces.I_C_BPartner;
 
 public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut
 	, IDocumentBillLocation, IDocumentDeliveryLocation
@@ -150,10 +151,12 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut
 	public void setDescriptionBottom(String DescriptionBottom);
 
 	public static String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+	public I_C_BPartner getHandOver_Partner();
 	public int getHandOver_Partner_ID();
 	public void setHandOver_Partner_ID(int HandOver_Partner_ID);
 
 	public static String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+	public I_C_BPartner_Location getHandOver_Location();
 	public int getHandOver_Location_ID();
 	public void setHandOver_Location_ID(int HandOver_Location_ID);
 

@@ -10,12 +10,12 @@ package de.metas.edi.esb.pojo.invoice.cctop;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,20 +29,19 @@ import java.util.List;
 
 /**
  * POJO that maps the C_Invoice data for the EDI data-format
- * 
+ *
  * @author al
  */
 public class CctopInvoice implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 4129268669443776288L;
 
 	/*
 	 * ADempiere-mapped fields
 	 */
-	private String cbPartnerLocationID;
 	private String cInvoiceID;
 	private String creditMemoReason;
 	private String creditMemoReasonText;
@@ -54,8 +53,7 @@ public class CctopInvoice implements Serializable
 	private String isoCode;
 	private Date movementDate;
 	private String poReference;
-	private String receivergln;
-	private String sendergln;
+
 	private String shipmentDocumentno;
 	private String vataxID;
 	private String totalLines;
@@ -76,15 +74,6 @@ public class CctopInvoice implements Serializable
 	 */
 	private Date currentDate;
 
-	public String getCbPartnerLocationID()
-	{
-		return cbPartnerLocationID;
-	}
-
-	public void setCbPartnerLocationID(final String cbPartnerLocationID)
-	{
-		this.cbPartnerLocationID = cbPartnerLocationID;
-	}
 
 	public String getcInvoiceID()
 	{
@@ -196,25 +185,6 @@ public class CctopInvoice implements Serializable
 		this.poReference = poReference;
 	}
 
-	public String getReceivergln()
-	{
-		return receivergln;
-	}
-
-	public void setReceivergln(final String receivergln)
-	{
-		this.receivergln = receivergln;
-	}
-
-	public String getSendergln()
-	{
-		return sendergln;
-	}
-
-	public void setSendergln(final String sendergln)
-	{
-		this.sendergln = sendergln;
-	}
 
 	public String getShipmentDocumentno()
 	{
@@ -372,7 +342,6 @@ public class CctopInvoice implements Serializable
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (cInvoiceID == null ? 0 : cInvoiceID.hashCode());
-		result = prime * result + (cbPartnerLocationID == null ? 0 : cbPartnerLocationID.hashCode());
 		result = prime * result + (cctop000V == null ? 0 : cctop000V.hashCode());
 		result = prime * result + (cctop111V == null ? 0 : cctop111V.hashCode());
 		result = prime * result + (cctop119V == null ? 0 : cctop119V.hashCode());
@@ -393,8 +362,7 @@ public class CctopInvoice implements Serializable
 		result = prime * result + (isoCode == null ? 0 : isoCode.hashCode());
 		result = prime * result + (movementDate == null ? 0 : movementDate.hashCode());
 		result = prime * result + (poReference == null ? 0 : poReference.hashCode());
-		result = prime * result + (receivergln == null ? 0 : receivergln.hashCode());
-		result = prime * result + (sendergln == null ? 0 : sendergln.hashCode());
+
 		result = prime * result + (shipmentDocumentno == null ? 0 : shipmentDocumentno.hashCode());
 		result = prime * result + (totalLines == null ? 0 : totalLines.hashCode());
 		result = prime * result + (totaltaxbaseamt == null ? 0 : totaltaxbaseamt.hashCode());
@@ -427,17 +395,6 @@ public class CctopInvoice implements Serializable
 			}
 		}
 		else if (!cInvoiceID.equals(other.cInvoiceID))
-		{
-			return false;
-		}
-		if (cbPartnerLocationID == null)
-		{
-			if (other.cbPartnerLocationID != null)
-			{
-				return false;
-			}
-		}
-		else if (!cbPartnerLocationID.equals(other.cbPartnerLocationID))
 		{
 			return false;
 		}
@@ -661,28 +618,7 @@ public class CctopInvoice implements Serializable
 		{
 			return false;
 		}
-		if (receivergln == null)
-		{
-			if (other.receivergln != null)
-			{
-				return false;
-			}
-		}
-		else if (!receivergln.equals(other.receivergln))
-		{
-			return false;
-		}
-		if (sendergln == null)
-		{
-			if (other.sendergln != null)
-			{
-				return false;
-			}
-		}
-		else if (!sendergln.equals(other.sendergln))
-		{
-			return false;
-		}
+
 		if (shipmentDocumentno == null)
 		{
 			if (other.shipmentDocumentno != null)
@@ -744,9 +680,9 @@ public class CctopInvoice implements Serializable
 	@Override
 	public String toString()
 	{
-		return "CctopInvoice [cbPartnerLocationID=" + cbPartnerLocationID + ", cInvoiceID=" + cInvoiceID + ", creditMemoReason=" + creditMemoReason + ", creditMemoReasonText=" + creditMemoReasonText
+		return "CctopInvoice [cInvoiceID=" + cInvoiceID + ", creditMemoReason=" + creditMemoReason + ", creditMemoReasonText=" + creditMemoReasonText
 				+ ", dateInvoiced=" + dateInvoiced + ", dateOrdered=" + dateOrdered + ", eancomDoctype=" + eancomDoctype + ", grandTotal=" + grandTotal + ", invoiceDocumentno=" + invoiceDocumentno
-				+ ", isoCode=" + isoCode + ", movementDate=" + movementDate + ", poReference=" + poReference + ", receivergln=" + receivergln + ", sendergln=" + sendergln + ", shipmentDocumentno="
+				+ ", isoCode=" + isoCode + ", movementDate=" + movementDate + ", poReference=" + poReference + ", shipmentDocumentno="
 				+ shipmentDocumentno + ", vataxID=" + vataxID + ", totalLines=" + totalLines + ", totaltaxbaseamt=" + totaltaxbaseamt + ", totalvat=" + totalvat
 				+ ", cctopInvoice500V=" + cctopInvoice500V + ", cctop000V=" + cctop000V + ", cctop111V=" + cctop111V + ", cctop119V=" + cctop119V + ", cctop120V=" + cctop120V + ", cctop140V="
 				+ cctop140V + ", cctop901991V=" + cctop901991V + ", countryCode=" + countryCode + ", countryCode3Digit=" + countryCode3Digit + ", currentDate=" + currentDate + "]";

@@ -1,0 +1,36 @@
+
+
+
+-- 26.07.2016 13:33
+-- URL zum Konzept
+CREATE SEQUENCE EDI_BPARTNER_CONFIG_SEQ INCREMENT 1 MINVALUE 0 MAXVALUE 2147483647 START 1000000
+;
+
+
+-- 26.07.2016 13:46
+-- URL zum Konzept
+CREATE TABLE EDI_BPartner_Config (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_BPartner_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, EDI_BPartner_Config_ID NUMERIC(10) NOT NULL, EdiRecipientGLN VARCHAR(13) DEFAULT NULL , IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, IsDesadvRecipient CHAR(1) DEFAULT 'N' CHECK (IsDesadvRecipient IN ('Y','N')) NOT NULL, IsEdiRecipient CHAR(1) DEFAULT 'N' CHECK (IsEdiRecipient IN ('Y','N')) NOT NULL, IsInvoicRecipient CHAR(1) DEFAULT 'N' CHECK (IsInvoicRecipient IN ('Y','N')) NOT NULL, IsOrdrspRecipient CHAR(1) DEFAULT 'N' CHECK (IsOrdrspRecipient IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, ValidFrom TIMESTAMP WITHOUT TIME ZONE NOT NULL, CONSTRAINT EDI_BPartner_Config_Key PRIMARY KEY (EDI_BPartner_Config_ID))
+;
+
+-- 22.08.2016 14:00
+-- URL zum Konzept
+ALTER TABLE EDI_BPartner_Config ADD EdiPartnerIdentification VARCHAR(13) DEFAULT NULL 
+;
+
+ALTER TABLE EDI_BPartner_Config DROP COLUMN EdiRecipientGLN;
+
+
+
+-- 26.07.2016 13:46
+-- URL zum Konzept
+CREATE UNIQUE INDEX EDI_BPartner_Config_UC_BPartner_validFrom ON EDI_BPartner_Config (C_BPartner_ID,ValidFrom) WHERE IsActive='Y'
+;
+
+-- 26.07.2016 13:52
+-- URL zum Konzept
+ALTER TABLE EDI_BPartner_Config ADD EdiDESADVDefaultItemCapacity NUMERIC DEFAULT 1 NOT NULL
+;
+
+-- FK constraint
+ALTER TABLE EDI_BPartner_Config DROP CONSTRAINT IF EXISTS CBPartner_EDIBPartnerConfig;
+ALTER TABLE EDI_BPartner_Config ADD CONSTRAINT CBPartner_EDIBPartnerConfig FOREIGN KEY (C_BPartner_ID) REFERENCES C_BPartner DEFERRABLE INITIALLY DEFERRED;

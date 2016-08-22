@@ -10,14 +10,14 @@ package de.metas.edi.esb.bean.invoice;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,6 +26,9 @@ import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.normalize;
 import static de.metas.edi.esb.commons.Util.toDate;
+import static de.metas.edi.esb.commons.ValidationHelper.validateNumber;
+import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -71,7 +74,7 @@ public class EDICctopInvoiceBean
 	 * <li>IN: {@link EDICctopInvoicVType}</li>
 	 * <li>OUT: {@link CctopInvoice}</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param exchange
 	 */
 	public void createEDIData(final Exchange exchange)
@@ -90,7 +93,6 @@ public class EDICctopInvoiceBean
 	{
 		final CctopInvoice invoice = new CctopInvoice();
 
-		invoice.setCbPartnerLocationID(formatNumber(xmlCctopInvoice.getCBPartnerLocationID(), decimalFormat));
 		invoice.setcInvoiceID(formatNumber(xmlCctopInvoice.getCInvoiceID(), decimalFormat));
 
 		// set CreditMemo-related data if the C_Invoice is actually a CreditMemo
@@ -131,8 +133,6 @@ public class EDICctopInvoiceBean
 		{
 			invoice.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getInvoiceDocumentno()));
 		}
-		invoice.setReceivergln(xmlCctopInvoice.getReceivergln());
-		invoice.setSendergln(xmlCctopInvoice.getSendergln());
 		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
 		invoice.setVataxID(xmlCctopInvoice.getVATaxID());
 		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
@@ -149,7 +149,7 @@ public class EDICctopInvoiceBean
 		invoice.setCctop901991V(createCctop901991VList(xmlCctopInvoice.getEDICctop901991V(), decimalFormat));
 
 		sortCctop500VLines(xmlCctopInvoice); // requirement, lines need to be sorted
-		invoice.setCctopInvoice500V(createCctopInvoice500VList(xmlCctopInvoice.getEDICctopInvoic500V(), decimalFormat));
+		invoice.setCctopInvoice500V(createCctopInvoice500VList(xmlCctopInvoice, decimalFormat));
 
 		invoice.setCurrentDate(SystemTime.asDate());
 
@@ -173,35 +173,23 @@ public class EDICctopInvoiceBean
 
 	private Cctop000V createCctop000V(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat, final Exchange exchange)
 	{
-		final EDICctop000VType xmlCctop000V = xmlCctopInvoice.getEDICctop000V();
-
-		if (xmlCctop000V == null)
+		if (xmlCctopInvoice.getEDICctop000V().isEmpty())
 		{
 			return null;
 		}
 
-		if (isEmpty(xmlCctop000V.getGLN()))
-		{
-			throw new RuntimeCamelException(xmlCctop000V + " should have a GLN");
-		}
+		final EDICctop000VType xmlCctop000V = xmlCctopInvoice.getEDICctop000V().get(0);
+
+		validateString(xmlCctop000V.getEdiReceiverIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EdiReceiverIdentification@ (Check EDI_cctop_Invoic_V.EdiReceiverIdentification)");
+		validateString(xmlCctop000V.getEdiSenderIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EdiSenderIdentification@ (Check EDI_cctop_Invoic_V.EdiSenderIdentification)");
+		validateNumber(xmlCctopInvoice.getSequenceNoAttr(), "@FillMandatory@ @SequenceNo@ (check AD_Sequence_ID of exp-format EDI_cctop_invoic_v)");
 
 		final Cctop000V cctop000V = new Cctop000V();
-		cctop000V.setCbPartnerLocationID(formatNumber(xmlCctop000V.getCBPartnerLocationID(), decimalFormat));
-		cctop000V.setGln(xmlCctop000V.getGLN());
+		cctop000V.setReceiverGln(xmlCctop000V.getEdiReceiverIdentification());
 
-		final BigInteger sequenceNoAttr = xmlCctopInvoice.getSequenceNoAttr();
-		if (sequenceNoAttr == null)
-		{
-			throw new RuntimeCamelException("sequenceNoAttr cannot be null for " + xmlCctopInvoice);
-		}
-		cctop000V.setInterchangeReferenceNo(sequenceNoAttr.toString());
+		cctop000V.setInterchangeReferenceNo(xmlCctopInvoice.getSequenceNoAttr().toString());
 
-		final Object senderGln = exchange.getProperty(EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN);
-		if (senderGln == null)
-		{
-			throw new RuntimeCamelException("senderGln property cannot be null for!");
-		}
-		cctop000V.setSenderGln(senderGln.toString());
+		cctop000V.setSenderGln(xmlCctop000V.getEdiSenderIdentification());
 
 		final Object isTest = exchange.getProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST);
 		if (isTest == null)
@@ -255,7 +243,7 @@ public class EDICctopInvoiceBean
 	{
 		return str != null && !str.trim().isEmpty();
 	}
-	
+
 	private List<Cctop119V> createCctop119VList(final List<EDICctop119VType> xmlCctop119VList, final DecimalFormat decimalFormat)
 	{
 		final List<Cctop119V> cctop119VList = new ArrayList<Cctop119V>();
@@ -370,16 +358,17 @@ public class EDICctopInvoiceBean
 		return cctop901991VList;
 	}
 
-	private List<CctopInvoice500V> createCctopInvoice500VList(final List<EDICctopInvoic500VType> xmlCctopInvoic500VList, final DecimalFormat decimalFormat)
+	private List<CctopInvoice500V> createCctopInvoice500VList(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat)
 	{
+
+		final List<EDICctopInvoic500VType> xmlCctopInvoic500VList = xmlCctopInvoice.getEDICctopInvoic500V();
+
 		final List<CctopInvoice500V> cctopInvoice500VList = new ArrayList<CctopInvoice500V>();
 
 		for (final EDICctopInvoic500VType xmlCctopInvoic500V : xmlCctopInvoic500VList)
 		{
-			if (isEmpty(xmlCctopInvoic500V.getUPC()))
-			{
-				throw new RuntimeCamelException(xmlCctopInvoic500V + " must have a UPC");
-			}
+			validateString(xmlCctopInvoic500V.getUPC(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + ", @Line@=" + xmlCctopInvoic500V.getLine() + " @UPC@");
+			validateObject(xmlCctopInvoic500V.getOrderLine(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + ", @Line@=" + xmlCctopInvoic500V.getLine() + " @C_OrderLine_ID@");
 
 			final CctopInvoice500V cctopInvoice500V = new CctopInvoice500V();
 			cctopInvoice500V.setcInvoiceID(formatNumber(xmlCctopInvoic500V.getCInvoiceID(), decimalFormat));
@@ -398,16 +387,11 @@ public class EDICctopInvoiceBean
 			cctopInvoice500V.setValue(xmlCctopInvoic500V.getValue());
 			cctopInvoice500V.setVendorProductNo(xmlCctopInvoic500V.getVendorProductNo());
 			cctopInvoice500V.setProductDescription(xmlCctopInvoic500V.getProductDescription());
-			if (xmlCctopInvoic500V.getOrderLine() == null)
-			{
-				throw new RuntimeCamelException(xmlCctopInvoic500V + " must reference an orderline");
-			}
-			else
-			{
-				// task 09182: we output the order's POReference which might be different from the POReference of the invoice header.
-				cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference().toString());
-				cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
-			}
+
+			// task 09182: we output the order's POReference which might be different from the POReference of the invoice header.
+			cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference().toString());
+			cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
+
 			cctopInvoice500V.setTaxAmount(formatNumber(xmlCctopInvoic500V.getTaxAmtInfo(), decimalFormat));
 
 			cctopInvoice500V.setEancomPriceUom(xmlCctopInvoic500V.getEanComPriceUOM());

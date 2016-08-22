@@ -1,21 +1,23 @@
 <#-- H000 -->
-${"H000"?right_pad(4)?substring(0, 4)}<#lt><#t>
-${"7640134460009"?right_pad(35)?substring(0, 35)}<#lt><#t>
-${"14"?right_pad(4)?substring(0, 4)}<#lt><#t>
-${h000.receiver?right_pad(35)?substring(0, 35)}<#lt><#t>
-${"14"?right_pad(4)?substring(0, 4)}<#lt><#t>
-${h000.reference?right_pad(35)?substring(0, 35)}<#lt><#t>
-${"INHEDI"?right_pad(6)?substring(0, 6)}<#lt><#t>
-${"DESADV"?right_pad(25)?substring(0, 25)}<#lt><#t>
-${"D96A"?right_pad(25)?substring(0, 25)}<#lt><#t>
-${"1"?left_pad(4)?substring(0, 4)}<#lt><#t><#-- msgCount=1 -->
-${"UNOC"?right_pad(4)?substring(0, 4)}<#lt><#t>
-${"3"?left_pad(1)?substring(0, 1)}<#lt><#t>
-${h000.messageDate?string("yyyyMMdd")?right_pad(8)?substring(0, 8)}<#lt><#t>
-${h000.messageDate?string("mmHH")?right_pad(4)?substring(0, 4)}<#lt><#t>
-${"DESADV0702"?right_pad(14)?substring(0, 14)}<#lt><#t>
-${"EANCOM76170270000007640134460009900"?right_pad(35)?substring(0, 35)}<#lt><#t>
-${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
+<#-- StartPosition=0001 -->${"H000"?right_pad(4)?substring(0, 4)}<#lt><#t>
+<#-- StartPosition=0005 -->${h000.sender?right_pad(35)?substring(0, 35)}<#lt><#t>
+<#-- StartPosition=0040 -->${"14"?right_pad(4)?substring(0, 4)}<#lt><#t>
+<#-- StartPosition=0044 -->${h000.receiver?right_pad(35)?substring(0, 35)}<#lt><#t>
+<#-- StartPosition=0079 -->${"14"?right_pad(4)?substring(0, 4)}<#lt><#t>
+<#-- StartPosition=0083 -->${h000.reference?right_pad(35)?substring(0, 35)}<#lt><#t>
+<#-- StartPosition=0118 -->${"INHEDI"?right_pad(6)?substring(0, 6)}<#lt><#t>
+<#-- StartPosition=0124 -->${"DESADV"?right_pad(25)?substring(0, 25)}<#lt><#t>
+<#-- StartPosition=0149 -->${"D96A"?right_pad(25)?substring(0, 25)}<#lt><#t>
+<#-- StartPosition=0174 -->${"1"?left_pad(4)?substring(0, 4)}<#lt><#t><#-- msgCount=1 -->
+<#-- StartPosition=0178 -->${"UNOC"?right_pad(4)?substring(0, 4)}<#lt><#t>
+<#-- StartPosition=0182 -->${"3"?left_pad(1)?substring(0, 1)}<#lt><#t>
+<#-- StartPosition=0183 -->${h000.messageDate?string("yyyyMMdd")?right_pad(8)?substring(0, 8)}<#lt><#t>
+<#-- StartPosition=0191 -->${h000.messageDate?string("mmHH")?right_pad(4)?substring(0, 4)}<#lt><#t>
+<#-- StartPosition=0195 -->${"DESADV0702"?right_pad(14)?substring(0, 14)}<#lt><#t>
+<#-- StartPosition=0209 -->${"EANCOM761702700000"}<#lt><#t>
+<#-- StartPosition=0209 -->${h000.sender?left_pad(14)?substring(0, 14)}<#lt><#t>
+<#-- StartPosition=0209 -->${"900"}<#lt><#t>
+<#-- StartPosition=0244 -->${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
 
 <#-- H100 -->
 <#list h000.h100Lines! as h100>
@@ -32,7 +34,7 @@ ${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
 	${h100.messageDate?string("yyyyMMddHHmmss")?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${h100.deliveryDate?string("yyyyMMddHHmmss")?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${h100.buyerID?right_pad(14)?substring(0, 14)}<#lt><#t>
-	${"7640134460009"?right_pad(14)?substring(0, 14)}<#lt><#t>
+	${h000.sender?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${h100.deliveryID?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${h100.storeNumber?right_pad(14)?substring(0, 14)}<#lt><#t>
 	${h100.invoiceID?right_pad(14)?substring(0, 14)}<#lt><#t>

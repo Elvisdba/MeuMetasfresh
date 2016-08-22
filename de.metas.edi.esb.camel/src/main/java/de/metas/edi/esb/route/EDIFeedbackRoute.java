@@ -10,12 +10,12 @@ package de.metas.edi.esb.route;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.EDIDesadvFeedbackType;
-import de.metas.edi.esb.jaxb.EDIInOutFeedbackType;
 import de.metas.edi.esb.jaxb.EDIInvoiceFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlErrorFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
@@ -75,8 +74,6 @@ public class EDIFeedbackRoute extends RouteBuilder
 
 		final Processor errorInvoiceProcessor = new EDIXmlErrorFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class,
 				EDIInvoiceRoute.EDIInvoiceFeedback_QNAME, EDIInvoiceRoute.METHOD_setCInvoiceID); // FIXME ugly
-		final Processor errorInOutProcessor = new EDIXmlErrorFeedbackProcessor<EDIInOutFeedbackType>(EDIInOutFeedbackType.class,
-				EDIDesadvRoute.EDIInOutFeedback_QNAME, EDIDesadvRoute.METHOD_setMInOutID); // FIXME ugly
 		final Processor errorDesadvProcessor = new EDIXmlErrorFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class,
 				EDIDesadvRoute.EDIDesadvFeedback_QNAME, EDIDesadvRoute.METHOD_setEDIDesadvID); // FIXME ugly
 
@@ -90,9 +87,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 							//.when(body().isInstanceOf(EDICctopInvoicVType.class))
 							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIInvoiceRoute.ROUTE_ID))
 								.process(errorInvoiceProcessor)
-							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIDesadvRoute.ROUTE_ID_SINGLE))
-								.process(errorInOutProcessor)
-							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIDesadvRoute.ROUTE_ID_AGGREGATE))
+							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIDesadvRoute.ROUTE_ID))
 								.process(errorDesadvProcessor)
 							.otherwise()
 								.log(LoggingLevel.ERROR, "EDI: No available feedback processor found for header[HEADER_ROUTE_ID]=" + header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID))
