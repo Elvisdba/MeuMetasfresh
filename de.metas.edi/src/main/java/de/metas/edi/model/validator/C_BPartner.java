@@ -13,15 +13,14 @@ package de.metas.edi.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -33,7 +32,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IEDIDocumentBL;
-import de.metas.edi.api.IEDIInvoiceCandDAO;
 import de.metas.edi.model.I_C_BPartner;
 
 @Validator(I_C_BPartner.class)
@@ -42,7 +40,8 @@ public class C_BPartner
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_C_BPartner bpartner)
 	{
-		if (!bpartner.isEdiRecipient())
+
+		if (!bpartner.getHasEdiConfig())
 		{
 			return;
 		}
@@ -62,28 +61,35 @@ public class C_BPartner
 		throw new AdempiereException("Invalid EDI partner " + causes.toString().trim());
 	}
 
-	/**
-	 * Make sure the IsEDIRecipient flag from the invoice candidates of a partner is always up to date
-	 *
-	 * @param partner
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiRecipient })
-	public void updateIsEDIRecipient_InvoiceCandidates(final I_C_BPartner partner)
-	{
-		if (partner == null)
-		{
-			// nothing to do
-			return;
-		}
-		// Services
-		final IEDIInvoiceCandDAO invoiceCandidateDAO = Services.get(IEDIInvoiceCandDAO.class);
-
-		final boolean isEDIRecipient = partner.isEdiRecipient();
-
-		// update the unprocessed invoice candidates of this bpartner with the ediRecipient flag,
-		// only if the flag is not yet correctly set
-
-		invoiceCandidateDAO.updateEdiRecipientInvoiceCandidates(partner, isEDIRecipient);
-	}
+	// updating all matching ICs is not feasible
+	// the old code just blindly updated them which might be performant enough,
+	// but now that we have EDI_BPartner_Config records with validFrom,
+	// that simple update won't work anymore and we need more sophisticated logic.
+	// But for the time being, people can just delete the ICs in question and have them recreated
+// @formatter:off
+//	/**
+//	 * Make sure the IsEDIRecipient flag from the invoice candidates of a partner is always up to date
+//	 *
+//	 * @param partner
+//	 */
+//	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+//			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiRecipient })
+//	public void updateIsEDIRecipient_InvoiceCandidates(final I_C_BPartner partner)
+//	{
+//		if (partner == null)
+//		{
+//			// nothing to do
+//			return;
+//		}
+//		// Services
+//		final IEDIInvoiceCandDAO invoiceCandidateDAO = Services.get(IEDIInvoiceCandDAO.class);
+//
+//		final boolean isEDIRecipient = partner.isEdiRecipient();
+//
+//		// update the unprocessed invoice candidates of this bpartner with the ediRecipient flag,
+//		// only if the flag is not yet correctly set
+//
+//		invoiceCandidateDAO.updateEdiRecipientInvoiceCandidates(partner, isEDIRecipient);
+//	}
+// @formatter:on
 }
