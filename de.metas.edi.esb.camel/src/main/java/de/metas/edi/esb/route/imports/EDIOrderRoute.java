@@ -43,7 +43,7 @@ import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 
-import de.metas.edi.esb.bean.order.EDICompudataOrdersBean;
+import de.metas.edi.esb.bean.orders.EDICompudataOrdersBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.processor.strategy.aggregation.AggregationHelper;
@@ -66,14 +66,14 @@ public class EDIOrderRoute extends AbstractEDIRoute
 	private static final Set<Class<?>> pojoTypes = new HashSet<Class<?>>();
 	static
 	{
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H000.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H100.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H110.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H120.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H130.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.P100.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.P110.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.T100.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.H000.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.H100.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.H110.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.H120.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.H130.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.P100.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.P110.class);
+		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.orders.compudata.T100.class);
 	}
 
 	@Override

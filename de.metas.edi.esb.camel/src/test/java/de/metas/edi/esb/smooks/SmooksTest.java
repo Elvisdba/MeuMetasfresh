@@ -40,8 +40,8 @@ import org.milyn.payload.StringResult;
 import org.xml.sax.SAXException;
 
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop000V;
-import de.metas.edi.esb.pojo.invoice.cctop.CctopInvoice;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop000V;
+import de.metas.edi.esb.pojo.invoic.cctop.CctopInvoice;
 
 @SuppressWarnings("PMD.SignatureDeclareThrowsException")
 public class SmooksTest

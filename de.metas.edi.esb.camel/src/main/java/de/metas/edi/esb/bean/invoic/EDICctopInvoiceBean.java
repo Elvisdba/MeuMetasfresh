@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.invoice;
+package de.metas.edi.esb.bean.invoic;
 
 /*
  * #%L
@@ -55,14 +55,14 @@ import de.metas.edi.esb.jaxb.EDICctop140VType;
 import de.metas.edi.esb.jaxb.EDICctop901991VType;
 import de.metas.edi.esb.jaxb.EDICctopInvoic500VType;
 import de.metas.edi.esb.jaxb.EDICctopInvoicVType;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop000V;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop111V;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop119V;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop120V;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop140V;
-import de.metas.edi.esb.pojo.invoice.cctop.Cctop901991V;
-import de.metas.edi.esb.pojo.invoice.cctop.CctopInvoice;
-import de.metas.edi.esb.pojo.invoice.cctop.CctopInvoice500V;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop000V;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop111V;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop119V;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop120V;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop140V;
+import de.metas.edi.esb.pojo.invoic.cctop.Cctop901991V;
+import de.metas.edi.esb.pojo.invoic.cctop.CctopInvoice;
+import de.metas.edi.esb.pojo.invoic.cctop.CctopInvoice500V;
 import de.metas.edi.esb.route.exports.EDIInvoiceRoute;
 
 public class EDICctopInvoiceBean

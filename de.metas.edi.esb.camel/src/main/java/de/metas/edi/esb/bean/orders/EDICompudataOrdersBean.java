@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.order;
+package de.metas.edi.esb.bean.orders;
 
 /*
  * #%L
@@ -53,14 +53,14 @@ import de.metas.edi.esb.jaxb.ObjectFactory;
 import de.metas.edi.esb.jaxb.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.ReplicationTypeEnum;
-import de.metas.edi.esb.pojo.order.compudata.H000;
-import de.metas.edi.esb.pojo.order.compudata.H100;
-import de.metas.edi.esb.pojo.order.compudata.H110;
-import de.metas.edi.esb.pojo.order.compudata.H120;
-import de.metas.edi.esb.pojo.order.compudata.H130;
-import de.metas.edi.esb.pojo.order.compudata.P100;
-import de.metas.edi.esb.pojo.order.compudata.P110;
-import de.metas.edi.esb.pojo.order.compudata.T100;
+import de.metas.edi.esb.pojo.orders.compudata.H000;
+import de.metas.edi.esb.pojo.orders.compudata.H100;
+import de.metas.edi.esb.pojo.orders.compudata.H110;
+import de.metas.edi.esb.pojo.orders.compudata.H120;
+import de.metas.edi.esb.pojo.orders.compudata.H130;
+import de.metas.edi.esb.pojo.orders.compudata.P100;
+import de.metas.edi.esb.pojo.orders.compudata.P110;
+import de.metas.edi.esb.pojo.orders.compudata.T100;
 import de.metas.edi.esb.route.imports.EDIOrderRoute;
 
 public class EDICompudataOrdersBean

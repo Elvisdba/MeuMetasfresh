@@ -1,4 +1,4 @@
-package de.metas.edi.esb.pojo.order.compudata;
+package de.metas.edi.esb.pojo.orders.compudata;
 
 /*
  * #%L

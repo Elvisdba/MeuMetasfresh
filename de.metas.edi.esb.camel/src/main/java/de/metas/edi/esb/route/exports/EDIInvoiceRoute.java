@@ -32,7 +32,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 
-import de.metas.edi.esb.bean.invoice.EDICctopInvoiceBean;
+import de.metas.edi.esb.bean.invoic.EDICctopInvoiceBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.EDICctopInvoicVType;

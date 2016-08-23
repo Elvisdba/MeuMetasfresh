@@ -1,7 +1,7 @@
 package org.adempiere.server.rpl.api.impl;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.server.rpl.api.IExportFormatDAO;
+import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
 import org.adempiere.util.Services;
 import org.compiere.model.I_EXP_FormatLine;
@@ -28,7 +28,7 @@ import org.compiere.model.I_EXP_FormatLine;
  * #L%
  */
 
-public class ExpFormatDAO implements IExportFormatDAO
+public class ExpFormatDAO implements IExpFormatDAO
 {
 
 	@Override

@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.server.rpl.api.IExportFormatDAO;
+import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.server.rpl.model.interceptor.EXP_Format;
 import org.compiere.util.CCache;
 import org.compiere.util.Util;
@@ -72,7 +72,7 @@ import org.compiere.util.Util;
  *         <li>[ 2195090 ] Stabilization of replication
  *         <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962
  *
- * @deprecated please port the code to {@link IExportFormatDAO}. Also note the model interceptor {@link EXP_Format} which handles <code>BEFORE_DELETE</code> stuff.
+ * @deprecated please port the code to {@link IExpFormatDAO}. Also note the model interceptor {@link EXP_Format} which handles <code>BEFORE_DELETE</code> stuff.
  */
 @Deprecated
 public class MEXPFormat extends X_EXP_Format

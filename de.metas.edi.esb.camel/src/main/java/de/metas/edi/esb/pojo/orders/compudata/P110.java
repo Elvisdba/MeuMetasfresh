@@ -1,4 +1,4 @@
-package de.metas.edi.esb.pojo.order.compudata;
+package de.metas.edi.esb.pojo.orders.compudata;
 
 /*
  * #%L
@@ -25,12 +25,12 @@ package de.metas.edi.esb.pojo.order.compudata;
 
 import java.io.Serializable;
 
-public class H120 implements Serializable
+public class P110 implements Serializable
 {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -3115547711048907017L;
+	private static final long serialVersionUID = 5834505864233374046L;
 
 	private String record;
 	private String partner;
@@ -164,7 +164,7 @@ public class H120 implements Serializable
 		{
 			return false;
 		}
-		final H120 other = (H120)obj;
+		final P110 other = (P110)obj;
 		if (messageNo == null)
 		{
 			if (other.messageNo != null)
@@ -270,7 +270,7 @@ public class H120 implements Serializable
 	@Override
 	public String toString()
 	{
-		return "H120 [record=" + record + ", partner=" + partner + ", messageNo=" + messageNo + ", qualifier=" + qualifier + ", text1=" + text1 + ", text2=" + text2
+		return "P110 [record=" + record + ", partner=" + partner + ", messageNo=" + messageNo + ", qualifier=" + qualifier + ", text1=" + text1 + ", text2=" + text2
 				+ ", text3=" + text3 + ", text4="
 				+ text4 + ", text5=" + text5 + "]";
 	}

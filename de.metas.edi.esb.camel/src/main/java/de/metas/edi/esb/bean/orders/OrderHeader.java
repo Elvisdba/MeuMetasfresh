@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.order;
+package de.metas.edi.esb.bean.orders;
 
 /*
  * #%L
@@ -26,11 +26,11 @@ package de.metas.edi.esb.bean.order;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.edi.esb.pojo.order.compudata.H100;
-import de.metas.edi.esb.pojo.order.compudata.H110;
-import de.metas.edi.esb.pojo.order.compudata.H120;
-import de.metas.edi.esb.pojo.order.compudata.H130;
-import de.metas.edi.esb.pojo.order.compudata.T100;
+import de.metas.edi.esb.pojo.orders.compudata.H100;
+import de.metas.edi.esb.pojo.orders.compudata.H110;
+import de.metas.edi.esb.pojo.orders.compudata.H120;
+import de.metas.edi.esb.pojo.orders.compudata.H130;
+import de.metas.edi.esb.pojo.orders.compudata.T100;
 
 public class OrderHeader
 {

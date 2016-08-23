@@ -1,4 +1,4 @@
-package de.metas.edi.esb.pojo.invoice.cctop;
+package de.metas.edi.esb.pojo.invoic.cctop;
 
 /*
  * #%L

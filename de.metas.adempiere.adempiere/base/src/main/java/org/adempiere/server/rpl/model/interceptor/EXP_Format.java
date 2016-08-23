@@ -2,7 +2,7 @@ package org.adempiere.server.rpl.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.server.rpl.api.IExportFormatDAO;
+import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
@@ -46,6 +46,6 @@ public class EXP_Format
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void onExpFormatDelete(final I_EXP_Format format)
 	{
-		Services.get(IExportFormatDAO.class).deleteAllLines(format);
+		Services.get(IExpFormatDAO.class).deleteAllLines(format);
 	}
 }

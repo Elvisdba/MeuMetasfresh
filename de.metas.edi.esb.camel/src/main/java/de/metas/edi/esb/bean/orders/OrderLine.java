@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.order;
+package de.metas.edi.esb.bean.orders;
 
 /*
  * #%L
@@ -26,33 +26,34 @@ package de.metas.edi.esb.bean.order;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.edi.esb.pojo.order.compudata.H000;
+import de.metas.edi.esb.pojo.orders.compudata.P100;
+import de.metas.edi.esb.pojo.orders.compudata.P110;
 
-public class OrderEDI
+public class OrderLine
 {
-	private final H000 h000;
+	private final P100 p100;
 
-	private final List<OrderHeader> orderHeaders = new ArrayList<OrderHeader>();
+	private final List<P110> p110Lines = new ArrayList<P110>();
 
-	public OrderEDI(final H000 h000)
+	public OrderLine(final P100 p100)
 	{
 		super();
 
-		this.h000 = h000;
+		this.p100 = p100;
 	}
 
-	public void addOrderHeader(final OrderHeader orderHeader)
+	public void addP110(final P110 p110)
 	{
-		orderHeaders.add(orderHeader);
+		p110Lines.add(p110);
 	}
 
-	public H000 getH000()
+	public P100 getP100()
 	{
-		return h000;
+		return p100;
 	}
 
-	public List<OrderHeader> getOrderHeaders()
+	public List<P110> getP110Lines()
 	{
-		return orderHeaders;
+		return p110Lines;
 	}
 }
