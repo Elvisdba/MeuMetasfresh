@@ -152,53 +152,53 @@ public interface I_EDI_BPartner_Config
 
 	/**
 	 * Set "CU pro TU" bei unbestimmter Verpackungskapazität.
-	 * "CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
+	 * "CU pro TU"-Wert, den das System in einem ausgehenden EDI-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiDESADVDefaultItemCapacity (java.math.BigDecimal EdiDESADVDefaultItemCapacity);
+	public void setEDI_DefaultItemCapacity (java.math.BigDecimal EDI_DefaultItemCapacity);
 
 	/**
 	 * Get "CU pro TU" bei unbestimmter Verpackungskapazität.
-	 * "CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
+	 * "CU pro TU"-Wert, den das System in einem ausgehenden EDI-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getEdiDESADVDefaultItemCapacity();
+	public java.math.BigDecimal getEDI_DefaultItemCapacity();
 
-    /** Column definition for EdiDESADVDefaultItemCapacity */
-    public static final org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object> COLUMN_EdiDESADVDefaultItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object>(I_EDI_BPartner_Config.class, "EdiDESADVDefaultItemCapacity", null);
-    /** Column name EdiDESADVDefaultItemCapacity */
-    public static final String COLUMNNAME_EdiDESADVDefaultItemCapacity = "EdiDESADVDefaultItemCapacity";
+    /** Column definition for EDI_DefaultItemCapacity */
+    public static final org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object> COLUMN_EDI_DefaultItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object>(I_EDI_BPartner_Config.class, "EDI_DefaultItemCapacity", null);
+    /** Column name EDI_DefaultItemCapacity */
+    public static final String COLUMNNAME_EDI_DefaultItemCapacity = "EDI_DefaultItemCapacity";
 
 	/**
-	 * Set EDI-ID des Dateiempfängers.
-	 * EDI-ID des Dateiempfängers
+	 * Set EDI-GLN des Partners .
+	 * Wird je nach Kontext als Absender-GLN oder als Empfänger-GLN benutzt.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiRecipientGLN (java.lang.String EdiRecipientGLN);
+	public void setEdiPartnerIdentification (java.lang.String EdiPartnerIdentification);
 
 	/**
-	 * Get EDI-ID des Dateiempfängers.
-	 * EDI-ID des Dateiempfängers
+	 * Get EDI-GLN des Partners .
+	 * Wird je nach Kontext als Absender-GLN oder als Empfänger-GLN benutzt.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiRecipientGLN();
+	public java.lang.String getEdiPartnerIdentification();
 
-    /** Column definition for EdiRecipientGLN */
-    public static final org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object> COLUMN_EdiRecipientGLN = new org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object>(I_EDI_BPartner_Config.class, "EdiRecipientGLN", null);
-    /** Column name EdiRecipientGLN */
-    public static final String COLUMNNAME_EdiRecipientGLN = "EdiRecipientGLN";
+    /** Column definition for EdiPartnerIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object> COLUMN_EdiPartnerIdentification = new org.adempiere.model.ModelColumn<I_EDI_BPartner_Config, Object>(I_EDI_BPartner_Config.class, "EdiPartnerIdentification", null);
+    /** Column name EdiPartnerIdentification */
+    public static final String COLUMNNAME_EdiPartnerIdentification = "EdiPartnerIdentification";
 
 	/**
 	 * Set Aktiv.
@@ -250,7 +250,6 @@ public interface I_EDI_BPartner_Config
 
 	/**
 	 * Set Erhält EDI-Belege.
-	 * Erhält EDI-Belege
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -260,7 +259,6 @@ public interface I_EDI_BPartner_Config
 
 	/**
 	 * Get Erhält EDI-Belege.
-	 * Erhält EDI-Belege
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

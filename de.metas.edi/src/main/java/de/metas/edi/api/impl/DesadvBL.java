@@ -228,8 +228,8 @@ public class DesadvBL implements IDesadvBL
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
 			desadv.setBill_Location(orderBL.getBillToLocation(order));
 
-			desadv.setEDISenderIdentification(edibPartnerService.getEdiRecipientGLN(orgBPartner, partnerConfigDate));
-			desadv.setEDIReceiverIdentification(edibPartnerService.getEdiRecipientGLN(shipToPartner, partnerConfigDate));
+			desadv.setEdiSenderIdentification(edibPartnerService.getEdiPartnerIdentification(orgBPartner, partnerConfigDate));
+			desadv.setEdiReceiverIdentification(edibPartnerService.getEdiPartnerIdentification(shipToPartner, partnerConfigDate));
 
 			InterfaceWrapperHelper.save(desadv);
 		}

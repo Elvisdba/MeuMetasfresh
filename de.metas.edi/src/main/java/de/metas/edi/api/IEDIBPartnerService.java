@@ -40,7 +40,7 @@ public interface IEDIBPartnerService extends ISingletonService
 	 */
 	BigDecimal getEdiDESADVDefaultItemCapacity(I_C_BPartner bpartner, Timestamp date);
 
-	String getEdiRecipientGLN(I_C_BPartner bpartner, Timestamp date);
+	String getEdiPartnerIdentification(I_C_BPartner bpartner, Timestamp date);
 
 	boolean isDesadvRecipient(I_C_BPartner bpartner, Timestamp date);
 

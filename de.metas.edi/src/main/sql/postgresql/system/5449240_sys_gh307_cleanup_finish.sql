@@ -400,10 +400,3 @@ UPDATE AD_Process_Para SET ColumnName='EDI_DefaultItemCapacity', Name='"CU pro T
 UPDATE AD_Process_Para SET ColumnName='EDI_DefaultItemCapacity', Name='"CU pro TU" bei unbestimmter Verpackungskapazität', Description='"CU pro TU"-Wert, den das System in einem ausgehenden EDI-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.', Help=NULL WHERE AD_Element_ID=542978 AND IsCentrallyMaintained='Y'
 ;
 
-COMMIT;
-
---
--- DDL
---
-
-ALTER TABLE edi_bpartner_config RENAME edidesadvdefaultitemcapacity TO EDI_DefaultItemCapacity;

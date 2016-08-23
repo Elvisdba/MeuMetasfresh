@@ -16,7 +16,7 @@ public class X_EDI_Ordrsp extends org.compiere.model.PO implements I_EDI_Ordrsp,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1104363750L;
+	private static final long serialVersionUID = 344308068L;
 
     /** Standard Constructor */
     public X_EDI_Ordrsp (Properties ctx, int EDI_Ordrsp_ID, String trxName)
@@ -30,6 +30,8 @@ public class X_EDI_Ordrsp extends org.compiere.model.PO implements I_EDI_Ordrsp,
 			setEDI_ExportStatus (null);
 // P
 			setEDI_Ordrsp_ID (0);
+			setEdiReceiverIdentification (null);
+			setEdiSenderIdentification (null);
 			setHandOver_Location_ID (0);
 			setHandOver_Partner_ID (0);
 			setPOReference (null);
@@ -262,6 +264,44 @@ public class X_EDI_Ordrsp extends org.compiere.model.PO implements I_EDI_Ordrsp,
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Empfänger-GLN.
+		@param EdiReceiverIdentification 
+		EDI-GLN des Empfängers
+	  */
+	@Override
+	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification)
+	{
+		set_Value (COLUMNNAME_EdiReceiverIdentification, EdiReceiverIdentification);
+	}
+
+	/** Get Empfänger-GLN.
+		@return EDI-GLN des Empfängers
+	  */
+	@Override
+	public java.lang.String getEdiReceiverIdentification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EdiReceiverIdentification);
+	}
+
+	/** Set Absender-GLN.
+		@param EdiSenderIdentification 
+		EDI-GLN des Absenders
+	  */
+	@Override
+	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification)
+	{
+		set_Value (COLUMNNAME_EdiSenderIdentification, EdiSenderIdentification);
+	}
+
+	/** Get Absender-GLN.
+		@return EDI-GLN des Absenders
+	  */
+	@Override
+	public java.lang.String getEdiSenderIdentification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EdiSenderIdentification);
 	}
 
 	@Override

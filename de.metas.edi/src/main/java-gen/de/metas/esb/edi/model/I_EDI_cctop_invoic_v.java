@@ -69,35 +69,6 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
-
-	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_Location_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_BPartner_Location>(I_EDI_cctop_invoic_v.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -522,52 +493,6 @@ public interface I_EDI_cctop_invoic_v
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "POReference", null);
     /** Column name POReference */
     public static final String COLUMNNAME_POReference = "POReference";
-
-	/**
-	 * Set receivergln.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setreceivergln (java.lang.String receivergln);
-
-	/**
-	 * Get receivergln.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getreceivergln();
-
-    /** Column definition for receivergln */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_receivergln = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "receivergln", null);
-    /** Column name receivergln */
-    public static final String COLUMNNAME_receivergln = "receivergln";
-
-	/**
-	 * Set sendergln.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setsendergln (java.lang.String sendergln);
-
-	/**
-	 * Get sendergln.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getsendergln();
-
-    /** Column definition for sendergln */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_sendergln = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "sendergln", null);
-    /** Column name sendergln */
-    public static final String COLUMNNAME_sendergln = "sendergln";
 
 	/**
 	 * Set shipment_documentno.

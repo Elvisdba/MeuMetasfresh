@@ -16,7 +16,7 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 208593372L;
+	private static final long serialVersionUID = -551396569L;
 
     /** Standard Constructor */
     public X_EDI_OrdrspLine (Properties ctx, int EDI_OrdrspLine_ID, String trxName)
@@ -24,13 +24,13 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
       super (ctx, EDI_OrdrspLine_ID, trxName);
       /** if (EDI_OrdrspLine_ID == 0)
         {
+			setConfirmedQty (Env.ZERO);
 			setC_UOM_ID (0);
 			setEDI_Ordrsp_ID (0);
 			setEDI_OrdrspLine_ID (0);
 			setLine (0);
 			setM_Product_ID (0);
 			setPriceActual (Env.ZERO);
-			setQty (Env.ZERO);
 			setQuantityQualifier (null);
 // IA
 			setUPC (null);
@@ -51,6 +51,28 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Bestätigte Menge.
+		@param ConfirmedQty 
+		Bestätigung einer erhaltenen Menge
+	  */
+	@Override
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
+	{
+		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
+	}
+
+	/** Get Bestätigte Menge.
+		@return Bestätigung einer erhaltenen Menge
+	  */
+	@Override
+	public java.math.BigDecimal getConfirmedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	@Override
 	public org.compiere.model.I_C_Tax getC_Tax() throws RuntimeException
@@ -317,22 +339,22 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
 	}
 
 	/** Set Menge.
-		@param Qty 
-		Menge
+		@param QtyEntered 
+		Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQtyEntered (java.math.BigDecimal QtyEntered)
 	{
-		set_Value (COLUMNNAME_Qty, Qty);
+		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
 	/** Get Menge.
-		@return Menge
+		@return Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public java.math.BigDecimal getQtyEntered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

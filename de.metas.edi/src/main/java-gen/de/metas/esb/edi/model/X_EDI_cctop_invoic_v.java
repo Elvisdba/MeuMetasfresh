@@ -16,7 +16,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 671797416L;
+	private static final long serialVersionUID = -21673780L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_v (Properties ctx, int EDI_cctop_invoic_v_ID, String trxName)
@@ -41,43 +41,6 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
-
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
-	{
-		if (C_BPartner_Location_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
-	}
-
-	/** Get Standort.
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BPartner_Location_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
@@ -399,38 +362,6 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	public java.lang.String getPOReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
-	}
-
-	/** Set receivergln.
-		@param receivergln receivergln	  */
-	@Override
-	public void setreceivergln (java.lang.String receivergln)
-	{
-		set_Value (COLUMNNAME_receivergln, receivergln);
-	}
-
-	/** Get receivergln.
-		@return receivergln	  */
-	@Override
-	public java.lang.String getreceivergln () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_receivergln);
-	}
-
-	/** Set sendergln.
-		@param sendergln sendergln	  */
-	@Override
-	public void setsendergln (java.lang.String sendergln)
-	{
-		set_Value (COLUMNNAME_sendergln, sendergln);
-	}
-
-	/** Get sendergln.
-		@return sendergln	  */
-	@Override
-	public java.lang.String getsendergln () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_sendergln);
 	}
 
 	/** Set shipment_documentno.

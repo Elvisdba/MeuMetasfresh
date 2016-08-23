@@ -20,7 +20,6 @@ ALTER TABLE EDI_BPartner_Config ADD EdiPartnerIdentification VARCHAR(13) DEFAULT
 ALTER TABLE EDI_BPartner_Config DROP COLUMN EdiRecipientGLN;
 
 
-
 -- 26.07.2016 13:46
 -- URL zum Konzept
 CREATE UNIQUE INDEX EDI_BPartner_Config_UC_BPartner_validFrom ON EDI_BPartner_Config (C_BPartner_ID,ValidFrom) WHERE IsActive='Y'
@@ -28,7 +27,7 @@ CREATE UNIQUE INDEX EDI_BPartner_Config_UC_BPartner_validFrom ON EDI_BPartner_Co
 
 -- 26.07.2016 13:52
 -- URL zum Konzept
-ALTER TABLE EDI_BPartner_Config ADD EdiDESADVDefaultItemCapacity NUMERIC DEFAULT 1 NOT NULL
+ALTER TABLE EDI_BPartner_Config ADD EDI_DefaultItemCapacity NUMERIC DEFAULT 1 NOT NULL
 ;
 
 -- FK constraint

@@ -29,9 +29,9 @@ SELECT
   nextval('edi_bpartner_config_seq') AS edi_bpartner_config_id, -- numeric(10,0) NOT NULL,
   bp.edirecipientgln, -- character varying(13) DEFAULT NULL::character varying,
   bp.isactive, -- character(1) NOT NULL,
-  bp.isedirecipient AS isdesadvrecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
-  bp.isedirecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
-  bp.isedirecipient AS isinvoicrecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
+  bp.HasEdiConfig AS isdesadvrecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
+  bp.HasEdiConfig AS isedirecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
+  bp.HasEdiConfig AS isinvoicrecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
   'N' AS isordrsprecipient, -- character(1) NOT NULL DEFAULT 'N'::bpchar,
   now() AS updated, -- timestamp with time zone NOT NULL,
   99 AS updatedby, -- numeric(10,0) NOT NULL,
@@ -39,9 +39,10 @@ SELECT
   bp.EdiDESADVDefaultItemCapacity AS edi_defaultitemcapacity -- numeric NOT NULL DEFAULT 1,
 FROM C_BPartner bp
 WHERE bp.HasEdiConfig='Y'
+AND NOT EXISTS (select 1 from edi_bpartner_config c where c.c_bpartner_id=bp.c_bpartner_id)
 ;
 
-COMMIT  -- commit 2 of 2
+COMMIT;
 
 --
 -- DDL - now drop the old columns

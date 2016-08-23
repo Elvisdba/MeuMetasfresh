@@ -16,7 +16,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 729382375L;
+	private static final long serialVersionUID = 935745653L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -344,6 +344,44 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	public java.lang.String getEDI_ExportStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EDI_ExportStatus);
+	}
+
+	/** Set Empfänger-GLN.
+		@param EdiReceiverIdentification 
+		EDI-GLN des Empfängers
+	  */
+	@Override
+	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification)
+	{
+		set_Value (COLUMNNAME_EdiReceiverIdentification, EdiReceiverIdentification);
+	}
+
+	/** Get Empfänger-GLN.
+		@return EDI-GLN des Empfängers
+	  */
+	@Override
+	public java.lang.String getEdiReceiverIdentification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EdiReceiverIdentification);
+	}
+
+	/** Set Absender-GLN.
+		@param EdiSenderIdentification 
+		EDI-GLN des Absenders
+	  */
+	@Override
+	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification)
+	{
+		set_Value (COLUMNNAME_EdiSenderIdentification, EdiSenderIdentification);
+	}
+
+	/** Get Absender-GLN.
+		@return EDI-GLN des Absenders
+	  */
+	@Override
+	public java.lang.String getEdiSenderIdentification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EdiSenderIdentification);
 	}
 
 	@Override

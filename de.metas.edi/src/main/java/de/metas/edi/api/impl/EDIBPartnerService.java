@@ -53,14 +53,14 @@ public class EDIBPartnerService implements IEDIBPartnerService
 	public BigDecimal getEdiDESADVDefaultItemCapacity(I_C_BPartner bpartner, Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
-		return isEdiRecipient(config) ? config.getEdiDESADVDefaultItemCapacity() : BigDecimal.ZERO;
+		return isEdiRecipient(config) ? config.getEDI_DefaultItemCapacity() : BigDecimal.ZERO;
 	}
 
 	@Override
-	public String getEdiRecipientGLN(I_C_BPartner bpartner, Timestamp date)
+	public String getEdiPartnerIdentification(I_C_BPartner bpartner, Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
-		return isEdiRecipient(config) ? config.getEdiRecipientGLN() : "";
+		return isEdiRecipient(config) ? config.getEdiPartnerIdentification() : "";
 	}
 
 

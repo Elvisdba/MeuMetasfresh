@@ -376,10 +376,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			return feedback;
 		}
 
-		final String ediRecipientGLN = ediBPartnerService.getEdiRecipientGLN(partner, date);
+		final String ediRecipientGLN = ediBPartnerService.getEdiPartnerIdentification(partner, date);
 		if (Check.isEmpty(ediRecipientGLN, true))
 		{
-			missingFields.add(I_EDI_BPartner_Config.COLUMNNAME_EdiRecipientGLN);
+			missingFields.add(I_EDI_BPartner_Config.COLUMNNAME_EdiPartnerIdentification);
 		}
 
 		if (ediBPartnerService.isInvoicRecipient(ediPartner, date))

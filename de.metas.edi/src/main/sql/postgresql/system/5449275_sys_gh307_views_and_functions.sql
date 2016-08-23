@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION "de.metas.edi".get_edi_gln(
   RETURNS character varying AS
 $BODY$
 
-SELECT c.EDIRecipientGLN
+SELECT c.EdiPartnerIdentification
 FROM EDI_BPartner_Config c
 	-- anti-left-join an older config that is still after p_date
 	LEFT JOIN EDI_BPartner_Config c2 ON c2.C_BPartner_ID=c.C_BPartner_ID AND c2.IsActive='Y' AND c2.IsEdiRecipient='Y' AND c2.ValidFrom<=$2 AND c2.ValidFrom<c.ValidFrom 

@@ -301,7 +301,7 @@ public interface I_EDI_Ordrsp
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -312,14 +312,66 @@ public interface I_EDI_Ordrsp
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getEDI_ORDRSP_SumPercentage();
 
     /** Column definition for EDI_ORDRSP_SumPercentage */
     public static final org.adempiere.model.ModelColumn<I_EDI_Ordrsp, Object> COLUMN_EDI_ORDRSP_SumPercentage = new org.adempiere.model.ModelColumn<I_EDI_Ordrsp, Object>(I_EDI_Ordrsp.class, "EDI_ORDRSP_SumPercentage", null);
     /** Column name EDI_ORDRSP_SumPercentage */
     public static final String COLUMNNAME_EDI_ORDRSP_SumPercentage = "EDI_ORDRSP_SumPercentage";
+
+	/**
+	 * Set Empfänger-GLN.
+	 * EDI-GLN des Empfängers
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification);
+
+	/**
+	 * Get Empfänger-GLN.
+	 * EDI-GLN des Empfängers
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEdiReceiverIdentification();
+
+    /** Column definition for EdiReceiverIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Ordrsp, Object> COLUMN_EdiReceiverIdentification = new org.adempiere.model.ModelColumn<I_EDI_Ordrsp, Object>(I_EDI_Ordrsp.class, "EdiReceiverIdentification", null);
+    /** Column name EdiReceiverIdentification */
+    public static final String COLUMNNAME_EdiReceiverIdentification = "EdiReceiverIdentification";
+
+	/**
+	 * Set Absender-GLN.
+	 * EDI-GLN des Absenders
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification);
+
+	/**
+	 * Get Absender-GLN.
+	 * EDI-GLN des Absenders
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEdiSenderIdentification();
+
+    /** Column definition for EdiSenderIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Ordrsp, Object> COLUMN_EdiSenderIdentification = new org.adempiere.model.ModelColumn<I_EDI_Ordrsp, Object>(I_EDI_Ordrsp.class, "EdiSenderIdentification", null);
+    /** Column name EdiSenderIdentification */
+    public static final String COLUMNNAME_EdiSenderIdentification = "EdiSenderIdentification";
 
 	/**
 	 * Set Übergabeadresse.

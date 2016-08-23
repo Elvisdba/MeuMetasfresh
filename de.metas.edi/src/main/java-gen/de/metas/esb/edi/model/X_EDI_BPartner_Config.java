@@ -16,7 +16,7 @@ public class X_EDI_BPartner_Config extends org.compiere.model.PO implements I_ED
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -327099274L;
+	private static final long serialVersionUID = -1698587468L;
 
     /** Standard Constructor */
     public X_EDI_BPartner_Config (Properties ctx, int EDI_BPartner_Config_ID, String trxName)
@@ -26,7 +26,7 @@ public class X_EDI_BPartner_Config extends org.compiere.model.PO implements I_ED
         {
 			setC_BPartner_ID (0);
 			setEDI_BPartner_Config_ID (0);
-			setEdiDESADVDefaultItemCapacity (Env.ZERO);
+			setEDI_DefaultItemCapacity (Env.ZERO);
 // 1
 			setIsDesadvRecipient (false);
 // N
@@ -115,44 +115,44 @@ public class X_EDI_BPartner_Config extends org.compiere.model.PO implements I_ED
 	}
 
 	/** Set "CU pro TU" bei unbestimmter Verpackungskapazität.
-		@param EdiDESADVDefaultItemCapacity 
-		"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
+		@param EDI_DefaultItemCapacity 
+		"CU pro TU"-Wert, den das System in einem ausgehenden EDI-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
 	  */
 	@Override
-	public void setEdiDESADVDefaultItemCapacity (java.math.BigDecimal EdiDESADVDefaultItemCapacity)
+	public void setEDI_DefaultItemCapacity (java.math.BigDecimal EDI_DefaultItemCapacity)
 	{
-		set_Value (COLUMNNAME_EdiDESADVDefaultItemCapacity, EdiDESADVDefaultItemCapacity);
+		set_Value (COLUMNNAME_EDI_DefaultItemCapacity, EDI_DefaultItemCapacity);
 	}
 
 	/** Get "CU pro TU" bei unbestimmter Verpackungskapazität.
-		@return "CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
+		@return "CU pro TU"-Wert, den das System in einem ausgehenden EDI-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
 	  */
 	@Override
-	public java.math.BigDecimal getEdiDESADVDefaultItemCapacity () 
+	public java.math.BigDecimal getEDI_DefaultItemCapacity () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EdiDESADVDefaultItemCapacity);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DefaultItemCapacity);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
 	}
 
-	/** Set EDI-ID des Dateiempfängers.
-		@param EdiRecipientGLN 
-		EDI-ID des Dateiempfängers
+	/** Set EDI-GLN des Partners .
+		@param EdiPartnerIdentification 
+		Wird je nach Kontext als Absender-GLN oder als Empfänger-GLN benutzt.
 	  */
 	@Override
-	public void setEdiRecipientGLN (java.lang.String EdiRecipientGLN)
+	public void setEdiPartnerIdentification (java.lang.String EdiPartnerIdentification)
 	{
-		set_Value (COLUMNNAME_EdiRecipientGLN, EdiRecipientGLN);
+		set_Value (COLUMNNAME_EdiPartnerIdentification, EdiPartnerIdentification);
 	}
 
-	/** Get EDI-ID des Dateiempfängers.
-		@return EDI-ID des Dateiempfängers
+	/** Get EDI-GLN des Partners .
+		@return Wird je nach Kontext als Absender-GLN oder als Empfänger-GLN benutzt.
 	  */
 	@Override
-	public java.lang.String getEdiRecipientGLN () 
+	public java.lang.String getEdiPartnerIdentification () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EdiRecipientGLN);
+		return (java.lang.String)get_Value(COLUMNNAME_EdiPartnerIdentification);
 	}
 
 	/** Set Erhält DESADV.
@@ -179,9 +179,7 @@ public class X_EDI_BPartner_Config extends org.compiere.model.PO implements I_ED
 	}
 
 	/** Set Erhält EDI-Belege.
-		@param IsEdiRecipient 
-		Erhält EDI-Belege
-	  */
+		@param IsEdiRecipient Erhält EDI-Belege	  */
 	@Override
 	public void setIsEdiRecipient (boolean IsEdiRecipient)
 	{
@@ -189,8 +187,7 @@ public class X_EDI_BPartner_Config extends org.compiere.model.PO implements I_ED
 	}
 
 	/** Get Erhält EDI-Belege.
-		@return Erhält EDI-Belege
-	  */
+		@return Erhält EDI-Belege	  */
 	@Override
 	public boolean isEdiRecipient () 
 	{

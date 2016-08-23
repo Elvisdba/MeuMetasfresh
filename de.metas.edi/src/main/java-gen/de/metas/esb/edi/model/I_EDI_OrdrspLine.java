@@ -69,6 +69,31 @@ public interface I_EDI_OrdrspLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Bestätigte Menge.
+	 * Bestätigung einer erhaltenen Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty);
+
+	/**
+	 * Get Bestätigte Menge.
+	 * Bestätigung einer erhaltenen Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getConfirmedQty();
+
+    /** Column definition for ConfirmedQty */
+    public static final org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object> COLUMN_ConfirmedQty = new org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object>(I_EDI_OrdrspLine.class, "ConfirmedQty", null);
+    /** Column name ConfirmedQty */
+    public static final String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -364,28 +389,28 @@ public interface I_EDI_OrdrspLine
 
 	/**
 	 * Set Menge.
-	 * Menge
+	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	public void setQtyEntered (java.math.BigDecimal QtyEntered);
 
 	/**
 	 * Get Menge.
-	 * Menge
+	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	public java.math.BigDecimal getQtyEntered();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object>(I_EDI_OrdrspLine.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+    /** Column definition for QtyEntered */
+    public static final org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object>(I_EDI_OrdrspLine.class, "QtyEntered", null);
+    /** Column name QtyEntered */
+    public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
 	 * Set Mengenkennzeichner.

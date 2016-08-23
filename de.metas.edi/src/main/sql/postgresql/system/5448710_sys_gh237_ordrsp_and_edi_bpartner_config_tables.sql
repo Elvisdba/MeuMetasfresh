@@ -1,4 +1,4 @@
--- 25.07.2016 17:49
+ï»¿-- 25.07.2016 17:49
 -- URL zum Konzept
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,ReplicationType,TableName,Updated,UpdatedBy) VALUES ('3',0,0,0,540776,'N',TO_TIMESTAMP('2016-07-25 17:49:11','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','N','Y','N','Y','Y','N','N','N',0,'ORDRSP','L','EDI_Ordrsp',TO_TIMESTAMP('2016-07-25 17:49:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -17,7 +17,7 @@ INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy
 
 -- 25.07.2016 17:49
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554858,102,0,19,540776,'AD_Client_ID',TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','de.metas.esb.edi',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','Y','N','N','Y','N','N','Mandant',0,TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554858,102,0,19,540776,'AD_Client_ID',TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,'Mandant fÃ¼r diese Installation.','de.metas.esb.edi',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie kÃ¶nnen keine Daten Ã¼ber Mandanten hinweg verwenden. .','Y','N','N','N','N','Y','N','N','Y','N','N','Mandant',0,TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 25.07.2016 17:49
@@ -27,7 +27,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 25.07.2016 17:49
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554859,113,0,19,540776,'AD_Org_ID',TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.esb.edi',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','Y','N','N','Y','N','N','Sektion',0,TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554859,113,0,19,540776,'AD_Org_ID',TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.esb.edi',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie kÃ¶nnen Daten Ã¼ber Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','Y','N','N','Y','N','N','Sektion',0,TO_TIMESTAMP('2016-07-25 17:49:23','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 25.07.2016 17:49
@@ -57,7 +57,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 25.07.2016 17:49
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554862,348,0,20,540776,'IsActive',TO_TIMESTAMP('2016-07-25 17:49:24','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','de.metas.esb.edi',1,'Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','Y','N','N','Y','N','Y','Aktiv',0,TO_TIMESTAMP('2016-07-25 17:49:24','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554862,348,0,20,540776,'IsActive',TO_TIMESTAMP('2016-07-25 17:49:24','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','de.metas.esb.edi',1,'Es gibt zwei MÃ¶glichkeiten, einen Datensatz nicht mehr verfÃ¼gbar zu machen: einer ist, ihn zu lÃ¶schen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr fÃ¼r eine Auswahl verfÃ¼gbar, aber verfÃ¼gbar fÃ¼r die Verwendung in Berichten. Es gibt zwei GrÃ¼nde, DatensÃ¤tze zu deaktivieren und nicht zu lÃ¶schen: (1) Das System braucht den Datensatz fÃ¼r Revisionszwecke. (2) Der Datensatz wird von anderen DatensÃ¤tzen referenziert. Z.B. kÃ¶nnen Sie keinen GeschÃ¤ftspartner lÃ¶schen, wenn es Rechnungen fÃ¼r diesen GeschÃ¤ftspartner gibt. Sie deaktivieren den GeschÃ¤ftspartner und verhindern, dass dieser Eintrag in zukÃ¼nftigen VorgÃ¤ngen verwendet wird.','Y','N','N','N','N','Y','N','N','Y','N','Y','Aktiv',0,TO_TIMESTAMP('2016-07-25 17:49:24','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 25.07.2016 17:49
@@ -242,7 +242,7 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 08:37:0
 
 -- 26.07.2016 09:21
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543140,0,'DelvieryGLN',TO_TIMESTAMP('2016-07-26 09:21:05','YYYY-MM-DD HH24:MI:SS'),100,'Übergabeort (EANCOM: NAD+DP)','U','Y','Lieferort-GLN','Lieferort-GLN',TO_TIMESTAMP('2016-07-26 09:21:05','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543140,0,'DelvieryGLN',TO_TIMESTAMP('2016-07-26 09:21:05','YYYY-MM-DD HH24:MI:SS'),100,'Ãœbergabeort (EANCOM: NAD+DP)','U','Y','Lieferort-GLN','Lieferort-GLN',TO_TIMESTAMP('2016-07-26 09:21:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 09:21
@@ -262,22 +262,22 @@ UPDATE AD_Element SET ColumnName='DeliveryGLN',Updated=TO_TIMESTAMP('2016-07-26 
 
 -- 26.07.2016 09:22
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='DeliveryGLN', Name='Lieferort-GLN', Description='Übergabeort (EANCOM: NAD+DP)', Help=NULL WHERE AD_Element_ID=543140
+UPDATE AD_Column SET ColumnName='DeliveryGLN', Name='Lieferort-GLN', Description='Ãœbergabeort (EANCOM: NAD+DP)', Help=NULL WHERE AD_Element_ID=543140
 ;
 
 -- 26.07.2016 09:22
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DeliveryGLN', Name='Lieferort-GLN', Description='Übergabeort (EANCOM: NAD+DP)', Help=NULL, AD_Element_ID=543140 WHERE UPPER(ColumnName)='DELIVERYGLN' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='DeliveryGLN', Name='Lieferort-GLN', Description='Ãœbergabeort (EANCOM: NAD+DP)', Help=NULL, AD_Element_ID=543140 WHERE UPPER(ColumnName)='DELIVERYGLN' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 26.07.2016 09:22
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DeliveryGLN', Name='Lieferort-GLN', Description='Übergabeort (EANCOM: NAD+DP)', Help=NULL WHERE AD_Element_ID=543140 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='DeliveryGLN', Name='Lieferort-GLN', Description='Ãœbergabeort (EANCOM: NAD+DP)', Help=NULL WHERE AD_Element_ID=543140 AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 09:22
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554868,543140,0,10,540776,'N','DeliveryGLN',TO_TIMESTAMP('2016-07-26 09:22:40','YYYY-MM-DD HH24:MI:SS'),100,'N','Übergabeort (EANCOM: NAD+DP)','de.metas.esb.edi',20,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Lieferort-GLN',0,TO_TIMESTAMP('2016-07-26 09:22:40','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554868,543140,0,10,540776,'N','DeliveryGLN',TO_TIMESTAMP('2016-07-26 09:22:40','YYYY-MM-DD HH24:MI:SS'),100,'N','Ãœbergabeort (EANCOM: NAD+DP)','de.metas.esb.edi',20,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Lieferort-GLN',0,TO_TIMESTAMP('2016-07-26 09:22:40','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 
@@ -289,7 +289,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 09:26
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554869,542280,0,30,540776,'N','HandOver_Partner_ID',TO_TIMESTAMP('2016-07-26 09:26:45','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.esb.edi',10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Übergabe an',0,TO_TIMESTAMP('2016-07-26 09:26:45','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554869,542280,0,30,540776,'N','HandOver_Partner_ID',TO_TIMESTAMP('2016-07-26 09:26:45','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.esb.edi',10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Ãœbergabe an',0,TO_TIMESTAMP('2016-07-26 09:26:45','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 09:26
@@ -299,7 +299,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 09:29
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554870,542281,0,30,159,540776,'N','HandOver_Location_ID',TO_TIMESTAMP('2016-07-26 09:29:06','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.esb.edi',10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Übergabeadresse',0,TO_TIMESTAMP('2016-07-26 09:29:06','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554870,542281,0,30,159,540776,'N','HandOver_Location_ID',TO_TIMESTAMP('2016-07-26 09:29:06','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.esb.edi',10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Ãœbergabeadresse',0,TO_TIMESTAMP('2016-07-26 09:29:06','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 09:29
@@ -314,7 +314,7 @@ UPDATE AD_Column SET AD_Val_Rule_ID=540207,Updated=TO_TIMESTAMP('2016-07-26 09:3
 
 -- 26.07.2016 09:32
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554871,193,0,19,540776,'N','C_Currency_ID',TO_TIMESTAMP('2016-07-26 09:32:02','YYYY-MM-DD HH24:MI:SS'),100,'N','Die Währung für diesen Eintrag','de.metas.esb.edi',10,'Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Währung',0,TO_TIMESTAMP('2016-07-26 09:32:02','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554871,193,0,19,540776,'N','C_Currency_ID',TO_TIMESTAMP('2016-07-26 09:32:02','YYYY-MM-DD HH24:MI:SS'),100,'N','Die WÃ¤hrung fÃ¼r diesen Eintrag','de.metas.esb.edi',10,'Bezeichnet die auf Dokumenten oder Berichten verwendete WÃ¤hrung','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','WÃ¤hrung',0,TO_TIMESTAMP('2016-07-26 09:32:02','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 09:32
@@ -344,7 +344,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:00
 -- URL zum Konzept
-UPDATE AD_Element SET Description='Datum, an dem die Lieferung das Lager des Lieferanten verlässt', Help=NULL, Name='Versanddatum', PrintName='Versanddatum',Updated=TO_TIMESTAMP('2016-07-26 10:00:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2123
+UPDATE AD_Element SET Description='Datum, an dem die Lieferung das Lager des Lieferanten verlÃ¤sst', Help=NULL, Name='Versanddatum', PrintName='Versanddatum',Updated=TO_TIMESTAMP('2016-07-26 10:00:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2123
 ;
 
 -- 26.07.2016 10:00
@@ -354,22 +354,22 @@ UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2123
 
 -- 26.07.2016 10:00
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='ShipDate', Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlässt', Help=NULL WHERE AD_Element_ID=2123
+UPDATE AD_Column SET ColumnName='ShipDate', Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlÃ¤sst', Help=NULL WHERE AD_Element_ID=2123
 ;
 
 -- 26.07.2016 10:00
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='ShipDate', Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlässt', Help=NULL, AD_Element_ID=2123 WHERE UPPER(ColumnName)='SHIPDATE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='ShipDate', Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlÃ¤sst', Help=NULL, AD_Element_ID=2123 WHERE UPPER(ColumnName)='SHIPDATE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 26.07.2016 10:00
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='ShipDate', Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlässt', Help=NULL WHERE AD_Element_ID=2123 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='ShipDate', Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlÃ¤sst', Help=NULL WHERE AD_Element_ID=2123 AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 10:00
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlässt', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2123) AND IsCentrallyMaintained='Y'
+UPDATE AD_Field SET Name='Versanddatum', Description='Datum, an dem die Lieferung das Lager des Lieferanten verlÃ¤sst', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2123) AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 10:00
@@ -379,12 +379,12 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Versanddatum', Name='Versanddatum' W
 
 -- 26.07.2016 10:01
 -- URL zum Konzept
-UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 10:01:22','YYYY-MM-DD HH24:MI:SS'),Description='Date on which the item leaves the vendor’s warehouse.',Help=NULL WHERE AD_Element_ID=2123 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 10:01:22','YYYY-MM-DD HH24:MI:SS'),Description='Date on which the item leaves the vendorâ€™s warehouse.',Help=NULL WHERE AD_Element_ID=2123 AND AD_Language='en_US'
 ;
 
 -- 26.07.2016 10:02
 -- URL zum Konzept
-UPDATE AD_Element SET Description='Datum, an dem die Lieferung den Lieferempfänger erreicht.',Updated=TO_TIMESTAMP('2016-07-26 10:02:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541376
+UPDATE AD_Element SET Description='Datum, an dem die Lieferung den LieferempfÃ¤nger erreicht.',Updated=TO_TIMESTAMP('2016-07-26 10:02:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541376
 ;
 
 -- 26.07.2016 10:02
@@ -394,22 +394,22 @@ UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=541376
 
 -- 26.07.2016 10:02
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='DeliveryDate', Name='Lieferdatum', Description='Datum, an dem die Lieferung den Lieferempfänger erreicht.', Help=NULL WHERE AD_Element_ID=541376
+UPDATE AD_Column SET ColumnName='DeliveryDate', Name='Lieferdatum', Description='Datum, an dem die Lieferung den LieferempfÃ¤nger erreicht.', Help=NULL WHERE AD_Element_ID=541376
 ;
 
 -- 26.07.2016 10:02
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DeliveryDate', Name='Lieferdatum', Description='Datum, an dem die Lieferung den Lieferempfänger erreicht.', Help=NULL, AD_Element_ID=541376 WHERE UPPER(ColumnName)='DELIVERYDATE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='DeliveryDate', Name='Lieferdatum', Description='Datum, an dem die Lieferung den LieferempfÃ¤nger erreicht.', Help=NULL, AD_Element_ID=541376 WHERE UPPER(ColumnName)='DELIVERYDATE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 26.07.2016 10:02
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DeliveryDate', Name='Lieferdatum', Description='Datum, an dem die Lieferung den Lieferempfänger erreicht.', Help=NULL WHERE AD_Element_ID=541376 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='DeliveryDate', Name='Lieferdatum', Description='Datum, an dem die Lieferung den LieferempfÃ¤nger erreicht.', Help=NULL WHERE AD_Element_ID=541376 AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 10:02
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Lieferdatum', Description='Datum, an dem die Lieferung den Lieferempfänger erreicht.', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541376) AND IsCentrallyMaintained='Y'
+UPDATE AD_Field SET Name='Lieferdatum', Description='Datum, an dem die Lieferung den LieferempfÃ¤nger erreicht.', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541376) AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 10:03
@@ -461,7 +461,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:12
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554879,1047,0,20,540776,'N','Processed',TO_TIMESTAMP('2016-07-26 10:11:59','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','de.metas.esb.edi',1,'Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Verarbeitet',0,TO_TIMESTAMP('2016-07-26 10:11:59','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554879,1047,0,20,540776,'N','Processed',TO_TIMESTAMP('2016-07-26 10:11:59','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','de.metas.esb.edi',1,'Verarbeitete Belege dÃ¼rfen in der Regel nich mehr geÃ¤ndert werden.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Verarbeitet',0,TO_TIMESTAMP('2016-07-26 10:11:59','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:12
@@ -472,7 +472,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:16
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543141,0,'EDI_ORDRSP_MinimumSumPercentage',TO_TIMESTAMP('2016-07-26 10:16:46','YYYY-MM-DD HH24:MI:SS'),100,'Mindestprozentsatz der beauftragten Gesamtmenge, zu der die Bestätigung eine Aussage treffen muss.','de.metas.esb.edi','Y','Bestätigung % Minimum','Bestätigung % Minimum',TO_TIMESTAMP('2016-07-26 10:16:46','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543141,0,'EDI_ORDRSP_MinimumSumPercentage',TO_TIMESTAMP('2016-07-26 10:16:46','YYYY-MM-DD HH24:MI:SS'),100,'Mindestprozentsatz der beauftragten Gesamtmenge, zu der die BestÃ¤tigung eine Aussage treffen muss.','de.metas.esb.edi','Y','BestÃ¤tigung % Minimum','BestÃ¤tigung % Minimum',TO_TIMESTAMP('2016-07-26 10:16:46','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 10:16
@@ -482,7 +482,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 26.07.2016 10:17
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554880,543141,0,22,540776,'N','EDI_ORDRSP_MinimumSumPercentage',TO_TIMESTAMP('2016-07-26 10:17:22','YYYY-MM-DD HH24:MI:SS'),100,'N','Mindestprozentsatz der beauftragten Gesamtmenge, zu der die Bestätigung eine Aussage treffen muss.','de.metas.esb.edi',14,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Bestätigung % Minimum',0,TO_TIMESTAMP('2016-07-26 10:17:22','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554880,543141,0,22,540776,'N','EDI_ORDRSP_MinimumSumPercentage',TO_TIMESTAMP('2016-07-26 10:17:22','YYYY-MM-DD HH24:MI:SS'),100,'N','Mindestprozentsatz der beauftragten Gesamtmenge, zu der die BestÃ¤tigung eine Aussage treffen muss.','de.metas.esb.edi',14,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','BestÃ¤tigung % Minimum',0,TO_TIMESTAMP('2016-07-26 10:17:22','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:17
@@ -492,7 +492,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543142,0,'EDI_ORDRSP_SumPercentage',TO_TIMESTAMP('2016-07-26 10:18:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','Bestädigt %','Bestädigt %',TO_TIMESTAMP('2016-07-26 10:18:45','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543142,0,'EDI_ORDRSP_SumPercentage',TO_TIMESTAMP('2016-07-26 10:18:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','BestÃ¤digt %','BestÃ¤digt %',TO_TIMESTAMP('2016-07-26 10:18:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 10:18
@@ -502,7 +502,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-UPDATE AD_Element SET Name='Bestätigt %', PrintName='Bestätigt %',Updated=TO_TIMESTAMP('2016-07-26 10:18:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543142
+UPDATE AD_Element SET Name='BestÃ¤tigt %', PrintName='BestÃ¤tigt %',Updated=TO_TIMESTAMP('2016-07-26 10:18:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543142
 ;
 
 -- 26.07.2016 10:18
@@ -512,32 +512,32 @@ UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=543142
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='EDI_ORDRSP_SumPercentage', Name='Bestätigt %', Description=NULL, Help=NULL WHERE AD_Element_ID=543142
+UPDATE AD_Column SET ColumnName='EDI_ORDRSP_SumPercentage', Name='BestÃ¤tigt %', Description=NULL, Help=NULL WHERE AD_Element_ID=543142
 ;
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='EDI_ORDRSP_SumPercentage', Name='Bestätigt %', Description=NULL, Help=NULL, AD_Element_ID=543142 WHERE UPPER(ColumnName)='EDI_ORDRSP_SUMPERCENTAGE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='EDI_ORDRSP_SumPercentage', Name='BestÃ¤tigt %', Description=NULL, Help=NULL, AD_Element_ID=543142 WHERE UPPER(ColumnName)='EDI_ORDRSP_SUMPERCENTAGE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='EDI_ORDRSP_SumPercentage', Name='Bestätigt %', Description=NULL, Help=NULL WHERE AD_Element_ID=543142 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='EDI_ORDRSP_SumPercentage', Name='BestÃ¤tigt %', Description=NULL, Help=NULL WHERE AD_Element_ID=543142 AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Bestätigt %', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543142) AND IsCentrallyMaintained='Y'
+UPDATE AD_Field SET Name='BestÃ¤tigt %', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543142) AND IsCentrallyMaintained='Y'
 ;
 
 -- 26.07.2016 10:18
 -- URL zum Konzept
-UPDATE AD_PrintFormatItem pi SET PrintName='Bestätigt %', Name='Bestätigt %' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543142)
+UPDATE AD_PrintFormatItem pi SET PrintName='BestÃ¤tigt %', Name='BestÃ¤tigt %' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543142)
 ;
 
 -- 26.07.2016 10:23
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554881,543142,0,22,540776,'N','EDI_ORDRSP_SumPercentage','(select CASE WHEN SUM (l.Qty) = 0 THEN NULL ELSE round ((SUM (l.Qty) ), 2) END from EDI_OrdrspLine l where l.EDI_Ordrsp_ID = EDI_Ordrsp.EDI_Ordrsp_ID)',TO_TIMESTAMP('2016-07-26 10:23:46','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.esb.edi',14,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Bestätigt %',0,TO_TIMESTAMP('2016-07-26 10:23:46','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554881,543142,0,22,540776,'N','EDI_ORDRSP_SumPercentage','(select CASE WHEN SUM (l.Qty) = 0 THEN NULL ELSE round ((SUM (l.Qty) ), 2) END from EDI_OrdrspLine l where l.EDI_Ordrsp_ID = EDI_Ordrsp.EDI_Ordrsp_ID)',TO_TIMESTAMP('2016-07-26 10:23:46','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.esb.edi',14,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','BestÃ¤tigt %',0,TO_TIMESTAMP('2016-07-26 10:23:46','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:23
@@ -580,7 +580,7 @@ UPDATE AD_Table SET IsDeleteable='N',Updated=TO_TIMESTAMP('2016-07-26 10:25:36',
 
 -- 26.07.2016 10:25
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554882,102,0,19,540777,'AD_Client_ID',TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','de.metas.esb.edi',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','Y','N','N','Y','N','N','Mandant',0,TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554882,102,0,19,540777,'AD_Client_ID',TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,'Mandant fÃ¼r diese Installation.','de.metas.esb.edi',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie kÃ¶nnen keine Daten Ã¼ber Mandanten hinweg verwenden. .','Y','N','N','N','N','Y','N','N','Y','N','N','Mandant',0,TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:25
@@ -590,7 +590,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:25
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554883,113,0,19,540777,'AD_Org_ID',TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.esb.edi',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','Y','N','N','Y','N','N','Sektion',0,TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554883,113,0,19,540777,'AD_Org_ID',TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.esb.edi',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie kÃ¶nnen Daten Ã¼ber Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','Y','N','N','Y','N','N','Sektion',0,TO_TIMESTAMP('2016-07-26 10:25:49','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:25
@@ -620,7 +620,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:25
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554886,348,0,20,540777,'IsActive',TO_TIMESTAMP('2016-07-26 10:25:50','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','de.metas.esb.edi',1,'Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','Y','N','N','Y','N','Y','Aktiv',0,TO_TIMESTAMP('2016-07-26 10:25:50','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554886,348,0,20,540777,'IsActive',TO_TIMESTAMP('2016-07-26 10:25:50','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','de.metas.esb.edi',1,'Es gibt zwei MÃ¶glichkeiten, einen Datensatz nicht mehr verfÃ¼gbar zu machen: einer ist, ihn zu lÃ¶schen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr fÃ¼r eine Auswahl verfÃ¼gbar, aber verfÃ¼gbar fÃ¼r die Verwendung in Berichten. Es gibt zwei GrÃ¼nde, DatensÃ¤tze zu deaktivieren und nicht zu lÃ¶schen: (1) Das System braucht den Datensatz fÃ¼r Revisionszwecke. (2) Der Datensatz wird von anderen DatensÃ¤tzen referenziert. Z.B. kÃ¶nnen Sie keinen GeschÃ¤ftspartner lÃ¶schen, wenn es Rechnungen fÃ¼r diesen GeschÃ¤ftspartner gibt. Sie deaktivieren den GeschÃ¤ftspartner und verhindern, dass dieser Eintrag in zukÃ¼nftigen VorgÃ¤ngen verwendet wird.','Y','N','N','N','N','Y','N','N','Y','N','Y','Aktiv',0,TO_TIMESTAMP('2016-07-26 10:25:50','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:25
@@ -700,7 +700,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:30
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554893,603,0,10,540777,'N','UPC',TO_TIMESTAMP('2016-07-26 10:30:47','YYYY-MM-DD HH24:MI:SS'),100,'N','Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)','de.metas.esb.edi',50,'Tragen Sie hier den Barcode für das Produkt in einer der Barcode-Codierungen (Codabar, Code 25, Code 39, Code 93, Code 128, UPC (A), UPC (E), EAN-13, EAN-8, ITF, ITF-14, ISBN, ISSN, JAN-13, JAN-8, POSTNET und FIM, MSI/Plessey, Pharmacode) ein.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','UPC/EAN',0,TO_TIMESTAMP('2016-07-26 10:30:47','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554893,603,0,10,540777,'N','UPC',TO_TIMESTAMP('2016-07-26 10:30:47','YYYY-MM-DD HH24:MI:SS'),100,'N','Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)','de.metas.esb.edi',50,'Tragen Sie hier den Barcode fÃ¼r das Produkt in einer der Barcode-Codierungen (Codabar, Code 25, Code 39, Code 93, Code 128, UPC (A), UPC (E), EAN-13, EAN-8, ITF, ITF-14, ISBN, ISSN, JAN-13, JAN-8, POSTNET und FIM, MSI/Plessey, Pharmacode) ein.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','UPC/EAN',0,TO_TIMESTAMP('2016-07-26 10:30:47','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:30
@@ -710,7 +710,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:31
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554894,526,0,29,540777,'N','Qty',TO_TIMESTAMP('2016-07-26 10:31:05','YYYY-MM-DD HH24:MI:SS'),100,'N','Menge','de.metas.esb.edi',10,'Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Menge',0,TO_TIMESTAMP('2016-07-26 10:31:05','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554894,526,0,29,540777,'N','Qty',TO_TIMESTAMP('2016-07-26 10:31:05','YYYY-MM-DD HH24:MI:SS'),100,'N','Menge','de.metas.esb.edi',10,'Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels fÃ¼r dieses Dokument.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Menge',0,TO_TIMESTAMP('2016-07-26 10:31:05','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:31
@@ -720,7 +720,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:31
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554895,215,0,30,540777,'N','C_UOM_ID',TO_TIMESTAMP('2016-07-26 10:31:25','YYYY-MM-DD HH24:MI:SS'),100,'N','Maßeinheit','de.metas.esb.edi',10,'Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Maßeinheit',0,TO_TIMESTAMP('2016-07-26 10:31:25','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554895,215,0,30,540777,'N','C_UOM_ID',TO_TIMESTAMP('2016-07-26 10:31:25','YYYY-MM-DD HH24:MI:SS'),100,'N','MaÃŸeinheit','de.metas.esb.edi',10,'Eine eindeutige (nicht monetÃ¤re) MaÃŸeinheit','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','MaÃŸeinheit',0,TO_TIMESTAMP('2016-07-26 10:31:25','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:31
@@ -730,7 +730,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:34
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543144,0,'QuantityQualifier',TO_TIMESTAMP('2016-07-26 10:34:33','YYYY-MM-DD HH24:MI:SS'),100,'Sagt aus, ob die jeweilige Menge zugesagt ist, nicht verfügbar ist, nachbestellt wird usw.','de.metas.esb.edi','Y','Mengenkennzeichner','Mengenkennzeichner',TO_TIMESTAMP('2016-07-26 10:34:33','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543144,0,'QuantityQualifier',TO_TIMESTAMP('2016-07-26 10:34:33','YYYY-MM-DD HH24:MI:SS'),100,'Sagt aus, ob die jeweilige Menge zugesagt ist, nicht verfÃ¼gbar ist, nachbestellt wird usw.','de.metas.esb.edi','Y','Mengenkennzeichner','Mengenkennzeichner',TO_TIMESTAMP('2016-07-26 10:34:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 10:34
@@ -760,7 +760,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 
 -- 26.07.2016 10:37
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554896,543144,0,17,540663,540777,'N','QuantityQualifier',TO_TIMESTAMP('2016-07-26 10:37:33','YYYY-MM-DD HH24:MI:SS'),100,'N','IA','Sagt aus, ob die jeweilige Menge zugesagt ist, nicht verfügbar ist, nachbestellt wird usw.','de.metas.esb.edi',2,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Mengenkennzeichner',0,TO_TIMESTAMP('2016-07-26 10:37:33','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554896,543144,0,17,540663,540777,'N','QuantityQualifier',TO_TIMESTAMP('2016-07-26 10:37:33','YYYY-MM-DD HH24:MI:SS'),100,'N','IA','Sagt aus, ob die jeweilige Menge zugesagt ist, nicht verfÃ¼gbar ist, nachbestellt wird usw.','de.metas.esb.edi',2,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Mengenkennzeichner',0,TO_TIMESTAMP('2016-07-26 10:37:33','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:37
@@ -820,7 +820,7 @@ UPDATE AD_Ref_List SET ValueName='ItemCancelled',Updated=TO_TIMESTAMP('2016-07-2
 
 -- 26.07.2016 10:42
 -- URL zum Konzept
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540663,541205,TO_TIMESTAMP('2016-07-26 10:42:36','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','Nicht verfügbar',TO_TIMESTAMP('2016-07-26 10:42:36','YYYY-MM-DD HH24:MI:SS'),100,'IR','ItemRejected')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540663,541205,TO_TIMESTAMP('2016-07-26 10:42:36','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','Nicht verfÃ¼gbar',TO_TIMESTAMP('2016-07-26 10:42:36','YYYY-MM-DD HH24:MI:SS'),100,'IR','ItemRejected')
 ;
 
 -- 26.07.2016 10:42
@@ -835,7 +835,7 @@ UPDATE AD_Ref_List_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 10:42:
 
 -- 26.07.2016 10:50
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554897,541376,0,15,540777,'N','DeliveryDate',TO_TIMESTAMP('2016-07-26 10:50:12','YYYY-MM-DD HH24:MI:SS'),100,'N','Datum, an dem die Lieferung den Lieferempfänger erreicht.','de.metas.esb.edi',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Lieferdatum',0,TO_TIMESTAMP('2016-07-26 10:50:12','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554897,541376,0,15,540777,'N','DeliveryDate',TO_TIMESTAMP('2016-07-26 10:50:12','YYYY-MM-DD HH24:MI:SS'),100,'N','Datum, an dem die Lieferung den LieferempfÃ¤nger erreicht.','de.metas.esb.edi',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Lieferdatum',0,TO_TIMESTAMP('2016-07-26 10:50:12','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:50
@@ -845,7 +845,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:50
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554898,2123,0,15,540777,'N','ShipDate',TO_TIMESTAMP('2016-07-26 10:50:28','YYYY-MM-DD HH24:MI:SS'),100,'N','Datum, an dem die Lieferung das Lager des Lieferanten verlässt','de.metas.esb.edi',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Versanddatum',0,TO_TIMESTAMP('2016-07-26 10:50:28','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554898,2123,0,15,540777,'N','ShipDate',TO_TIMESTAMP('2016-07-26 10:50:28','YYYY-MM-DD HH24:MI:SS'),100,'N','Datum, an dem die Lieferung das Lager des Lieferanten verlÃ¤sst','de.metas.esb.edi',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Versanddatum',0,TO_TIMESTAMP('2016-07-26 10:50:28','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:50
@@ -855,7 +855,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 10:51
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554899,519,0,37,540777,'N','PriceActual',TO_TIMESTAMP('2016-07-26 10:51:06','YYYY-MM-DD HH24:MI:SS'),100,'N','Effektiver Preis','de.metas.esb.edi',14,'Der Einzelpreis oder Effektive Preis bezeichnet den Preis für das Produkt in Ausgangswährung.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Einzelpreis',0,TO_TIMESTAMP('2016-07-26 10:51:06','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554899,519,0,37,540777,'N','PriceActual',TO_TIMESTAMP('2016-07-26 10:51:06','YYYY-MM-DD HH24:MI:SS'),100,'N','Effektiver Preis','de.metas.esb.edi',14,'Der Einzelpreis oder Effektive Preis bezeichnet den Preis fÃ¼r das Produkt in AusgangswÃ¤hrung.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Einzelpreis',0,TO_TIMESTAMP('2016-07-26 10:51:06','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 10:51
@@ -951,7 +951,7 @@ INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy
 
 -- 26.07.2016 13:34
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554902,102,0,19,540778,'AD_Client_ID',TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','de.metas.esb.edi',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','Y','N','N','Y','N','N','Mandant',0,TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554902,102,0,19,540778,'AD_Client_ID',TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,'Mandant fÃ¼r diese Installation.','de.metas.esb.edi',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie kÃ¶nnen keine Daten Ã¼ber Mandanten hinweg verwenden. .','Y','N','N','N','N','Y','N','N','Y','N','N','Mandant',0,TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:34
@@ -961,7 +961,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:34
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554903,113,0,19,540778,'AD_Org_ID',TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.esb.edi',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','Y','N','N','Y','N','N','Sektion',0,TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554903,113,0,19,540778,'AD_Org_ID',TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.esb.edi',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie kÃ¶nnen Daten Ã¼ber Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','Y','N','N','Y','N','N','Sektion',0,TO_TIMESTAMP('2016-07-26 13:34:01','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:34
@@ -991,7 +991,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:34
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554906,348,0,20,540778,'IsActive',TO_TIMESTAMP('2016-07-26 13:34:02','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','de.metas.esb.edi',1,'Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','Y','N','N','Y','N','Y','Aktiv',0,TO_TIMESTAMP('2016-07-26 13:34:02','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554906,348,0,20,540778,'IsActive',TO_TIMESTAMP('2016-07-26 13:34:02','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','de.metas.esb.edi',1,'Es gibt zwei MÃ¶glichkeiten, einen Datensatz nicht mehr verfÃ¼gbar zu machen: einer ist, ihn zu lÃ¶schen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr fÃ¼r eine Auswahl verfÃ¼gbar, aber verfÃ¼gbar fÃ¼r die Verwendung in Berichten. Es gibt zwei GrÃ¼nde, DatensÃ¤tze zu deaktivieren und nicht zu lÃ¶schen: (1) Das System braucht den Datensatz fÃ¼r Revisionszwecke. (2) Der Datensatz wird von anderen DatensÃ¤tzen referenziert. Z.B. kÃ¶nnen Sie keinen GeschÃ¤ftspartner lÃ¶schen, wenn es Rechnungen fÃ¼r diesen GeschÃ¤ftspartner gibt. Sie deaktivieren den GeschÃ¤ftspartner und verhindern, dass dieser Eintrag in zukÃ¼nftigen VorgÃ¤ngen verwendet wird.','Y','N','N','N','N','Y','N','N','Y','N','Y','Aktiv',0,TO_TIMESTAMP('2016-07-26 13:34:02','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:34
@@ -1041,7 +1041,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:34
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554910,187,0,30,540778,'N','C_BPartner_ID',TO_TIMESTAMP('2016-07-26 13:34:34','YYYY-MM-DD HH24:MI:SS'),100,'N','Bezeichnet einen Geschäftspartner','de.metas.esb.edi',10,'Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','Y','N','N','N','N','N','N','Geschäftspartner',0,TO_TIMESTAMP('2016-07-26 13:34:34','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554910,187,0,30,540778,'N','C_BPartner_ID',TO_TIMESTAMP('2016-07-26 13:34:34','YYYY-MM-DD HH24:MI:SS'),100,'N','Bezeichnet einen GeschÃ¤ftspartner','de.metas.esb.edi',10,'Ein GeschÃ¤ftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','Y','N','N','N','N','N','N','GeschÃ¤ftspartner',0,TO_TIMESTAMP('2016-07-26 13:34:34','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:34
@@ -1051,7 +1051,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:35
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554911,542000,0,20,540778,'N','IsEdiRecipient',TO_TIMESTAMP('2016-07-26 13:35:10','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Erhält EDI-Belege','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Erhält EDI-Belege',0,TO_TIMESTAMP('2016-07-26 13:35:10','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554911,542000,0,20,540778,'N','IsEdiRecipient',TO_TIMESTAMP('2016-07-26 13:35:10','YYYY-MM-DD HH24:MI:SS'),100,'N','N','ErhÃ¤lt EDI-Belege','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','ErhÃ¤lt EDI-Belege',0,TO_TIMESTAMP('2016-07-26 13:35:10','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:35
@@ -1061,7 +1061,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:36
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554912,542001,0,10,540778,'N','EdiRecipientGLN',TO_TIMESTAMP('2016-07-26 13:36:43','YYYY-MM-DD HH24:MI:SS'),100,'N','EDI-ID des Dateiempfängers','de.metas.esb.edi',13,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','EDI-ID des Dateiempfängers',0,TO_TIMESTAMP('2016-07-26 13:36:43','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554912,542001,0,10,540778,'N','EdiRecipientGLN',TO_TIMESTAMP('2016-07-26 13:36:43','YYYY-MM-DD HH24:MI:SS'),100,'N','EDI-ID des DateiempfÃ¤ngers','de.metas.esb.edi',13,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','EDI-ID des DateiempfÃ¤ngers',0,TO_TIMESTAMP('2016-07-26 13:36:43','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:36
@@ -1071,7 +1071,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:37
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543146,0,'IsOrdrspRecipient',TO_TIMESTAMP('2016-07-26 13:37:53','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','Erhält ORDRSP','Erhält ORDRSP',TO_TIMESTAMP('2016-07-26 13:37:53','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543146,0,'IsOrdrspRecipient',TO_TIMESTAMP('2016-07-26 13:37:53','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','ErhÃ¤lt ORDRSP','ErhÃ¤lt ORDRSP',TO_TIMESTAMP('2016-07-26 13:37:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 13:37
@@ -1091,7 +1091,7 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 13:38:0
 
 -- 26.07.2016 13:38
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554913,543146,0,20,540778,'N','IsOrdrspRecipient',TO_TIMESTAMP('2016-07-26 13:38:24','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Erhält ORDRSP',0,TO_TIMESTAMP('2016-07-26 13:38:24','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554913,543146,0,20,540778,'N','IsOrdrspRecipient',TO_TIMESTAMP('2016-07-26 13:38:24','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','ErhÃ¤lt ORDRSP',0,TO_TIMESTAMP('2016-07-26 13:38:24','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:38
@@ -1101,7 +1101,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:39
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543147,0,'IsDesadvRecipient',TO_TIMESTAMP('2016-07-26 13:39:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','Erhält DESADV','Erhält DESADV',TO_TIMESTAMP('2016-07-26 13:39:05','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543147,0,'IsDesadvRecipient',TO_TIMESTAMP('2016-07-26 13:39:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','ErhÃ¤lt DESADV','ErhÃ¤lt DESADV',TO_TIMESTAMP('2016-07-26 13:39:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 13:39
@@ -1116,7 +1116,7 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 13:39:1
 
 -- 26.07.2016 13:39
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554914,543147,0,20,540778,'N','IsDesadvRecipient',TO_TIMESTAMP('2016-07-26 13:39:31','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Erhält DESADV',0,TO_TIMESTAMP('2016-07-26 13:39:31','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554914,543147,0,20,540778,'N','IsDesadvRecipient',TO_TIMESTAMP('2016-07-26 13:39:31','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','ErhÃ¤lt DESADV',0,TO_TIMESTAMP('2016-07-26 13:39:31','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:39
@@ -1126,7 +1126,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:40
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543148,0,'IsInvoicRecipient',TO_TIMESTAMP('2016-07-26 13:40:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','Erhält INVOIC','Erhält INVOIC',TO_TIMESTAMP('2016-07-26 13:40:07','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543148,0,'IsInvoicRecipient',TO_TIMESTAMP('2016-07-26 13:40:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y','ErhÃ¤lt INVOIC','ErhÃ¤lt INVOIC',TO_TIMESTAMP('2016-07-26 13:40:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 26.07.2016 13:40
@@ -1141,7 +1141,7 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2016-07-26 13:40:1
 
 -- 26.07.2016 13:40
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554915,543148,0,20,540778,'N','IsInvoicRecipient',TO_TIMESTAMP('2016-07-26 13:40:32','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Erhält INVOIC',0,TO_TIMESTAMP('2016-07-26 13:40:32','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554915,543148,0,20,540778,'N','IsInvoicRecipient',TO_TIMESTAMP('2016-07-26 13:40:32','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.esb.edi',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','ErhÃ¤lt INVOIC',0,TO_TIMESTAMP('2016-07-26 13:40:32','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:40
@@ -1151,7 +1151,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 26.07.2016 13:41
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554916,617,0,15,291,'N','ValidFrom',TO_TIMESTAMP('2016-07-26 13:41:48','YYYY-MM-DD HH24:MI:SS'),100,'N','Gültig ab inklusiv (erster Tag)','D',7,'"Gültig ab" bezeichnet den ersten Tag eines Gültigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Gültig ab',0,TO_TIMESTAMP('2016-07-26 13:41:48','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554916,617,0,15,291,'N','ValidFrom',TO_TIMESTAMP('2016-07-26 13:41:48','YYYY-MM-DD HH24:MI:SS'),100,'N','GÃ¼ltig ab inklusiv (erster Tag)','D',7,'"GÃ¼ltig ab" bezeichnet den ersten Tag eines GÃ¼ltigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','GÃ¼ltig ab',0,TO_TIMESTAMP('2016-07-26 13:41:48','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:41
@@ -1171,7 +1171,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=554916
 
 -- 26.07.2016 13:42
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554917,617,0,15,540778,'N','ValidFrom',TO_TIMESTAMP('2016-07-26 13:42:24','YYYY-MM-DD HH24:MI:SS'),100,'N','Gültig ab inklusiv (erster Tag)','de.metas.esb.edi',7,'"Gültig ab" bezeichnet den ersten Tag eines Gültigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Gültig ab',0,TO_TIMESTAMP('2016-07-26 13:42:24','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554917,617,0,15,540778,'N','ValidFrom',TO_TIMESTAMP('2016-07-26 13:42:24','YYYY-MM-DD HH24:MI:SS'),100,'N','GÃ¼ltig ab inklusiv (erster Tag)','de.metas.esb.edi',7,'"GÃ¼ltig ab" bezeichnet den ersten Tag eines GÃ¼ltigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','GÃ¼ltig ab',0,TO_TIMESTAMP('2016-07-26 13:42:24','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:42
@@ -1203,7 +1203,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 
 -- 26.07.2016 13:52
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554918,542978,0,29,540778,'N','EdiDESADVDefaultItemCapacity',TO_TIMESTAMP('2016-07-26 13:52:23','YYYY-MM-DD HH24:MI:SS'),100,'N','1','"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.','de.metas.esb.edi',14,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','"CU pro TU" bei unbestimmter Verpackungskapazität',0,TO_TIMESTAMP('2016-07-26 13:52:23','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,554918,542978,0,29,540778,'N','EdiDESADVDefaultItemCapacity',TO_TIMESTAMP('2016-07-26 13:52:23','YYYY-MM-DD HH24:MI:SS'),100,'N','1','"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine GebindekapazitÃ¤t hinterlegt ist.','de.metas.esb.edi',14,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','"CU pro TU" bei unbestimmter VerpackungskapazitÃ¤t',0,TO_TIMESTAMP('2016-07-26 13:52:23','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 26.07.2016 13:52
@@ -1218,17 +1218,17 @@ UPDATE AD_Element SET ColumnName='DESADVDefaultItemCapacity',Updated=TO_TIMESTAM
 
 -- 26.07.2016 14:32
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='DESADVDefaultItemCapacity', Name='"CU pro TU" bei unbestimmter Verpackungskapazität', Description='"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.', Help=NULL WHERE AD_Element_ID=542978
+UPDATE AD_Column SET ColumnName='DESADVDefaultItemCapacity', Name='"CU pro TU" bei unbestimmter VerpackungskapazitÃ¤t', Description='"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine GebindekapazitÃ¤t hinterlegt ist.', Help=NULL WHERE AD_Element_ID=542978
 ;
 
 -- 26.07.2016 14:32
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DESADVDefaultItemCapacity', Name='"CU pro TU" bei unbestimmter Verpackungskapazität', Description='"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.', Help=NULL, AD_Element_ID=542978 WHERE UPPER(ColumnName)='DESADVDEFAULTITEMCAPACITY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='DESADVDefaultItemCapacity', Name='"CU pro TU" bei unbestimmter VerpackungskapazitÃ¤t', Description='"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine GebindekapazitÃ¤t hinterlegt ist.', Help=NULL, AD_Element_ID=542978 WHERE UPPER(ColumnName)='DESADVDEFAULTITEMCAPACITY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 26.07.2016 14:32
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DESADVDefaultItemCapacity', Name='"CU pro TU" bei unbestimmter Verpackungskapazität', Description='"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.', Help=NULL WHERE AD_Element_ID=542978 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='DESADVDefaultItemCapacity', Name='"CU pro TU" bei unbestimmter VerpackungskapazitÃ¤t', Description='"CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine GebindekapazitÃ¤t hinterlegt ist.', Help=NULL WHERE AD_Element_ID=542978 AND IsCentrallyMaintained='Y'
 ;
 
 

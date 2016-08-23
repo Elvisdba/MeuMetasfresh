@@ -80,7 +80,7 @@ public class OrdrspBL implements IOrdrspBL
 
 			// https://github.com/metasfresh/metasfresh/issues/307
 			final I_C_BPartner orgBPartner = InterfaceWrapperHelper.create(Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(order.getAD_Org()),I_C_BPartner.class);
-			final String supplierGLN = Services.get(IEDIBPartnerService.class).getEdiRecipientGLN(orgBPartner, order.getDatePromised());
+			final String supplierGLN = Services.get(IEDIBPartnerService.class).getEdiPartnerIdentification(orgBPartner, order.getDatePromised());
 			ordrsp.setSupplierGLN(supplierGLN);
 
 			InterfaceWrapperHelper.save(ordrsp);
