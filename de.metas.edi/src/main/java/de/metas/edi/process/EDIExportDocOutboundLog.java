@@ -10,18 +10,17 @@ package de.metas.edi.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,16 +39,18 @@ import org.compiere.model.Query;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import com.google.common.base.Joiner;
+
+import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.logging.LogManager;
 
 /**
  * Send EDI documents for selected entries.
@@ -61,7 +62,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
 	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
-	
+
 	@Override
 	protected void prepare()
 	{
@@ -101,18 +102,24 @@ public class EDIExportDocOutboundLog extends SvrProcess
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
 
+		final int pInstanceId = getAD_PInstance_ID();
+
+		final IWorkPackageBlockBuilder blockBuilder = queue.newBlock()
+				.setContext(ctx)
+				.setAD_PInstance_Creator_ID(pInstanceId);
+
 		//
 		// Enqueue selected archives as workpackages
-		final int pInstanceId = getAD_PInstance_ID();
 		final List<I_EDI_Document_Extension> ediDocuments = retrieveValidSelectedDocuments(ctx, pInstanceId, trxName);
 		for (final I_EDI_Document_Extension ediDocument : ediDocuments)
 		{
-			final I_C_Queue_Block block = queue.enqueueBlock(ctx);
-			final I_C_Queue_WorkPackage workpackage = queue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);
 
-			queue.enqueueElement(workpackage, ediDocument);
-
-			queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
+			final I_C_Queue_WorkPackage workpackage = blockBuilder
+					.newWorkpackage()
+					.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
+					.bindToTrxName(trxName)
+					.addElement(ediDocument)
+					.build();
 
 			logger.info("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
 
@@ -120,6 +127,9 @@ public class EDIExportDocOutboundLog extends SvrProcess
 			ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
 			InterfaceWrapperHelper.save(ediDocument);
 		}
+
+		blockBuilder.build();
+
 		return "OK";
 	}
 
@@ -133,9 +143,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
 				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
-						I_C_Invoice.Table_ID
-				// , I_M_InOut.Table_ID
-				) // currently only export Invoices; InOuts are aggregated into EDI_Desadv records and exported as such
+						I_C_Invoice.Table_ID)
 				.setOnlySelection(pInstanceId);
 
 		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
@@ -143,7 +151,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 
 		final List<I_EDI_Document_Extension> filteredDocuments = new ArrayList<I_EDI_Document_Extension>();
 		logger.info("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
-		
+
 		for (final I_C_Doc_Outbound_Log log : logs)
 		{
 			//
@@ -162,34 +170,21 @@ public class EDIExportDocOutboundLog extends SvrProcess
 			}
 
 			//
-			// Only pending EDI documents
-			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
-			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
+			// Only EDI documents that are pending (main case), error (to retry) or invalid (to-revalidate them and then possibley send in a later move)
+			final String ediExportStatus = ediDocument.getEDI_ExportStatus();
+
+			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediExportStatus)
+					&& !I_EDI_Document.EDI_EXPORTSTATUS_Error.equals(ediExportStatus)
+					&& !I_EDI_Document.EDI_EXPORTSTATUS_Invalid.equals(ediExportStatus))
 			{
-				logger.info("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				logger.info("Skipping ediDocument={}, because EDI_ExportStatus={} is none of {}",
+						new Object[] { ediDocument,
+								ediDocument.getEDI_ExportStatus(),
+								Joiner.on(",").join(I_EDI_Document.EDI_EXPORTSTATUS_Pending, I_EDI_Document.EDI_EXPORTSTATUS_Error, I_EDI_Document.EDI_EXPORTSTATUS_Invalid) });;
 				continue;
 			}
 
-//			// @formatter:off
-			// task: 08456: currently, InOuts are aggregated into EDI_Desadv records and exported as such, from the desadv window
-//			if (I_M_InOut.Table_Name.equals(logTableName))
-//			{
-//				final de.metas.edi.model.I_M_InOut inOut = InterfaceWrapperHelper.create(ediDocument, de.metas.edi.model.I_M_InOut.class);
-//				if (Check.isEmpty(inOut.getPOReference()))
-//				{
-//					continue; // POReference is mandatory for EDI DESADV files (desadvBL will fail trx if null POReference enters it)
-//				}
-//				final I_EDI_Desadv desadv = desadvBL.createOrAddToDesadv(inOut);
-//
-//				desadv.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
-//				InterfaceWrapperHelper.save(desadv);
-//
-//				// if the inOut is invalid, then the M_InOut MI will now update the desadv accordingly
-//				InterfaceWrapperHelper.save(inOut);
-//			}
-//			// @formatter:on
-
-			logger.info("Adding ediDocument {}",ediDocument);
+			logger.info("Adding ediDocument {}", ediDocument);
 			filteredDocuments.add(ediDocument);
 		}
 		return filteredDocuments;
