@@ -30,7 +30,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.EDIDesadvFeedbackType;
+import de.metas.edi.esb.jaxb.EDIImpDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.EDIInvoiceFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlErrorFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
@@ -74,7 +74,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 
 		final Processor errorInvoiceProcessor = new EDIXmlErrorFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class,
 				EDIInvoiceRoute.EDIInvoiceFeedback_QNAME, EDIInvoiceRoute.METHOD_setCInvoiceID); // FIXME ugly
-		final Processor errorDesadvProcessor = new EDIXmlErrorFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class,
+		final Processor errorDesadvProcessor = new EDIXmlErrorFeedbackProcessor<EDIImpDesadvFeedbackType>(EDIImpDesadvFeedbackType.class,
 				EDIDesadvRoute.EDIDesadvFeedback_QNAME, EDIDesadvRoute.METHOD_setEDIDesadvID); // FIXME ugly
 
 		// @formatter:off

@@ -100,8 +100,8 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	{
 		final H000 h000 = new H000();
 		h000.setMessageDate(SystemTime.asDate());
-		h000.setReceiver(xmlDesadv.getEdiReceiverIdentification());
-		h000.setSender(xmlDesadv.getEdiSenderIdentification());
+		h000.setReceiver(xmlDesadv.getEDIReceiverIdentification());
+		h000.setSender(xmlDesadv.getEDISenderIdentification());
 
 		h000.setReference(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		h000.setTestFlag(testFlag);
@@ -142,8 +142,8 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		validateObject(xmlDesadv.getCCurrencyID(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @C_Currency_ID@");
 
 		// validate strings (not null or empty)
-		validateString(xmlDesadv.getEdiReceiverIdentification(), "@FillMandatory@ @EDI_DESADV_ID@="  + xmlDesadv.getDocumentNo() + " @EdiReceiverIdentification@");
-		validateString(xmlDesadv.getEdiSenderIdentification(), "@FillMandatory@ @EDI_DESADV_ID@="  + xmlDesadv.getDocumentNo() + " @EdiSenderIdentification@");
+		validateString(xmlDesadv.getEDIReceiverIdentification(), "@FillMandatory@ @EDI_DESADV_ID@="  + xmlDesadv.getDocumentNo() + " @EdiReceiverIdentification@");
+		validateString(xmlDesadv.getEDISenderIdentification(), "@FillMandatory@ @EDI_DESADV_ID@="  + xmlDesadv.getDocumentNo() + " @EdiSenderIdentification@");
 
 		validateString(xmlDesadv.getCBPartnerLocationID().getGLN(), "@FillMandatory@ @C_BPartner_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
 		validateObject(xmlDesadv.getBillLocationID().getGLN(), "@FillMandatory@ @Bill_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
@@ -217,7 +217,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		}
 
 		final EDIExpCBPartnerType partner = xmlDesadv.getCBPartnerID();
-		h100.setPartner(xmlDesadv.getEdiReceiverIdentification());
+		h100.setPartner(xmlDesadv.getEDIReceiverIdentification());
 
 		h100.setProdGrpCode(voidString);
 		h100.setRampeID(voidString);
@@ -244,7 +244,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	{
 		final P050 p050 = new P050();
 
-		p050.setPartner(xmlDesadv.getEdiReceiverIdentification());
+		p050.setPartner(xmlDesadv.getEDIReceiverIdentification());
 		p050.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 
 		final List<P102> p102Lines = new ArrayList<P102>();
@@ -302,7 +302,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
 
-		p060.setPartner(xmlDesadv.getEdiReceiverIdentification());
+		p060.setPartner(xmlDesadv.getEDIReceiverIdentification());
 
 		final String sscc18Value = Util.removePrecedingZeros(xmlDesadvLine.getIPASSCC18());
 		p060.setNormalSSCC(sscc18Value);
@@ -365,7 +365,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		}
 
 		p100.setOrderPosNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
-		p100.setPartner(xmlDesadv.getEdiReceiverIdentification());
+		p100.setPartner(xmlDesadv.getEDIReceiverIdentification());
 		p100.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p100.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p100.setProductionDate(EDIDesadvBean.voidDate);
@@ -431,7 +431,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 			p102.setOrderNo(Util.mkOwnOrderNumber(xmlDesadv.getDocumentNo()));
 		}
 		p102.setOrderPosNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
-		p102.setPartner(xmlDesadv.getEdiReceiverIdentification());
+		p102.setPartner(xmlDesadv.getEDIReceiverIdentification());
 		p102.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p102.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p102.setProductionDate(EDIDesadvBean.voidDate);

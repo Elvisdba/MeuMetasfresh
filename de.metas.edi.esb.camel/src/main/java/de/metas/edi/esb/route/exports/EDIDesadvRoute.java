@@ -37,8 +37,8 @@ import de.metas.edi.esb.bean.desadv.AbstractEDIDesadvCommonBean;
 import de.metas.edi.esb.bean.desadv.EDIDesadvAggregateBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.EDIImpDesadvFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlSuccessFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
@@ -122,7 +122,7 @@ public class EDIDesadvRoute extends AbstractEDIRoute
 
 				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 
-				.process(new EDIXmlSuccessFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class, EDIDesadvRoute.EDIDesadvFeedback_QNAME, EDIDesadvRoute.METHOD_setEDIDesadvID))
+				.process(new EDIXmlSuccessFeedbackProcessor<EDIImpDesadvFeedbackType>(EDIImpDesadvFeedbackType.class, EDIDesadvRoute.EDIDesadvFeedback_QNAME, EDIDesadvRoute.METHOD_setEDIDesadvID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)

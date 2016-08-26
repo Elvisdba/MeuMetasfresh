@@ -173,23 +173,19 @@ public class EDICctopInvoiceBean
 
 	private Cctop000V createCctop000V(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat, final Exchange exchange)
 	{
-		if (xmlCctopInvoice.getEDICctop000V().isEmpty())
-		{
-			return null;
-		}
+		final EDICctop000VType xmlCctop000V = xmlCctopInvoice.getEDICctop000V();
+		validateObject(xmlCctop000V,"Missing Cctop000V data. Check view edi_cctop_000_v)");
 
-		final EDICctop000VType xmlCctop000V = xmlCctopInvoice.getEDICctop000V().get(0);
-
-		validateString(xmlCctop000V.getEdiReceiverIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EdiReceiverIdentification@ (Check EDI_cctop_Invoic_V.EdiReceiverIdentification)");
-		validateString(xmlCctop000V.getEdiSenderIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EdiSenderIdentification@ (Check EDI_cctop_Invoic_V.EdiSenderIdentification)");
+		validateString(xmlCctop000V.getEDIReceiverIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EDIReceiverIdentification@ (Check EDIReceiverIdentification of view edi_cctop_000_v)");
+		validateString(xmlCctop000V.getEDISenderIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EDISenderIdentification@ (Check EDISenderIdentification of view edi_cctop_000_v)");
 		validateNumber(xmlCctopInvoice.getSequenceNoAttr(), "@FillMandatory@ @SequenceNo@ (check AD_Sequence_ID of exp-format EDI_cctop_invoic_v)");
 
 		final Cctop000V cctop000V = new Cctop000V();
-		cctop000V.setReceiverGln(xmlCctop000V.getEdiReceiverIdentification());
+		cctop000V.setReceiverGln(xmlCctop000V.getEDIReceiverIdentification());
 
 		cctop000V.setInterchangeReferenceNo(xmlCctopInvoice.getSequenceNoAttr().toString());
 
-		cctop000V.setSenderGln(xmlCctop000V.getEdiSenderIdentification());
+		cctop000V.setSenderGln(xmlCctop000V.getEDISenderIdentification());
 
 		final Object isTest = exchange.getProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST);
 		if (isTest == null)

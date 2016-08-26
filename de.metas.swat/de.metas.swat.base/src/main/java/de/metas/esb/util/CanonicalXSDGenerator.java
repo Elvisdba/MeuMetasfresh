@@ -13,18 +13,17 @@ package de.metas.esb.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileWriter;
@@ -74,13 +73,14 @@ import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import de.metas.logging.LogManager;
 
 /**
  * Helper tool that generates XSD Schema for Canonical Messages
@@ -283,8 +283,7 @@ public class CanonicalXSDGenerator
 
 			map.put(
 					toJavaName(value),
-					toJavaName(valueName)
-					);
+					toJavaName(valueName));
 		}
 		return createXSDEnumeration(name, map);
 	}
@@ -458,6 +457,8 @@ public class CanonicalXSDGenerator
 				//
 				if (embededFormat != null)
 				{
+					// jup, this is dump, but i did it and it cost me >30 minutes
+					Check.errorIf(embededFormat.getEXP_Format_ID() == format.getEXP_Format_ID(), "Format {} references itself at line {}", format.getName(), line.getPosition());
 					createComplexType(embededFormat, true);
 					//
 					final Element e = document.createElement(XSD_ELEMENT);
@@ -661,7 +662,7 @@ public class CanonicalXSDGenerator
 		{
 			xsdType = "xsd:string";
 		}
-		else if (displayType == DisplayType.Integer) // note that Integer is stored as BD
+		else if (displayType == DisplayType.Integer)  // note that Integer is stored as BD
 		{
 			xsdType = "xsd:integer";
 		}
@@ -725,7 +726,7 @@ public class CanonicalXSDGenerator
 				xsdType = "xsd:string";
 			}
 		}
-		else if (DisplayType.isLOB(displayType)) // CLOB is String
+		else if (DisplayType.isLOB(displayType))  // CLOB is String
 		{
 			xsdType = "xsd:base64Binary";
 		}
