@@ -1,7 +1,7 @@
 ï»¿
 -- Aug 26, 2016 5:23 PM
 -- URL zum Konzept
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,BeforeChangeCode,BeforeChangeCodeType,BeforeChangeWarning,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540381,0,293,'IsRemitTo=''N''','SQLS','Möchten sie wirklich die Erstattungsaddresse ändern?',TO_TIMESTAMP('2016-08-26 17:23:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Es darf nur eine Erstattungsaddresse aktiviert sein. Bei Änderung wird bei der vorherigen Erstattungsaddresse automatisch der Haken entfernt.','Y','Y','IsRemitTo','N',TO_TIMESTAMP('2016-08-26 17:23:20','YYYY-MM-DD HH24:MI:SS'),100,'IsBillToDefault=''Y'' and isActive=''Y''')
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,BeforeChangeCode,BeforeChangeCodeType,BeforeChangeWarning,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540381,0,293,'IsRemitTo=''N''','SQLS','MÃ¶chten sie wirklich die Erstattungsaddresse Ã¤ndern?',TO_TIMESTAMP('2016-08-26 17:23:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Es darf nur eine Erstattungsaddresse aktiviert sein. Bei Ã„nderung wird bei der vorherigen Erstattungsaddresse automatisch der Haken entfernt.','Y','Y','IsRemitTo','N',TO_TIMESTAMP('2016-08-26 17:23:20','YYYY-MM-DD HH24:MI:SS'),100,'IsBillToDefault=''Y'' and isActive=''Y''')
 ;
 
 -- Aug 26, 2016 5:23 PM
@@ -26,7 +26,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 
 -- Aug 26, 2016 5:28 PM
 -- URL zum Konzept
-UPDATE AD_Index_Table SET Description='Zur Zeit ist es beim Senden von EDI-Rechnungen (INVOIC) nötig, dass der Geschäftspartner der jeweiligen Organisation nur eine Erstattungsaddresse hat.',Updated=TO_TIMESTAMP('2016-08-26 17:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540381
+UPDATE AD_Index_Table SET Description='Zur Zeit ist es beim Senden von EDI-Rechnungen (INVOIC) nÃ¶tig, dass der GeschÃ¤ftspartner der jeweiligen Organisation nur eine Erstattungsaddresse hat.',Updated=TO_TIMESTAMP('2016-08-26 17:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540381
 ;
 
 -- Aug 26, 2016 6:11 PM
