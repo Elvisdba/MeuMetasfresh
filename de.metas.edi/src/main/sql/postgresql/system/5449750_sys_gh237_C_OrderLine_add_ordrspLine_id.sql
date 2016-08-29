@@ -18,6 +18,20 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=557205 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
+-- 29.08.2016 13:10
+-- URL zum Konzept
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2016-08-29 13:10:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555020
+;
+
+--
+-- C_Order.EDI_Ordrsp_ID
+-- 29.08.2016 13:13
+-- URL zum Konzept
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2016-08-29 13:13:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554940
+;
+
+
+
 COMMIT;
 --
 --DDL
@@ -26,3 +40,17 @@ COMMIT;
 -- URL zum Konzept
 ALTER TABLE C_OrderLine ADD EDI_OrdrspLine_ID NUMERIC(10) DEFAULT NULL 
 ;
+
+--
+-- bonus: add indeces and FK contraints for C_ORder and C_OrderLine
+--
+
+CREATE INDEX c_orderline_edi_ordrspline
+  ON c_orderline
+  USING btree
+  (edi_ordrspline_ID);
+
+ALTER TABLE C_OrderLine DROP CONSTRAINT IF EXISTS EDIOrdrspLine_COrderLine;
+ALTER TABLE C_Order DROP CONSTRAINT IF EXISTS EDIOrdrsp_COrder;
+ALTER TABLE C_OrderLine ADD CONSTRAINT EDIOrdrspLine_COrderLine FOREIGN KEY (EDI_OrdrspLine_ID) REFERENCES EDI_OrdrspLine DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE C_Order ADD CONSTRAINT EDIOrdrsp_COrder FOREIGN KEY (EDI_Ordrsp_ID) REFERENCES EDI_Ordrsp DEFERRABLE INITIALLY DEFERRED;
