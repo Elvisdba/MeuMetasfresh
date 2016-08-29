@@ -1,30 +1,30 @@
 /**********************************************************************
- * This file is part of Adempiere ERP Bazaar                          *
- * http://www.adempiere.org                                           *
- *                                                                    *
- * Copyright (C) Trifon Trifonov.                                     *
- * Copyright (C) Contributors                                         *
- *                                                                    *
- * This program is free software; you can redistribute it and/or      *
- * modify it under the terms of the GNU General Public License        *
- * as published by the Free Software Foundation; either version 2     *
- * of the License, or (at your option) any later version.             *
- *                                                                    *
- * This program is distributed in the hope that it will be useful,    *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       *
- * GNU General Public License for more details.                       *
- *                                                                    *
- * You should have received a copy of the GNU General Public License  *
- * along with this program; if not, write to the Free Software        *
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         *
- * MA 02110-1301, USA.                                                *
- *                                                                    *
- * Contributors:                                                      *
- *  - Trifon Trifonov (trifonnt@users.sourceforge.net)                *
- *                                                                    *
- * Sponsors:                                                          *
- *  - E-evolution (http://www.e-evolution.com/)                       *
+ * This file is part of Adempiere ERP Bazaar *
+ * http://www.adempiere.org *
+ * *
+ * Copyright (C) Trifon Trifonov. *
+ * Copyright (C) Contributors *
+ * *
+ * This program is free software; you can redistribute it and/or *
+ * modify it under the terms of the GNU General Public License *
+ * as published by the Free Software Foundation; either version 2 *
+ * of the License, or (at your option) any later version. *
+ * *
+ * This program is distributed in the hope that it will be useful, *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the *
+ * GNU General Public License for more details. *
+ * *
+ * You should have received a copy of the GNU General Public License *
+ * along with this program; if not, write to the Free Software *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, *
+ * MA 02110-1301, USA. *
+ * *
+ * Contributors: *
+ * - Trifon Trifonov (trifonnt@users.sourceforge.net) *
+ * *
+ * Sponsors: *
+ * - E-evolution (http://www.e-evolution.com/) *
  *********************************************************************/
 package org.adempiere.server.rpl.api.impl;
 
@@ -36,7 +36,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -62,6 +62,7 @@ import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerResult;
 import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandler;
 import org.adempiere.process.rpl.requesthandler.spi.IReplRequestHandler;
+import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorBL.ITableAndColumn;
 import org.adempiere.server.rpl.api.IImportHelper;
@@ -107,6 +108,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.service.IColumnBL;
@@ -118,9 +120,15 @@ import de.metas.monitoring.api.IMonitoringBL;
  * Default XML importer
  *
  * @author Trifon N. Trifonov
- * @author Antonio Cañaveral, e-Evolution <li>[ 2195016 ] Implementation delete records messages <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
- * @author victor.perez@e-evolution.com, e-Evolution <li>[ 2195090 ] Stabilization of replication <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962 <li>BF
- *         [2947622] The replication ID (Primary Key) is not working <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
+ * @author Antonio Cañaveral, e-Evolution
+ *         <li>[ 2195016 ] Implementation delete records messages
+ *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+ * @author victor.perez@e-evolution.com, e-Evolution
+ *         <li>[ 2195090 ] Stabilization of replication
+ *         <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962
+ *         <li>BF
+ *         [2947622] The replication ID (Primary Key) is not working
+ *         <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
  *
  */
 public class ImportHelper implements IImportHelper
@@ -149,6 +157,31 @@ public class ImportHelper implements IImportHelper
 	private static final String MSG_CantGetRecordID = "CantGetRecordID";
 	private static final String MSG_CantGetNodeList = "CantGetNodeList";
 	private static final String MSG_ParseException = "ParseException";
+
+	/**
+	 * Specify the line order:
+	 * <ul>
+	 * <li>embedded sub formats last; note that the postgresql ordering for boolean values is false, true, null</li>
+	 * <li>mandatory line before non-mandatory lines</li>
+	 * <li>whatever is specified in the 'Position' column</li>
+	 * </ul>
+	 * <p>
+	 * This is the former equivalent SQL orderBy clause. I keep it around for reference:
+	 *
+	 * <pre>
+	 * final String orderBy = I_EXP_FormatLine.COLUMNNAME_Type + "='" + X_EXP_FormatLine.TYPE_EmbeddedEXPFormat + "'," +
+	 * 		I_EXP_FormatLine.COLUMNNAME_IsMandatory + " DESC , " +
+	 * 		I_EXP_FormatLine.COLUMNNAME_Position;
+	 * </pre>
+	 *
+	 * Note that I removed the legacy orderBy method which took this clause.
+	 * I think we can live with ordering the lines directly here in the code.
+	 */
+	@VisibleForTesting
+	/* package */ final static Comparator<I_EXP_FormatLine> FORMAT_LINE_COMPARATOR = Comparator
+			.comparing((I_EXP_FormatLine l) -> X_EXP_FormatLine.TYPE_EmbeddedEXPFormat.equals(l.getType()) ? 1 : -1) // lines with embedded formats are "bigger" and therefore come last in the list
+			.thenComparing((I_EXP_FormatLine l) -> !l.isMandatory()) // lines that are *not* mandatory shall be *after* the mandatory ones
+			.thenComparing(I_EXP_FormatLine::getPosition);
 
 	/**
 	 * Currently not used, but might be again in future.
@@ -289,9 +322,9 @@ public class ImportHelper implements IImportHelper
 		try
 		{
 			po = importElement(result, rootElement, expFormatPO, ReplicationType, "",
-					null, // masterPO
-					null, // masterExpFormat
-					null, // masterFormaLine
+					null,              // masterPO
+					null,              // masterExpFormat
+					null,              // masterFormaLine
 					ReplicationTrxName, trxName);
 			meter.plusOne();
 
@@ -555,16 +588,11 @@ public class ImportHelper implements IImportHelper
 					.addParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName());
 		}
 
-		// Specify the line order
-		// *embedded sub formats last; note that the postgres ordering for boolean values is false, true, null
-		// *mandatory line before non-mandatory lines
-		// *whatever is specified in the 'Position' column
-		final String orderBy =
-				I_EXP_FormatLine.COLUMNNAME_Type + "='" + X_EXP_FormatLine.TYPE_EmbeddedEXPFormat + "'," +
-						I_EXP_FormatLine.COLUMNNAME_IsMandatory + " DESC , " + // mandatory fields first
-						I_EXP_FormatLine.COLUMNNAME_Position;
+		// this is the "modern" comparator.
+		final Comparator<I_EXP_FormatLine> comparator = FORMAT_LINE_COMPARATOR;
 
-		final Collection<I_EXP_FormatLine> formatLines = expFormat.getFormatLinesOrderedBy(orderBy);
+		final List<I_EXP_FormatLine> formatLines = Services.get(IExpFormatDAO.class).retrieveLines(expFormat);
+		formatLines.sort(comparator);
 		if (formatLines == null || formatLines.size() < 1)
 		{
 			throw new ReplicationException(MSG_EXPFormatNoLines);
@@ -716,9 +744,9 @@ public class ImportHelper implements IImportHelper
 				{
 					// 03469: we don't just try to look up the ID, but also create the PO on demand, if required
 					final PO referencedPO = importElement(result, rootElement, referencedExpFormat, ReplicationType, valueXPath,
-							null, // masterPO
-							InterfaceWrapperHelper.create(line.getEXP_Format(), I_EXP_Format.class), // masterExpFormat
-							line, // masterFormatLine
+							null,              // masterPO
+							InterfaceWrapperHelper.create(line.getEXP_Format(), I_EXP_Format.class),              // masterExpFormat
+							line,              // masterFormatLine
 							ReplicationTrxName, po.get_TrxName());
 
 					final ITableAndColumn targetTableAndColumn = Services.get(IIMPProcessorBL.class).getTargetTableAndColumn(line);
@@ -778,9 +806,9 @@ public class ImportHelper implements IImportHelper
 				{
 					// note that we call the method with parentXPath="", because we also call it with 'referencedElement', i.e. the current child node
 					embeddedPo = importElement(result, referencedElement, referencedExpFormat, ReplicationType, "",
-							po, // masterPO
-							InterfaceWrapperHelper.create(line.getEXP_Format(), I_EXP_Format.class), // masterExpFormat
-							line, // masterExpFormatLine
+							po,              // masterPO
+							InterfaceWrapperHelper.create(line.getEXP_Format(), I_EXP_Format.class),              // masterExpFormat
+							line,              // masterExpFormatLine
 							ReplicationTrxName, po.get_TrxName());
 				}
 				catch (final Exception e)
@@ -891,9 +919,9 @@ public class ImportHelper implements IImportHelper
 			else if (DisplayType.Integer == adReferenceId
 					|| DisplayType.isID(adReferenceId)
 
-					// 03534: note that a Button can be 'anything' in the case of C_BPartner.AD_OrgBP_ID, it is a table reference to AD_Org
+			// 03534: note that a Button can be 'anything' in the case of C_BPartner.AD_OrgBP_ID, it is a table reference to AD_Org
 					|| DisplayType.Button == adReferenceId && column.getAD_Reference_Value_ID() > 0
-					&& X_AD_Reference.VALIDATIONTYPE_TableValidation.equals(column.getAD_Reference_Value().getValidationType()))
+							&& X_AD_Reference.VALIDATIONTYPE_TableValidation.equals(column.getAD_Reference_Value().getValidationType()))
 			{
 				// 02775
 				// Note: Even with displayType being ID, we still can't assume an integer in all cases. E.g. AD_Languange
@@ -907,8 +935,7 @@ public class ImportHelper implements IImportHelper
 				final int displayType = adReferenceId;
 				if ((displayType == DisplayType.Table
 						|| displayType == DisplayType.Search
-						|| displayType == DisplayType.Button
-						) && column.getAD_Reference_Value_ID() > 0)
+						|| displayType == DisplayType.Button) && column.getAD_Reference_Value_ID() > 0)
 				{
 					final MRefTable refTable = MRefTable.get(ctx, column.getAD_Reference_Value_ID());
 
@@ -994,7 +1021,7 @@ public class ImportHelper implements IImportHelper
 
 			}
 			result.append(columnName).append("=").append(value).append("; ");
-		}// end if TYPE_EmbeddedEXPFormat
+		}             // end if TYPE_EmbeddedEXPFormat
 	}
 
 	private static int getADClientIdByValue(final Properties ctx, final String value, final String trxName)
@@ -1067,7 +1094,7 @@ public class ImportHelper implements IImportHelper
 		{
 			uniqueFormatLines.addAll(expFormat.getUniqueColumns());
 			if (uniqueFormatLines.isEmpty()
-					&& masterPO == null) // note that with a masterPO, a lookup can be done, even without unique lines
+					&& masterPO == null)              // note that with a masterPO, a lookup can be done, even without unique lines
 			{
 				throw new ReplicationException(MSG_EXPFormatLineNoUniqueColumns);
 			}
@@ -1147,9 +1174,9 @@ public class ImportHelper implements IImportHelper
 					{
 						// 03469: we don't just try to look up the ID, but also create the PO on demand, if required
 						final PO referencedPO = importElement(result, rootElement, referencedExpFormat, ReplicationType, xPath,
-								null, // masterPO
-								InterfaceWrapperHelper.create(expFormat, I_EXP_Format.class), // masterExportFormant
-								uniqueFormatLine, // masterExpFormatLine
+								null,              // masterPO
+								InterfaceWrapperHelper.create(expFormat, I_EXP_Format.class),              // masterExportFormant
+								uniqueFormatLine,              // masterExpFormatLine
 								ReplicationTrxName, trxName);
 						record_ID = referencedPO.get_ID();
 					}
@@ -1231,8 +1258,8 @@ public class ImportHelper implements IImportHelper
 					{
 						throw new ReplicationException("Decoding failed at line " + uniqueFormatLine.getName()
 								+ ", at column number " + col, e)
-								.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine)
-								.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
+										.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine)
+										.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
 					}
 					// metas:rc: end
 				}
@@ -1327,7 +1354,7 @@ public class ImportHelper implements IImportHelper
 		}
 
 		final PO po;
-		if (lookupValues.size() > 1) // The Return Object must be always one
+		if (lookupValues.size() > 1)              // The Return Object must be always one
 		{
 			//
 			// Do a lookup to find out if the DB contains a data record for the given XML data
@@ -1341,7 +1368,7 @@ public class ImportHelper implements IImportHelper
 			// further up, this exception might be caught and resolved by getSingleDefaultPO()
 			throw lookupEx;
 		}
-		else if (lookupValues.isEmpty()) // Means that is a new record
+		else if (lookupValues.isEmpty())              // Means that is a new record
 		{
 			if (I_EXP_Format.RplImportMode_RecordExists.equals(importMode))
 			{
@@ -1447,7 +1474,7 @@ public class ImportHelper implements IImportHelper
 		PO defaultValue = null;
 		for (final PO lookupValue : availableValues)
 		{
-			if(!lookupValue.isActive())
+			if (!lookupValue.isActive())
 			{
 				continue; // shouldn't be the case, but just to make sure..
 			}

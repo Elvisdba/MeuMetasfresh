@@ -1,10 +1,15 @@
 package org.adempiere.server.rpl.api.impl;
 
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_EXP_FormatLine;
+
+import de.metas.adempiere.util.CacheModel;
 
 /*
  * #%L
@@ -40,5 +45,24 @@ public class ExpFormatDAO implements IExpFormatDAO
 				.addEqualsFilter(I_EXP_FormatLine.COLUMNNAME_EXP_Format_ID, format.getEXP_Format_ID())
 				.create()
 				.delete();
+	}
+
+	@Override
+	@Cached(cacheName = I_EXP_FormatLine.Table_Name + "#by#" + I_EXP_FormatLine.COLUMNNAME_EXP_Format_ID)
+	public List<I_EXP_FormatLine> retrieveLines(@CacheModel org.compiere.model.I_EXP_Format exportFormat)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final int expFormatID = exportFormat.getEXP_Format_ID();
+
+		return queryBL.createQueryBuilder(I_EXP_FormatLine.class, exportFormat)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EXP_FormatLine.COLUMNNAME_EXP_Format_ID, expFormatID)
+				.orderBy()
+				.addColumn(I_EXP_FormatLine.COLUMNNAME_Position)
+				.addColumn(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID)
+				.endOrderBy()
+				.create()
+				.list();
 	}
 }

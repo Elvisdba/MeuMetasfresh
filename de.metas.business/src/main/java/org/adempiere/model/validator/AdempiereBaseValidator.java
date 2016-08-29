@@ -47,6 +47,8 @@ import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_EXP_Format;
+import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -241,6 +243,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Process_Para.Table_Name);
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_SysConfig.Table_Name); // also broadcast sysconfig changes
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_EXP_Format.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_EXP_FormatLine.Table_Name);
 
 		// task 09509: changes in the pricing data shall also be propagated to other hosts
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_DiscountSchema.Table_Name);

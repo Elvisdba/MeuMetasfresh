@@ -56,6 +56,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.RPL_Constants;
+import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.MiscUtils;
@@ -374,7 +375,8 @@ public class CanonicalXSDGenerator
 			createXSDAttribute(formatComplexTypeElement, RPL_Constants.XML_ATTR_AD_SESSION_ID, null, null); // 03132
 		}
 
-		for (final I_EXP_FormatLine line : format.getFormatLinesOrderedBy(I_EXP_FormatLine.COLUMNNAME_Position + "," + I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID))
+		final List<I_EXP_FormatLine> lines = Services.get(IExpFormatDAO.class).retrieveLines(format);
+		for (final I_EXP_FormatLine line : lines)
 		{
 			if (!line.isActive())
 			{

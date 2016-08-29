@@ -42,23 +42,16 @@ import de.metas.edi.process.export.IExport;
  */
 public class EDIExport extends SvrProcess
 {
-	private int recordId = -1;
+	// Services
+	final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
-	@Override
-	protected void prepare()
-	{
-		recordId = getRecord_ID();
-	}
 
 	@Override
 	protected String doIt()
 	{
-		//
-		// Services
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(getCtx(), getAD_Client_ID(), getTable_ID(),  getRecord_ID(), get_TrxName());
 
-		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(getCtx(), getAD_Client_ID(), getTable_ID(), recordId, get_TrxName());
-		final List<Exception> feedback = export.createExport();
+		final List<Exception> feedback = export.createExport(); // perform the actual export
 		if (feedback == null || feedback.isEmpty())
 		{
 			return "OK";

@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -52,6 +50,7 @@ import org.adempiere.process.rpl.IExportProcessor2;
 import org.adempiere.process.rpl.RPL_Constants;
 import org.adempiere.process.rpl.api.IReplicationAccessContext;
 import org.adempiere.process.rpl.api.impl.ReplicationAccessContext;
+import org.adempiere.server.rpl.api.IExpFormatDAO;
 import org.adempiere.server.rpl.api.impl.ImportHelper;
 import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
@@ -64,6 +63,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ReplicationStrategy;
 import org.compiere.model.I_AD_ReplicationTable;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_EXP_Format;
 import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
@@ -79,11 +79,13 @@ import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import de.metas.adempiere.service.IAppDictionaryBL;
+import de.metas.logging.LogManager;
 
 /**
  * @author Trifon N. Trifonov
@@ -147,7 +149,7 @@ public class ExportHelper
 		return exportRecord(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
 	}
 
-	public String exportRecord(final PO po, final MEXPFormat exportFormat, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent) throws ReplicationException
+	public String exportRecord(final PO po, final I_EXP_Format exportFormat, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent) throws ReplicationException
 	{
 		outDocument = createExportDOM(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
 
@@ -188,7 +190,7 @@ public class ExportHelper
 	// extracted the DOM creating code from 'exportRecord()'
 	public Document createExportDOM(
 			final PO po,
-			MEXPFormat exportFormat,
+			I_EXP_Format exportFormat,
 			final Integer ReplicationMode,
 			String ReplicationType,
 			final Integer ReplicationEvent)
@@ -353,10 +355,15 @@ public class ExportHelper
 	/*
 	 * Trifon Generate Export Format process; RESULT = <C_Invoice> <DocumentNo>101</DocumentNo> </C_Invoice>
 	 */
-	private void generateExportFormat(final Document outDocument, final Element rootElement, final MEXPFormat exportFormat, final PO masterPO, final HashMap<String, Integer> variableMap,
+	private void generateExportFormat(final Document outDocument,
+			final Element rootElement,
+			final I_EXP_Format exportFormat,
+			final PO masterPO,
+			final HashMap<String, Integer> variableMap,
 			final IReplicationAccessContext racCtx)
 	{
-		final List<I_EXP_FormatLine> formatLines = exportFormat.getFormatLines();
+
+		final List<I_EXP_FormatLine> formatLines = Services.get(IExpFormatDAO.class).retrieveLines(exportFormat);
 
 		for (final I_EXP_FormatLine formatLine : formatLines)
 		{
@@ -379,7 +386,7 @@ public class ExportHelper
 	private void generateExportFormatLine(
 			final Document outDocument,
 			final Element rootElement,
-			final MEXPFormat exportFormat,
+			final I_EXP_Format exportFormat,
 			final I_EXP_FormatLine formatLine,
 			final PO masterPO,
 			final HashMap<String, Integer> variableMap,
@@ -477,7 +484,7 @@ public class ExportHelper
 			}
 
 			final Query query = new Query(masterPO.getCtx(), tableEmbedded.getTableName(), whereClause.toString(), masterPO.get_TrxName());
-		
+
 			final boolean hasIsActiveColumn = Services.get(IADTableDAO.class).hasColumnName(tableEmbedded.getTableName(), "IsActive");
 			if (hasIsActiveColumn)
 			{

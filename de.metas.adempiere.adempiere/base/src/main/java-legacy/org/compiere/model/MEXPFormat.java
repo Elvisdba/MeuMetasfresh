@@ -97,35 +97,6 @@ public class MEXPFormat extends X_EXP_Format
 		super(ctx, rs, trxName);
 	}
 
-	public List<I_EXP_FormatLine> getFormatLines()
-	{
-		return getFormatLinesOrderedBy(I_EXP_FormatLine.COLUMNNAME_Position);
-	}
-
-	private List<I_EXP_FormatLine> _lines = null;
-	private String _lines_orderByClause = null;
-
-	public List<I_EXP_FormatLine> getFormatLinesOrderedBy(String orderBy)
-	{
-		return getFormatLinesOrderedBy(false, orderBy);
-	}
-
-	public List<I_EXP_FormatLine> getFormatLinesOrderedBy(boolean requery, String orderBy)
-	{
-		if (!requery && _lines != null && Util.equals(_lines_orderByClause, orderBy))
-		{
-			return _lines;
-		}
-
-		final String clauseWhere = X_EXP_FormatLine.COLUMNNAME_EXP_Format_ID + "=?";
-		_lines = new Query(getCtx(), I_EXP_FormatLine.Table_Name, clauseWhere, get_TrxName())
-				.setOnlyActiveRecords(true)
-				.setParameters(getEXP_Format_ID())
-				.setOrderBy(orderBy)
-				.list(I_EXP_FormatLine.class);
-		return _lines;
-	}
-
 	public List<I_EXP_FormatLine> getUniqueColumns()
 	{
 		if (m_lines_unique != null)
@@ -149,7 +120,6 @@ public class MEXPFormat extends X_EXP_Format
 		exp_format = new MEXPFormat(ctx, EXP_Format_ID, trxName);
 		if (exp_format != null)
 		{
-			exp_format.getFormatLines();
 			exp_format_by_id_cache.put(EXP_Format_ID, exp_format);
 		}
 		return exp_format;
@@ -191,7 +161,6 @@ public class MEXPFormat extends X_EXP_Format
 
 		if (retValue != null)
 		{
-			retValue.getFormatLines();
 			s_cache.put(key, retValue);
 			exp_format_by_id_cache.put(retValue.getEXP_Format_ID(), retValue);
 		}
@@ -229,7 +198,6 @@ public class MEXPFormat extends X_EXP_Format
 				.first();
 		if (retValue != null)
 		{
-			retValue.getFormatLines();
 			if (trxName == null)   // metas: tsa: cache only if trxName==null
 			{
 				s_cache.put(key, retValue);
