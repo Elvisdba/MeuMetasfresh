@@ -61,3 +61,50 @@ DROP TRIGGER IF EXISTS IsRemitTo_tg ON C_BPartner_Location
 CREATE TRIGGER IsRemitTo_tg BEFORE INSERT OR UPDATE  ON C_BPartner_Location FOR EACH ROW EXECUTE PROCEDURE IsRemitTo_tgfn()
 ;
 
+--
+-- Update: we don't need to be this strict.
+-- It's enough (and still easily implemented) if the UC about isRemitTo is only enforced among only C_BPartner_Locations *with a GLN*:
+--
+-- Aug 29, 2016 7:40 AM
+-- URL zum Konzept
+UPDATE AD_Index_Table SET WhereClause='IsRemitTo=''Y'' and isActive=''Y'' and coalesce(trim(GLN), '''')!=''''',Updated=TO_TIMESTAMP('2016-08-29 07:40:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540381
+;
+
+-- Aug 29, 2016 7:40 AM
+-- URL zum Konzept
+DROP INDEX IF EXISTS isremitto
+;
+
+-- Aug 29, 2016 7:40 AM
+-- URL zum Konzept
+CREATE UNIQUE INDEX IsRemitTo ON C_BPartner_Location (C_BPartner_ID,IsRemitTo) WHERE IsRemitTo='Y' and isActive='Y' and coalesce(trim(GLN), '')!=''
+;
+
+-- Aug 29, 2016 7:40 AM
+-- URL zum Konzept
+CREATE OR REPLACE FUNCTION IsRemitTo_tgfn()
+ RETURNS TRIGGER AS $IsRemitTo_tg$
+ BEGIN
+ IF TG_OP='INSERT' THEN
+UPDATE C_BPartner_Location SET IsRemitTo='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_ID=NEW.C_BPartner_ID AND IsRemitTo=NEW.IsRemitTo AND C_BPartner_Location_ID<>NEW.C_BPartner_Location_ID AND IsRemitTo='Y' and isActive='Y' and coalesce(trim(GLN), '')!='';
+ ELSE
+IF OLD.C_BPartner_ID<>NEW.C_BPartner_ID OR OLD.IsRemitTo<>NEW.IsRemitTo THEN
+UPDATE C_BPartner_Location SET IsRemitTo='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_ID=NEW.C_BPartner_ID AND IsRemitTo=NEW.IsRemitTo AND C_BPartner_Location_ID<>NEW.C_BPartner_Location_ID AND IsRemitTo='Y' and isActive='Y' and coalesce(trim(GLN), '')!='';
+ END IF;
+ END IF;
+ RETURN NEW;
+ END;
+ $IsRemitTo_tg$ LANGUAGE plpgsql;
+;
+
+-- Aug 29, 2016 7:40 AM
+-- URL zum Konzept
+DROP TRIGGER IF EXISTS IsRemitTo_tg ON C_BPartner_Location
+;
+
+-- Aug 29, 2016 7:40 AM
+-- URL zum Konzept
+CREATE TRIGGER IsRemitTo_tg BEFORE INSERT OR UPDATE  ON C_BPartner_Location FOR EACH ROW EXECUTE PROCEDURE IsRemitTo_tgfn()
+;
+
+

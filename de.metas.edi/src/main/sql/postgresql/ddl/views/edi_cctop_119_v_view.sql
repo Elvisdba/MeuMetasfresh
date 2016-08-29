@@ -44,16 +44,15 @@ FROM
 	FROM
 	(
 		SELECT DISTINCT
-			1::INTEGER AS SeqNo
+			1 AS SeqNo
 			, 'cust'::TEXT AS Type_V
-			, (CASE
-				WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
-					THEN o.C_BPartner_Location_ID
-				ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
-					i.C_BPartner_Location_ID
+			, (CASE -- use the order's bPartner location or fall back to the invoice's
+				WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID > 0
+				THEN o.C_BPartner_Location_ID
+				ELSE i.C_BPartner_Location_ID
 			END) AS C_BPartner_Location_ID
 			, i.C_Invoice_ID
-			, 0::INTEGER AS M_InOut_ID
+			, 0 AS M_InOut_ID
 			, NULL::TEXT AS Vendor_ReferenceNo
 		FROM C_Invoice i
 			LEFT JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -63,16 +62,16 @@ FROM
 		UNION
 		--
 		SELECT
-			2::INTEGER AS SeqNo
+			2 AS SeqNo
 			, 'vend'::TEXT AS Type_V
 			, pl_vend.C_BPartner_Location_ID
 			, i.C_Invoice_ID
-			, 0::INTEGER AS M_InOut_ID
+			, 0 AS M_InOut_ID
 			, p_cust.ReferenceNo AS Vendor_ReferenceNo
 		FROM C_Invoice i
 			JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
 			JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
-					JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'::BPChar
+					JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y' AND COALESCE(trim(pl_vend.GLN), '')!=''
 		--
 		UNION
 		--
