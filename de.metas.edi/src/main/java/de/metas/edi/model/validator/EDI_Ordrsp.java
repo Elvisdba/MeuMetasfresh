@@ -54,7 +54,7 @@ public class EDI_Ordrsp
 	 * @param ordrsp
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void onDesadvDelete(final I_EDI_Ordrsp ordrsp)
+	public void onOrdrspDelete(final I_EDI_Ordrsp ordrsp)
 	{
 		final IOrdrspDAO ordrspDAO = Services.get(IOrdrspDAO.class);
 
@@ -78,7 +78,7 @@ public class EDI_Ordrsp
 	 * @param ordrsp
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus })
-	public void onDesadvStatusChanged(final I_EDI_Ordrsp ordrsp)
+	public void onOrdrspStatusChanged(final I_EDI_Ordrsp ordrsp)
 	{
 		final String exportStatus = ordrsp.getEDI_ExportStatus();
 

@@ -8,6 +8,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.edi.model.I_C_Order;
+import de.metas.edi.model.I_C_OrderLine;
 import de.metas.esb.edi.model.I_EDI_Ordrsp;
 import de.metas.esb.edi.model.I_EDI_OrdrspLine;
 
@@ -43,5 +44,11 @@ public interface IOrdrspDAO extends ISingletonService
 	I_EDI_Ordrsp retrieveMatchingOrdrspOrNull(I_C_BPartner c_BPartner, String poReference, IContextAware ctxAware);
 
 	BigDecimal retrieveMinimumSumPercentage();
+
+	boolean hasOrders(I_EDI_Ordrsp ordrsp);
+
+	boolean hasOrdrspLines(I_EDI_Ordrsp ordrsp);
+
+	List<I_C_OrderLine> retrieveAllOrderLines(I_EDI_OrdrspLine ordrspLine);
 
 }

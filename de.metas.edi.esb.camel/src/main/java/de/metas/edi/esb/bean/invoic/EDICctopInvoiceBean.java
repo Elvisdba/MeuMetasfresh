@@ -37,7 +37,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -174,7 +176,7 @@ public class EDICctopInvoiceBean
 	private Cctop000V createCctop000V(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat, final Exchange exchange)
 	{
 		final EDICctop000VType xmlCctop000V = xmlCctopInvoice.getEDICctop000V();
-		validateObject(xmlCctop000V,"Missing Cctop000V data. Check view edi_cctop_000_v)");
+		validateObject(xmlCctop000V, "Missing Cctop000V data. Check view edi_cctop_000_v)");
 
 		validateString(xmlCctop000V.getEDIReceiverIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EDIReceiverIdentification@ (Check EDIReceiverIdentification of view edi_cctop_000_v)");
 		validateString(xmlCctop000V.getEDISenderIdentification(), "@FillMandatory@ @C_Invoice_ID@=" + xmlCctopInvoice.getInvoiceDocumentno() + " @EDISenderIdentification@ (Check EDISenderIdentification of view edi_cctop_000_v)");
@@ -188,10 +190,7 @@ public class EDICctopInvoiceBean
 		cctop000V.setSenderGln(xmlCctop000V.getEDISenderIdentification());
 
 		final Object isTest = exchange.getProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST);
-		if (isTest == null)
-		{
-			throw new RuntimeCamelException("isTest property cannot be null for!");
-		}
+		validateObject(isTest, EDIInvoiceRoute.EDI_INVOICE_IS_TEST + " property cannot be null!");
 		cctop000V.setIsTest(isTest.toString());
 
 		return cctop000V;
@@ -240,21 +239,43 @@ public class EDICctopInvoiceBean
 		return str != null && !str.trim().isEmpty();
 	}
 
+	/**
+	 * Creates a list of pojos that is supposed to be forwarded to the templating engine.
+	 * Also validates the data
+	 *
+	 * @param xmlCctop119VList
+	 * @param decimalFormat
+	 * @return
+	 * @throws RuntimeCamelException if a problem with the data is found.
+	 */
 	private List<Cctop119V> createCctop119VList(final List<EDICctop119VType> xmlCctop119VList, final DecimalFormat decimalFormat)
 	{
 		final List<Cctop119V> cctop119VList = new ArrayList<Cctop119V>();
 
+		Set<String> seenTypes = new HashSet<String>();
+
 		for (final EDICctop119VType xmlCctop119V : xmlCctop119VList)
 		{
-			if (isEmpty(xmlCctop119V.getGLN()))
+			final String eancomLocationtype = xmlCctop119V.getEancomLocationtype();
+			if (!seenTypes.add(eancomLocationtype))
 			{
-				throw new RuntimeCamelException(xmlCctop119V + " must have a GLN");
+				throw new RuntimeCamelException("Duplicate @EANCom_LocationType@=" + eancomLocationtype + " (check the rows of view edi_cctop_119_v for C_Invoice_ID=" + xmlCctop119V.getCInvoiceID() + ")");
 			}
 
-			if (isEmpty(xmlCctop119V.getVATaxID()))
+			if (!"DP".equals(eancomLocationtype) &&
+					!"IV".equals(eancomLocationtype) &&
+					!"BY".equals(eancomLocationtype) &&
+					!"SU".equals(eancomLocationtype) &&
+					!"SN".equals(eancomLocationtype))
 			{
-				throw new RuntimeCamelException(xmlCctop119V + " must have a VATTaxID");
+				throw new RuntimeCamelException("Unexpected @EANCom_LocationType@=" + eancomLocationtype
+						+ " (check EANCom_LocationType of view edi_cctop_119_v for C_Invoice_ID=" + xmlCctop119V.getCInvoiceID() + " and C_BPartner_Location_ID=" + xmlCctop119V.getCBPartnerLocationID() + ")");
 			}
+
+			validateString(xmlCctop119V.getGLN(), "@FillMandatory@ @EANCom_LocationType@=" + eancomLocationtype + " @GLN@"
+					+ " (check GLN of view edi_cctop_119_v for C_Invoice_ID=" + xmlCctop119V.getCInvoiceID() + " and C_BPartner_Location_ID=" + xmlCctop119V.getCBPartnerLocationID() + ")");
+			validateString(xmlCctop119V.getGLN(), "@FillMandatory@ @EANCom_LocationType@=" + eancomLocationtype + " @VATTaxID@"
+					+ " (check VATTaxID of view edi_cctop_119_v for C_Invoice_ID=" + xmlCctop119V.getCInvoiceID() + " and C_BPartner_Location_ID=" + xmlCctop119V.getCBPartnerLocationID() + ")");
 
 			final Cctop119V cctop119V = new Cctop119V();
 			cctop119V.setCbPartnerLocationID(formatNumber(xmlCctop119V.getCBPartnerLocationID(), decimalFormat));
@@ -266,16 +287,15 @@ public class EDICctopInvoiceBean
 			}
 			else
 			{
-				if (isEmpty(xmlCctop119V.getAddress2()))
-				{
-					throw new RuntimeCamelException(xmlCctop119V + " must have at least one filled address");
-				}
+				validateString(xmlCctop119V.getAddress2(), "@EANCom_LocationType@=" + eancomLocationtype + " either Address1 or Address2 must be set."
+						+ " (check Address1 or Address2 of view edi_cctop_119_v for C_Invoice_ID=" + xmlCctop119V.getCInvoiceID() + " and C_BPartner_Location_ID=" + xmlCctop119V.getCBPartnerLocationID() + ")");
+
 				cctop119V.setAddress1(normalize(xmlCctop119V.getAddress2()));
 			}
 			cctop119V.setAddress2(normalize(xmlCctop119V.getAddress2()));
 			cctop119V.setCity(xmlCctop119V.getCity());
 			cctop119V.setCountryCode(xmlCctop119V.getCountryCode());
-			cctop119V.setEancomLocationtype(xmlCctop119V.getEancomLocationtype());
+			cctop119V.setEancomLocationtype(eancomLocationtype);
 			cctop119V.setFax(xmlCctop119V.getFax());
 			cctop119V.setGln(xmlCctop119V.getGLN());
 			cctop119V.setName(normalize(xmlCctop119V.getName()));

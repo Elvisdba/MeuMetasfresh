@@ -12,6 +12,7 @@ import org.compiere.model.I_C_BPartner;
 
 import de.metas.edi.api.IOrdrspDAO;
 import de.metas.edi.model.I_C_Order;
+import de.metas.edi.model.I_C_OrderLine;
 import de.metas.esb.edi.model.I_EDI_Ordrsp;
 import de.metas.esb.edi.model.I_EDI_OrdrspLine;
 
@@ -51,6 +52,15 @@ public class OrdrspDAO implements IOrdrspDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_OrdrspLine.class, ordrsp)
 				.addEqualsFilter(I_EDI_OrdrspLine.COLUMNNAME_EDI_Ordrsp_ID, ordrsp.getEDI_Ordrsp_ID())
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<I_C_OrderLine> retrieveAllOrderLines(final I_EDI_OrdrspLine ordrspLine)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class, ordrspLine)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_EDI_OrdrspLine_ID, ordrspLine.getEDI_OrdrspLine_ID())
 				.create()
 				.list();
 	}
@@ -97,5 +107,25 @@ public class OrdrspDAO implements IOrdrspDAO
 			Check.errorIf(true, "AD_SysConfig {} = {} can't be parsed as a number", SYS_CONFIG_MinimumPercentage, minimumPercentageAccepted_Value);
 			return null; // shall not be reached
 		}
+	}
+
+	@Override
+	public boolean hasOrders(final I_EDI_Ordrsp ordrsp)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, ordrsp)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_EDI_Ordrsp_ID, ordrsp.getEDI_Ordrsp_ID())
+				.create()
+				.match();
+	}
+
+	@Override
+	public boolean hasOrdrspLines(final I_EDI_Ordrsp ordrsp)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_OrdrspLine.class, ordrsp)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_EDI_Ordrsp_ID, ordrsp.getEDI_Ordrsp_ID())
+				.create()
+				.match();
 	}
 }

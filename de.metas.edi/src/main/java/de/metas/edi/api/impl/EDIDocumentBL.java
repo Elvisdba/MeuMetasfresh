@@ -66,8 +66,10 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
+import de.metas.edi.process.export.impl.EDI_ORDRSPExport;
 import de.metas.esb.edi.model.I_EDI_BPartner_Config;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_EDI_Ordrsp;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -470,7 +472,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final String tableName = adTableDAO.retrieveTableName(tableId);
 
 		final IExport<? extends I_EDI_Document> export;
-		if (org.compiere.model.I_C_Invoice.Table_Name.equals(tableName))
+		if (I_C_Invoice.Table_Name.equals(tableName))
 		{
 			final String tableIdentifier = org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 			verifyRecordId(recordId, tableIdentifier);
@@ -486,6 +488,15 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(ctx, recordId, I_EDI_Desadv.class, trxName);
 			export = new EDI_DESADVExport(desadv, tableIdentifier, clientId);
 		}
+		else if (I_EDI_Ordrsp.Table_Name.equals(tableName))
+		{
+			final String tableIdentifier = I_EDI_Ordrsp.COLUMNNAME_EDI_Ordrsp_ID;
+			verifyRecordId(recordId, tableIdentifier);
+
+			final I_EDI_Ordrsp desadv = InterfaceWrapperHelper.create(ctx, recordId, I_EDI_Ordrsp.class, trxName);
+			export = new EDI_ORDRSPExport(desadv, tableIdentifier, clientId);
+		}
+
 		else
 		{
 			throw new AdempiereException("Export EDI operation not supported for table " + tableName);

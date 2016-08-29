@@ -19,11 +19,11 @@ import de.metas.esb.edi.model.I_EDI_OrdrspLine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,6 +46,11 @@ public interface IOrdrspBL extends ISingletonService
 	 */
 	I_EDI_Ordrsp addToOrdrspCreateIfNotExistForOrder(I_C_Order order);
 
+	/**
+	 * Removes the given <code>order</code> from its {@link I_EDI_Ordrsp} record.
+	 *
+	 * @param order
+	 */
 	void removeOrderFromOrdrsp(I_C_Order order);
 
 	void setMinimumPercentage(I_EDI_Ordrsp ordrsp);
