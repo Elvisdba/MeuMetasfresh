@@ -14,7 +14,7 @@ public class X_EDI_cctop_000_v extends org.compiere.model.PO implements I_EDI_cc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1341646303L;
+	private static final long serialVersionUID = -312471007L;
 
     /** Standard Constructor */
     public X_EDI_cctop_000_v (Properties ctx, int EDI_cctop_000_v_ID, String trxName)
@@ -100,40 +100,40 @@ public class X_EDI_cctop_000_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	/** Set Empfänger-GLN.
-		@param EdiReceiverIdentification 
+		@param EDIReceiverIdentification 
 		EDI-GLN des Empfängers
 	  */
 	@Override
-	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification)
+	public void setEDIReceiverIdentification (java.lang.String EDIReceiverIdentification)
 	{
-		set_ValueNoCheck (COLUMNNAME_EdiReceiverIdentification, EdiReceiverIdentification);
+		set_ValueNoCheck (COLUMNNAME_EDIReceiverIdentification, EDIReceiverIdentification);
 	}
 
 	/** Get Empfänger-GLN.
 		@return EDI-GLN des Empfängers
 	  */
 	@Override
-	public java.lang.String getEdiReceiverIdentification () 
+	public java.lang.String getEDIReceiverIdentification () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EdiReceiverIdentification);
+		return (java.lang.String)get_Value(COLUMNNAME_EDIReceiverIdentification);
 	}
 
 	/** Set Absender-GLN.
-		@param EdiSenderIdentification 
+		@param EDISenderIdentification 
 		EDI-GLN des Absenders
 	  */
 	@Override
-	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification)
+	public void setEDISenderIdentification (java.lang.String EDISenderIdentification)
 	{
-		set_ValueNoCheck (COLUMNNAME_EdiSenderIdentification, EdiSenderIdentification);
+		set_ValueNoCheck (COLUMNNAME_EDISenderIdentification, EDISenderIdentification);
 	}
 
 	/** Get Absender-GLN.
 		@return EDI-GLN des Absenders
 	  */
 	@Override
-	public java.lang.String getEdiSenderIdentification () 
+	public java.lang.String getEDISenderIdentification () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EdiSenderIdentification);
+		return (java.lang.String)get_Value(COLUMNNAME_EDISenderIdentification);
 	}
 }

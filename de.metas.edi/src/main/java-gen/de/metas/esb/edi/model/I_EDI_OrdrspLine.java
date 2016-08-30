@@ -282,6 +282,31 @@ public interface I_EDI_OrdrspLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Manuell.
+	 * Dies ist ein manueller Vorgang
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsManual (boolean IsManual);
+
+	/**
+	 * Get Manuell.
+	 * Dies ist ein manueller Vorgang
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isManual();
+
+    /** Column definition for IsManual */
+    public static final org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object> COLUMN_IsManual = new org.adempiere.model.ModelColumn<I_EDI_OrdrspLine, Object>(I_EDI_OrdrspLine.class, "IsManual", null);
+    /** Column name IsManual */
+    public static final String COLUMNNAME_IsManual = "IsManual";
+
+	/**
 	 * Set Zeile Nr..
 	 * Einzelne Zeile in dem Dokument
 	 *

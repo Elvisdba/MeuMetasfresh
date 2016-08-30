@@ -158,7 +158,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification);
+	public void setEDIReceiverIdentification (java.lang.String EDIReceiverIdentification);
 
 	/**
 	 * Get Empfänger-GLN.
@@ -168,12 +168,12 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiReceiverIdentification();
+	public java.lang.String getEDIReceiverIdentification();
 
-    /** Column definition for EdiReceiverIdentification */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EdiReceiverIdentification = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EdiReceiverIdentification", null);
-    /** Column name EdiReceiverIdentification */
-    public static final String COLUMNNAME_EdiReceiverIdentification = "EdiReceiverIdentification";
+    /** Column definition for EDIReceiverIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EDIReceiverIdentification = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EDIReceiverIdentification", null);
+    /** Column name EDIReceiverIdentification */
+    public static final String COLUMNNAME_EDIReceiverIdentification = "EDIReceiverIdentification";
 
 	/**
 	 * Set Absender-GLN.
@@ -183,7 +183,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification);
+	public void setEDISenderIdentification (java.lang.String EDISenderIdentification);
 
 	/**
 	 * Get Absender-GLN.
@@ -193,12 +193,12 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiSenderIdentification();
+	public java.lang.String getEDISenderIdentification();
 
-    /** Column definition for EdiSenderIdentification */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EdiSenderIdentification = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EdiSenderIdentification", null);
-    /** Column name EdiSenderIdentification */
-    public static final String COLUMNNAME_EdiSenderIdentification = "EdiSenderIdentification";
+    /** Column definition for EDISenderIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EDISenderIdentification = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EDISenderIdentification", null);
+    /** Column name EDISenderIdentification */
+    public static final String COLUMNNAME_EDISenderIdentification = "EDISenderIdentification";
 
 	/**
 	 * Set Aktiv.

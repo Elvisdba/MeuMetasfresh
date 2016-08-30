@@ -16,7 +16,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -21673780L;
+	private static final long serialVersionUID = 1156629976L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_v (Properties ctx, int EDI_cctop_invoic_v_ID, String trxName)
@@ -41,6 +41,43 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
+	}
+
+	/** Set Standort.
+		@param C_BPartner_Location_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+	}
+
+	/** Get Standort.
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BPartner_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
@@ -267,6 +304,44 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Empfänger-GLN.
+		@param EDIReceiverIdentification 
+		EDI-GLN des Empfängers
+	  */
+	@Override
+	public void setEDIReceiverIdentification (java.lang.String EDIReceiverIdentification)
+	{
+		set_Value (COLUMNNAME_EDIReceiverIdentification, EDIReceiverIdentification);
+	}
+
+	/** Get Empfänger-GLN.
+		@return EDI-GLN des Empfängers
+	  */
+	@Override
+	public java.lang.String getEDIReceiverIdentification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EDIReceiverIdentification);
+	}
+
+	/** Set Absender-GLN.
+		@param EDISenderIdentification 
+		EDI-GLN des Absenders
+	  */
+	@Override
+	public void setEDISenderIdentification (java.lang.String EDISenderIdentification)
+	{
+		set_Value (COLUMNNAME_EDISenderIdentification, EDISenderIdentification);
+	}
+
+	/** Get Absender-GLN.
+		@return EDI-GLN des Absenders
+	  */
+	@Override
+	public java.lang.String getEDISenderIdentification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EDISenderIdentification);
 	}
 
 	/** Set Summe Gesamt.

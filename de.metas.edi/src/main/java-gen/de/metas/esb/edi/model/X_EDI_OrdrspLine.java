@@ -16,7 +16,7 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -551396569L;
+	private static final long serialVersionUID = -1229160321L;
 
     /** Standard Constructor */
     public X_EDI_OrdrspLine (Properties ctx, int EDI_OrdrspLine_ID, String trxName)
@@ -28,11 +28,13 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
 			setC_UOM_ID (0);
 			setEDI_Ordrsp_ID (0);
 			setEDI_OrdrspLine_ID (0);
+			setIsManual (true);
+// Y
 			setLine (0);
 			setM_Product_ID (0);
 			setPriceActual (Env.ZERO);
 			setQuantityQualifier (null);
-// IA
+// 10_IA
 			setUPC (null);
         } */
     }
@@ -223,6 +225,32 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
 		return ii.intValue();
 	}
 
+	/** Set Manuell.
+		@param IsManual 
+		Dies ist ein manueller Vorgang
+	  */
+	@Override
+	public void setIsManual (boolean IsManual)
+	{
+		set_Value (COLUMNNAME_IsManual, Boolean.valueOf(IsManual));
+	}
+
+	/** Get Manuell.
+		@return Dies ist ein manueller Vorgang
+	  */
+	@Override
+	public boolean isManual () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsManual);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Zeile Nr..
 		@param Line 
 		Einzelne Zeile in dem Dokument
@@ -365,14 +393,14 @@ public class X_EDI_OrdrspLine extends org.compiere.model.PO implements I_EDI_Ord
 	 * Reference name: QuantityQualifier
 	 */
 	public static final int QUANTITYQUALIFIER_AD_Reference_ID=540663;
-	/** ItemAccepted = IA */
-	public static final String QUANTITYQUALIFIER_ItemAccepted = "IA";
-	/** ItemBackordered = IB */
-	public static final String QUANTITYQUALIFIER_ItemBackordered = "IB";
-	/** ItemCancelled = CK */
-	public static final String QUANTITYQUALIFIER_ItemCancelled = "CK";
-	/** ItemRejected = IR */
-	public static final String QUANTITYQUALIFIER_ItemRejected = "IR";
+	/** ItemAccepted = 10_IA */
+	public static final String QUANTITYQUALIFIER_ItemAccepted = "10_IA";
+	/** ItemBackordered = 20_IB */
+	public static final String QUANTITYQUALIFIER_ItemBackordered = "20_IB";
+	/** ItemCancelled = 40_CK */
+	public static final String QUANTITYQUALIFIER_ItemCancelled = "40_CK";
+	/** ItemRejected = 30_IR */
+	public static final String QUANTITYQUALIFIER_ItemRejected = "30_IR";
 	/** Set Mengenkennzeichner.
 		@param QuantityQualifier 
 		Sagt aus, ob die jeweilige Menge zugesagt ist, nicht verfügbar ist, nachbestellt wird usw.

@@ -16,7 +16,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 935745653L;
+	private static final long serialVersionUID = -1120386491L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -27,6 +27,8 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 			setEDI_Desadv_ID (0);
 			setEDI_ExportStatus (null);
 // P
+			setEDIReceiverIdentification (null);
+			setEDISenderIdentification (null);
 			setProcessed (false);
 // N
 			setProcessing (false);
@@ -329,8 +331,8 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	public static final String EDI_EXPORTSTATUS_Enqueued = "U";
 	/** DontSend = N */
 	public static final String EDI_EXPORTSTATUS_DontSend = "N";
-	/** Set EDI Status Exportieren.
-		@param EDI_ExportStatus EDI Status Exportieren	  */
+	/** Set EDI Export Status.
+		@param EDI_ExportStatus EDI Export Status	  */
 	@Override
 	public void setEDI_ExportStatus (java.lang.String EDI_ExportStatus)
 	{
@@ -338,8 +340,8 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		set_Value (COLUMNNAME_EDI_ExportStatus, EDI_ExportStatus);
 	}
 
-	/** Get EDI Status Exportieren.
-		@return EDI Status Exportieren	  */
+	/** Get EDI Export Status.
+		@return EDI Export Status	  */
 	@Override
 	public java.lang.String getEDI_ExportStatus () 
 	{
@@ -347,41 +349,41 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	}
 
 	/** Set Empfänger-GLN.
-		@param EdiReceiverIdentification 
+		@param EDIReceiverIdentification 
 		EDI-GLN des Empfängers
 	  */
 	@Override
-	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification)
+	public void setEDIReceiverIdentification (java.lang.String EDIReceiverIdentification)
 	{
-		set_Value (COLUMNNAME_EdiReceiverIdentification, EdiReceiverIdentification);
+		set_Value (COLUMNNAME_EDIReceiverIdentification, EDIReceiverIdentification);
 	}
 
 	/** Get Empfänger-GLN.
 		@return EDI-GLN des Empfängers
 	  */
 	@Override
-	public java.lang.String getEdiReceiverIdentification () 
+	public java.lang.String getEDIReceiverIdentification () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EdiReceiverIdentification);
+		return (java.lang.String)get_Value(COLUMNNAME_EDIReceiverIdentification);
 	}
 
 	/** Set Absender-GLN.
-		@param EdiSenderIdentification 
+		@param EDISenderIdentification 
 		EDI-GLN des Absenders
 	  */
 	@Override
-	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification)
+	public void setEDISenderIdentification (java.lang.String EDISenderIdentification)
 	{
-		set_Value (COLUMNNAME_EdiSenderIdentification, EdiSenderIdentification);
+		set_Value (COLUMNNAME_EDISenderIdentification, EDISenderIdentification);
 	}
 
 	/** Get Absender-GLN.
 		@return EDI-GLN des Absenders
 	  */
 	@Override
-	public java.lang.String getEdiSenderIdentification () 
+	public java.lang.String getEDISenderIdentification () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EdiSenderIdentification);
+		return (java.lang.String)get_Value(COLUMNNAME_EDISenderIdentification);
 	}
 
 	@Override

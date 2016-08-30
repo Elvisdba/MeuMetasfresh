@@ -69,6 +69,35 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_Location_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
+
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
+
+    /** Column definition for C_BPartner_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, org.compiere.model.I_C_BPartner_Location>(I_EDI_cctop_invoic_v.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BPartner_Location_ID */
+    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -345,6 +374,56 @@ public interface I_EDI_cctop_invoic_v
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDI_cctop_invoic_v_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "EDI_cctop_invoic_v_ID", null);
     /** Column name EDI_cctop_invoic_v_ID */
     public static final String COLUMNNAME_EDI_cctop_invoic_v_ID = "EDI_cctop_invoic_v_ID";
+
+	/**
+	 * Set Empfänger-GLN.
+	 * EDI-GLN des Empfängers
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEDIReceiverIdentification (java.lang.String EDIReceiverIdentification);
+
+	/**
+	 * Get Empfänger-GLN.
+	 * EDI-GLN des Empfängers
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEDIReceiverIdentification();
+
+    /** Column definition for EDIReceiverIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDIReceiverIdentification = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "EDIReceiverIdentification", null);
+    /** Column name EDIReceiverIdentification */
+    public static final String COLUMNNAME_EDIReceiverIdentification = "EDIReceiverIdentification";
+
+	/**
+	 * Set Absender-GLN.
+	 * EDI-GLN des Absenders
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEDISenderIdentification (java.lang.String EDISenderIdentification);
+
+	/**
+	 * Get Absender-GLN.
+	 * EDI-GLN des Absenders
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEDISenderIdentification();
+
+    /** Column definition for EDISenderIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDISenderIdentification = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object>(I_EDI_cctop_invoic_v.class, "EDISenderIdentification", null);
+    /** Column name EDISenderIdentification */
+    public static final String COLUMNNAME_EDISenderIdentification = "EDISenderIdentification";
 
 	/**
 	 * Set Summe Gesamt.

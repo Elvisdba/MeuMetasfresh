@@ -361,7 +361,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_EDIErrorMsg = "EDIErrorMsg";
 
 	/**
-	 * Set EDI Status Exportieren.
+	 * Set EDI Export Status.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -370,7 +370,7 @@ public interface I_EDI_Desadv
 	public void setEDI_ExportStatus (java.lang.String EDI_ExportStatus);
 
 	/**
-	 * Get EDI Status Exportieren.
+	 * Get EDI Export Status.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -388,50 +388,50 @@ public interface I_EDI_Desadv
 	 * EDI-GLN des Empfängers
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiReceiverIdentification (java.lang.String EdiReceiverIdentification);
+	public void setEDIReceiverIdentification (java.lang.String EDIReceiverIdentification);
 
 	/**
 	 * Get Empfänger-GLN.
 	 * EDI-GLN des Empfängers
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiReceiverIdentification();
+	public java.lang.String getEDIReceiverIdentification();
 
-    /** Column definition for EdiReceiverIdentification */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EdiReceiverIdentification = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EdiReceiverIdentification", null);
-    /** Column name EdiReceiverIdentification */
-    public static final String COLUMNNAME_EdiReceiverIdentification = "EdiReceiverIdentification";
+    /** Column definition for EDIReceiverIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDIReceiverIdentification = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDIReceiverIdentification", null);
+    /** Column name EDIReceiverIdentification */
+    public static final String COLUMNNAME_EDIReceiverIdentification = "EDIReceiverIdentification";
 
 	/**
 	 * Set Absender-GLN.
 	 * EDI-GLN des Absenders
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiSenderIdentification (java.lang.String EdiSenderIdentification);
+	public void setEDISenderIdentification (java.lang.String EDISenderIdentification);
 
 	/**
 	 * Get Absender-GLN.
 	 * EDI-GLN des Absenders
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiSenderIdentification();
+	public java.lang.String getEDISenderIdentification();
 
-    /** Column definition for EdiSenderIdentification */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EdiSenderIdentification = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EdiSenderIdentification", null);
-    /** Column name EdiSenderIdentification */
-    public static final String COLUMNNAME_EdiSenderIdentification = "EdiSenderIdentification";
+    /** Column definition for EDISenderIdentification */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDISenderIdentification = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDISenderIdentification", null);
+    /** Column name EDISenderIdentification */
+    public static final String COLUMNNAME_EDISenderIdentification = "EDISenderIdentification";
 
 	/**
 	 * Set Übergabeadresse.
