@@ -22,7 +22,7 @@
 *                                                                     *
 * Contributors:                                                       *
 * - Trifon Trifonov (trifonnt@users.sourceforge.net)
-* - Antonio Cañaveral, e-Evolution                  
+* - Antonio Cañaveral, e-Evolution
 *                                                                     *
 * Sponsors:                                                           *
 * - E-evolution (http://www.e-evolution.com)                          *
@@ -53,10 +53,11 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.compiere.model.I_EXP_ProcessorParameter;
 import org.compiere.model.MEXPProcessor;
 import org.compiere.model.X_EXP_ProcessorParameter;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
+
+import de.metas.logging.LogManager;
 
 /**
  * @author Trifon N. Trifonov
@@ -71,12 +72,13 @@ public class TopicExportProcessor implements IExportProcessor {
 
 	/**	Logger	*/
 	protected Logger	log = LogManager.getLogger(getClass());
-	
+
 	/**
-	 * 
+	 *
 	 */
-	public void process(Properties ctx, MEXPProcessor expProcessor, Document document, Trx trx) 
-			throws Exception 
+	@Override
+	public void process(Properties ctx, MEXPProcessor expProcessor, Document document, Trx trx)
+			throws Exception
 	{
 		String host 	      = expProcessor.getHost();
 		int port 		      = expProcessor.getPort();
@@ -88,8 +90,8 @@ public class TopicExportProcessor implements IExportProcessor {
         String timeToLiveStr  = null;
         int timeToLive        = 10000;
         boolean isDeliveryModePersistent = true;
-        
-        // Read all processor parameters and set them!        
+
+        // Read all processor parameters and set them!
         I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
         if (processorParameters != null && processorParameters.length > 0) {
         	for (int i = 0; i < processorParameters.length; i++) {
@@ -111,7 +113,7 @@ public class TopicExportProcessor implements IExportProcessor {
         		}
         	}
         }
-        
+
         if (topicName == null || topicName.length() == 0) {
         	throw new Exception("Missing "+X_EXP_ProcessorParameter.Table_Name+" with key 'topicName'!");
         }
@@ -124,34 +126,31 @@ public class TopicExportProcessor implements IExportProcessor {
         if (timeToLiveStr == null || timeToLiveStr.length() == 0) {
         	throw new Exception("Missing "+X_EXP_ProcessorParameter.Table_Name+" with key 'timeToLive'!");
         }
-        
+
 		// Construct Transformer Factory and Transformer
         TransformerFactory tranFactory = TransformerFactory.newInstance();
-        String jVersion = System.getProperty("java.version");
-		if (jVersion.startsWith("1.5.0"))
-			tranFactory.setAttribute("indent-number", Integer.valueOf(1));
-        
+
         Transformer aTransformer = tranFactory.newTransformer();
         aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
         Source src = new DOMSource( document );
-		
+
         // =================================== Write to String
         Writer writer = new StringWriter();
         Result dest2 = new StreamResult(writer);
         aTransformer.transform(src, dest2);
-        
+
         sendJMSMessage(host, port, writer.toString(), protocol, topicName, clientID, account, password, timeToLive, isDeliveryModePersistent);
-		
+
 	}
 
 	private void sendJMSMessage(String host, int port, String msg, String protocol, String topicName
 			, String clientID, String userName, String password, int timeToLive
-			, boolean isDeliveryModePersistent) throws JMSException 
+			, boolean isDeliveryModePersistent) throws JMSException
 	{
 		// Create a ConnectionFactory
 		// network protocol (tcp, ...) set as EXP_ProcessorParameter
 		ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(protocol + "://" + host + ":" + port);
-		
+
 		Connection connection = null;
 		Session session = null;
 		try {
@@ -161,33 +160,33 @@ public class TopicExportProcessor implements IExportProcessor {
 			} else {
 				connection = connectionFactory.createConnection();
 			}
-			
+
 			// connection.setClientID( clientID ); Commented by Victor as he had issue!
 			connection.start();
-			
+
 			// Create a Session
 			session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE); //TODO - Trifon could be EXP_ProcessorParameter
 
 			// Create the destination (Topic or Queue)
 			Destination destination = session.createTopic(topicName);
-			
+
 			// Create a MessageProducer from the Session to the Topic or Queue
 			MessageProducer producer = session.createProducer( destination );
 			producer.setTimeToLive( timeToLive ); // EXP_ProcessorParameter
 			if ( isDeliveryModePersistent ) {
-				producer.setDeliveryMode( DeliveryMode.PERSISTENT ); // EXP_ProcessorParameter	
+				producer.setDeliveryMode( DeliveryMode.PERSISTENT ); // EXP_ProcessorParameter
 			} else {
 				producer.setDeliveryMode( DeliveryMode.NON_PERSISTENT ); // EXP_ProcessorParameter
 			}
-			
+
 			// How to send to multiple destinations.
 			//MessageProducer producer = session.createProducer(null);
 			//producer.send(someDestination, message);
 			//producer.send(anotherDestination, message);
-			
+
 			// Create a message
 			TextMessage message = session.createTextMessage( msg );
-			
+
 			// Tell the producer to send the message
 			try
 			{
@@ -200,10 +199,10 @@ public class TopicExportProcessor implements IExportProcessor {
 				log.info("JMS Can't send the message!");
 				throw ex;
 			}
-			
+
 		} finally {
 			// Clean up
-			if (session != null) { 
+			if (session != null) {
 				try { session.close(); } catch (JMSException ex) { /* ignored */ }
 			}
 			if (connection != null) {

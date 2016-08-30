@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -31,23 +32,28 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_Sequence_No;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.logging.LogManager;
 
 public class DocumentSequenceDAO implements IDocumentSequenceDAO
 {
@@ -61,12 +67,16 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			+ " FROM " + I_AD_Sequence_No.Table_Name
 			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND " + I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=?";
 
+	private static final transient Logger logger = LogManager.getLogger(Adempiere.class);
+
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#SequenceName")
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
 	{
+		IContextAware ctxProvider = new PlainContextAware(Env.getCtx());
+
 		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Sequence.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Sequence.class, ctxProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, false)
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId)
@@ -78,11 +88,26 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Sequence.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last); // make sure we get for our particular org first
 
-		final I_AD_Sequence adSequence = queryBuilder.create().first(I_AD_Sequence.class);
+		I_AD_Sequence adSequence = queryBuilder.create().first(I_AD_Sequence.class);
 		if (adSequence == null)
 		{
-			// TODO: shall not happen but it's safe to create AD_Sequence
-			throw new AdempiereException("@NotFound@ @AD_Sequence_ID@ (@Name@: " + sequenceName + ")");
+			logger.warn("Did not find any AD_Sequence for Name={}, AD_Client_ID={}, AD_Org_ID IN (0,{}) and IsTable=false; Going to create one.", sequenceName, adClientId, adOrgId);
+
+			final I_AD_Sequence newInstance = InterfaceWrapperHelper.newInstance(I_AD_Sequence.class, ctxProvider);
+			newInstance.setAD_Org_ID(adOrgId);
+			newInstance.setName(sequenceName);
+			newInstance.setIsTableID(false);
+
+			// get the system's input on where the range should start, but make sure that it is at least 1.
+			final BigDecimal idRangeStart = BigDecimal.ONE.max(
+					Services.get(ISystemBL.class).get(ctxProvider.getCtx()).getIDRangeStart());
+
+			newInstance.setCurrentNext(idRangeStart.intValue());
+
+			InterfaceWrapperHelper.save(newInstance);
+			logger.warn("Created new AD_Sequence={} in the fly.", newInstance);
+
+			adSequence = newInstance;
 		}
 
 		return DocumentSequenceInfo.of(adSequence);
