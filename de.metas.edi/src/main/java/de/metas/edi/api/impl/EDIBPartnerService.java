@@ -4,11 +4,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.adempiere.util.CacheModel;
 import de.metas.edi.api.IEDIBPartnerService;
 import de.metas.esb.edi.model.I_EDI_BPartner_Config;
 
@@ -38,7 +42,7 @@ public class EDIBPartnerService implements IEDIBPartnerService
 {
 
 	@Override
-	public boolean isEDIRecipient(I_C_BPartner bpartner, Timestamp date)
+	public boolean isEDIRecipient(final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
 		return isEdiRecipient(config);
@@ -50,42 +54,42 @@ public class EDIBPartnerService implements IEDIBPartnerService
 	}
 
 	@Override
-	public BigDecimal getEdiDESADVDefaultItemCapacity(I_C_BPartner bpartner, Timestamp date)
+	public BigDecimal getEdiDESADVDefaultItemCapacity(final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
 		return isEdiRecipient(config) ? config.getEDI_DefaultItemCapacity() : BigDecimal.ZERO;
 	}
 
 	@Override
-	public String getEdiPartnerIdentification(I_C_BPartner bpartner, Timestamp date)
+	public String getEdiPartnerIdentification(final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
 		return isEdiRecipient(config) ? config.getEdiPartnerIdentification() : "";
 	}
 
-
 	@Override
-	public boolean isDesadvRecipient(I_C_BPartner bpartner, Timestamp date)
+	public boolean isDesadvRecipient(final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
 		return isEdiRecipient(config) && config.isDesadvRecipient();
 	}
 
 	@Override
-	public boolean isOrdrspRecipient(I_C_BPartner bpartner, Timestamp date)
+	public boolean isOrdrspRecipient(final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
 		return isEdiRecipient(config) && config.isOrdrspRecipient();
 	}
 
 	@Override
-	public boolean isInvoicRecipient(I_C_BPartner bpartner, Timestamp date)
+	public boolean isInvoicRecipient(final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final I_EDI_BPartner_Config config = retrieve(bpartner, date);
 		return isEdiRecipient(config) && config.isInvoicRecipient();
 	}
 
-	private I_EDI_BPartner_Config retrieve(I_C_BPartner bpartner, Timestamp date)
+	@Cached(cacheName = I_EDI_BPartner_Config.Table_Name + "#by#" + I_EDI_BPartner_Config.COLUMNNAME_ValidFrom)
+	/* package */ I_EDI_BPartner_Config retrieve(@CacheModel final I_C_BPartner bpartner, final Timestamp date)
 	{
 		final de.metas.edi.model.I_C_BPartner bpartnerExt = InterfaceWrapperHelper.create(bpartner, de.metas.edi.model.I_C_BPartner.class);
 		if (!bpartnerExt.getHasEdiConfig())
@@ -95,9 +99,9 @@ public class EDIBPartnerService implements IEDIBPartnerService
 		final I_EDI_BPartner_Config config = Services.get(IQueryBL.class).createQueryBuilder(I_EDI_BPartner_Config.class, bpartner)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_BPartner_Config.COLUMN_C_BPartner_ID, bpartner.getC_BPartner_ID())
-				.addCompareFilter(I_EDI_BPartner_Config.COLUMN_ValidFrom, Operator.GREATER_OR_EQUAL, date)
+				.addCompareFilter(I_EDI_BPartner_Config.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.orderBy()
-				.addColumn(I_EDI_BPartner_Config.COLUMN_ValidFrom)
+				.addColumn(I_EDI_BPartner_Config.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
 				.first();

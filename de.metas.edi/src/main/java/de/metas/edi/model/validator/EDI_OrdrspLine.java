@@ -30,9 +30,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
+import de.metas.edi.api.IOrdrspBL;
 import de.metas.edi.api.IOrdrspDAO;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.esb.edi.model.I_EDI_OrdrspLine;
+import de.metas.esb.edi.model.X_EDI_OrdrspLine;
 
 @Interceptor(I_EDI_OrdrspLine.class)
 public class EDI_OrdrspLine
@@ -59,6 +61,16 @@ public class EDI_OrdrspLine
 		{
 			line.setEDI_OrdrspLine_ID(0);
 			InterfaceWrapperHelper.save(line);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_EDI_OrdrspLine.COLUMNNAME_ConfirmedQty })
+	public void onOrdrspLineChange(final I_EDI_OrdrspLine ordrspLine)
+	{
+		if (X_EDI_OrdrspLine.QUANTITYQUALIFIER_ItemAccepted.equals(ordrspLine.getQuantityQualifier()))
+		{
+			final IOrdrspBL ordrspBL = Services.get(IOrdrspBL.class);
+			ordrspBL.updateManualLinesFromCalculatedLine(ordrspLine);
 		}
 	}
 }

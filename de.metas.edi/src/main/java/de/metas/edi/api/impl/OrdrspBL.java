@@ -55,6 +55,13 @@ public class OrdrspBL implements IOrdrspBL
 	@Override
 	public I_EDI_Ordrsp addToOrdrspCreateIfNotExistForOrder(final I_C_Order order)
 	{
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+
+		if (!ediBPartnerService.isOrdrspRecipient(order.getC_BPartner(), order.getDateOrdered()))
+		{
+			return null;
+		}
+
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -93,8 +100,11 @@ public class OrdrspBL implements IOrdrspBL
 	{
 		final IOrdrspDAO ordrspDAO = Services.get(IOrdrspDAO.class);
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 		final I_C_BPartner handoverPartner = InterfaceWrapperHelper.create(orderBL.getHandoverPartner(order), I_C_BPartner.class);
+
 		I_EDI_Ordrsp ordrsp = ordrspDAO.retrieveMatchingOrdrspOrNull(handoverPartner, order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
 
 		if (ordrsp == null)
@@ -113,10 +123,15 @@ public class OrdrspBL implements IOrdrspBL
 			ordrsp.setHandOver_Location_ID(handoverLocation.getC_BPartner_Location_ID());
 			ordrsp.setDeliveryGLN(handoverLocation.getGLN());
 
+			final String receiverIdentification = ediBPartnerService.getEdiPartnerIdentification(handoverPartner, order.getDateOrdered());
+			ordrsp.setEDIReceiverIdentification(receiverIdentification);
+
 			// https://github.com/metasfresh/metasfresh/issues/307
-			final I_C_BPartner orgBPartner = InterfaceWrapperHelper.create(Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(order.getAD_Org()), I_C_BPartner.class);
-			final String supplierGLN = Services.get(IEDIBPartnerService.class).getEdiPartnerIdentification(orgBPartner, order.getDatePromised());
+			final I_C_BPartner orgBPartner = InterfaceWrapperHelper.create(bpartnerOrgBL.retrieveLinkedBPartner(order.getAD_Org()), I_C_BPartner.class);
+
+			final String supplierGLN = ediBPartnerService.getEdiPartnerIdentification(orgBPartner, order.getDateOrdered());
 			ordrsp.setSupplierGLN(supplierGLN);
+			ordrsp.setEDISenderIdentification(supplierGLN);
 
 			InterfaceWrapperHelper.save(ordrsp);
 		}
@@ -134,12 +149,13 @@ public class OrdrspBL implements IOrdrspBL
 		}
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 		final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 		final I_EDI_OrdrspLine ordrspLine = InterfaceWrapperHelper.newInstance(I_EDI_OrdrspLine.class, ordrsp);
 		ordrspLine.setEDI_Ordrsp(ordrsp);
+		ordrspLine.setIsManual(false); // this one is maintained by the system
+		ordrspLine.setQuantityQualifier(X_EDI_OrdrspLine.QUANTITYQUALIFIER_ItemAccepted);
 
 		ordrspLine.setC_Tax_ID(orderLine.getC_Tax_ID());
 		ordrspLine.setLine(orderLine.getLine());
@@ -152,13 +168,7 @@ public class OrdrspBL implements IOrdrspBL
 		final I_M_ShipmentSchedule shipmentSched = shipmentSchedulePA.retrieveForOrderLine(orderLine);
 		ordrspLine.setM_ShipmentSchedule(shipmentSched);
 
-		final BigDecimal qtyToDeliver = uomConversionBL.convertFromProductUOM(InterfaceWrapperHelper.getCtx(orderLine), orderLine.getM_Product(), orderLine.getC_UOM(), shipmentSched.getQtyToDeliver());
-
-		ordrspLine.setConfirmedQty(qtyToDeliver);
-		ordrspLine.setQuantityQualifier(X_EDI_OrdrspLine.QUANTITYQUALIFIER_ItemAccepted);
-
-		ordrspLine.setShipDate(shipmentScheduleEffectiveBL.getPreparationDate(shipmentSched));
-		ordrspLine.setDeliveryDate(shipmentScheduleEffectiveBL.getDeliveryDate(shipmentSched));
+		updateOrdrspLineFromShipmentSchedule(ordrspLine, shipmentSched);
 
 		final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
 				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product(), orderLine.getM_Product().getAD_Org_ID()),
@@ -208,8 +218,94 @@ public class OrdrspBL implements IOrdrspBL
 	@Override
 	public void setMinimumPercentage(final I_EDI_Ordrsp ordrsp)
 	{
-		final BigDecimal minimumPercentageAccepted = Services.get(IOrdrspDAO.class).retrieveMinimumSumPercentage();
+		final IOrdrspDAO ordrspDAO = Services.get(IOrdrspDAO.class);
+		final BigDecimal minimumPercentageAccepted = ordrspDAO.retrieveMinimumSumPercentage();
+
 		ordrsp.setEDI_ORDRSP_MinimumSumPercentage(minimumPercentageAccepted);
 	}
 
+	@Override
+	public void updateLineFromShipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IOrdrspDAO ordrspDAO = Services.get(IOrdrspDAO.class);
+		final I_EDI_OrdrspLine ordrspLine = ordrspDAO.retrieveUnsentOrdrspLine(shipmentSchedule);
+		if (ordrspLine == null)
+		{
+			return;
+		}
+		updateOrdrspLineFromShipmentSchedule(ordrspLine, shipmentSchedule);
+		InterfaceWrapperHelper.save(ordrspLine);
+	}
+
+	/**
+	 * See {@link IOrdrspBL#updateLineFromShipmentSchedule(I_M_ShipmentSchedule)}.
+	 *
+	 * @param ordrspLine
+	 * @param shipmentSched
+	 */
+	private void updateOrdrspLineFromShipmentSchedule(final I_EDI_OrdrspLine ordrspLine, final I_M_ShipmentSchedule shipmentSched)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+		final BigDecimal confirmableQty = shipmentSched.getQtyToDeliver()
+				.add(shipmentSched.getQtyPickList())
+				.add(shipmentSched.getQtyDelivered());
+
+		final BigDecimal confirmedQty = uomConversionBL.convertFromProductUOM(InterfaceWrapperHelper.getCtx(shipmentSched), ordrspLine.getM_Product(), ordrspLine.getC_UOM(), confirmableQty);
+
+		ordrspLine.setConfirmedQty(confirmedQty);
+		ordrspLine.setShipDate(shipmentScheduleEffectiveBL.getPreparationDate(shipmentSched));
+		ordrspLine.setDeliveryDate(shipmentScheduleEffectiveBL.getDeliveryDate(shipmentSched));
+	}
+
+	@Override
+	public void updateManualLinesFromCalculatedLine(final I_EDI_OrdrspLine ordrspLine)
+	{
+		final IOrdrspDAO ordrspDAO = Services.get(IOrdrspDAO.class);
+		final List<I_EDI_OrdrspLine> manualSiblings = ordrspDAO.retrieveManualSiblings(ordrspLine);
+		if (manualSiblings.isEmpty())
+		{
+			return; // nothing to update
+		}
+
+		BigDecimal sumConfirmedQty = ordrspLine.getConfirmedQty();
+		for (final I_EDI_OrdrspLine sibling : manualSiblings)
+		{
+			sumConfirmedQty = sumConfirmedQty.add(sibling.getConfirmedQty());
+		}
+
+		BigDecimal overhead = sumConfirmedQty.subtract(ordrspLine.getQtyEntered());
+		if (overhead.signum() <= 0)
+		{
+			return; // we *never* raise the Qty in the manual ordrspLines! Instead, we leave it as it is. That means that if the accepted quantity is decreased, then ORDRSPs SumPercentage also decreases and a user needs to decide what to do.
+		}
+
+		for (final I_EDI_OrdrspLine sibling : manualSiblings)
+		{
+			if (overhead.signum() <= 0)
+			{
+				break; // this loop's work is done
+			}
+			if (overhead.compareTo(sibling.getConfirmedQty()) >= 0)
+			{
+				// example 1: overhead = 8, confirmedQty = 3
+				// => new confirmedQty = 0, new overhead = 5
+
+				// example 2: overhead = 8, confirmedQty = 8
+				// => new confirmedQty = 0, new overhead = 0
+				overhead = overhead.subtract(sibling.getConfirmedQty()).max(BigDecimal.ZERO);
+				sibling.setConfirmedQty(BigDecimal.ZERO);
+			}
+			else
+			{
+				// example overhead = 5, confirmedQty = 8
+				// => new confirmedQty = 3, new overhead = 0
+				sibling.setConfirmedQty(sibling.getConfirmedQty().subtract(overhead));
+				overhead = BigDecimal.ZERO;
+			}
+
+			InterfaceWrapperHelper.save(sibling);
+		}
+	}
 }

@@ -56,16 +56,28 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_VOID })
 	public void assertReActivationAllowed(final I_C_Order order)
 	{
-		if (order.getEDI_Desadv_ID() <= 0)
+		if (order.getEDI_Desadv_ID() > 0)
 		{
-			return;
+
+			final String desadvEDIStatus = order.getEDI_Desadv().getEDI_ExportStatus();
+			if (I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(desadvEDIStatus)
+					|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(desadvEDIStatus)
+					|| I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(desadvEDIStatus))
+			{
+				throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus + ")");
+			}
 		}
-		final String desadvEDIStatus = order.getEDI_Desadv().getEDI_ExportStatus();
-		if (I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(desadvEDIStatus)
-				|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(desadvEDIStatus)
-				|| I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(desadvEDIStatus))
+
+		if (order.getEDI_Ordrsp_ID() > 0)
 		{
-			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus + ")");
+
+			final String ordrspEDIStatus = order.getEDI_Ordrsp().getEDI_ExportStatus();
+			if (I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(ordrspEDIStatus)
+					|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(ordrspEDIStatus)
+					|| I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(ordrspEDIStatus))
+			{
+				throw new AdempiereException("@NotAllowed@ (@EDI_Ordrsp_ID@ @EDIStatus@: " + ordrspEDIStatus + ")");
+			}
 		}
 	}
 
@@ -77,7 +89,7 @@ public class C_Order
 	 * @param inOut
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void addToDesadv(final I_C_Order order)
+	public void addToOrdrspAndDesadv(final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{
@@ -94,26 +106,18 @@ public class C_Order
 			return;
 		}
 
-		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
 		final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
 		final IOrdrspBL ordrspBL = Services.get(IOrdrspBL.class);
 
-		if(ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDatePromised()))
-		{
-			desadvBL.addToDesadvCreateIfNotExistForOrder(order);
-		}
-
-		if(ediBPartnerService.isOrdrspRecipient(order.getC_BPartner(), order.getDatePromised()))
-		{
-			ordrspBL.addToOrdrspCreateIfNotExistForOrder(order);
-		}
+		desadvBL.addToDesadvCreateIfNotExistForOrder(order);
+		ordrspBL.addToOrdrspCreateIfNotExistForOrder(order);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
 			ModelValidator.TIMING_BEFORE_VOID })
-	public void removeFromDesadv(final I_C_Order order)
+	public void removeFromOrdrspAndDesadv(final I_C_Order order)
 	{
 		if (order.getEDI_Desadv_ID() > 0)
 		{
@@ -132,7 +136,6 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID })
 	public void setIsEdiEnabled(final I_C_Order order)
 	{
-
 		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
 
 		if (orderInputDataSource == null)
@@ -166,7 +169,7 @@ public class C_Order
 		}
 
 		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
-		final boolean isEdiRecipient = ediBPartnerService.isEDIRecipient(partner, order.getDatePromised());
+		final boolean isEdiRecipient = ediBPartnerService.isEDIRecipient(partner, order.getDateOrdered());
 
 		// in case the partner was changed and the new one is not an edi recipient, the order will not be edi enabled
 		// If the new bp is edi recipient, we leave it to the user to set the flag or not

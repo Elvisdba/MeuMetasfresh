@@ -8,13 +8,18 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.adempiere.util.CacheModel;
 import de.metas.edi.api.IOrdrspDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.esb.edi.model.I_EDI_Ordrsp;
 import de.metas.esb.edi.model.I_EDI_OrdrspLine;
+import de.metas.esb.edi.model.X_EDI_Ordrsp;
+import de.metas.esb.edi.model.X_EDI_OrdrspLine;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /*
  * #%L
@@ -40,13 +45,6 @@ import de.metas.esb.edi.model.I_EDI_OrdrspLine;
 
 public class OrdrspDAO implements IOrdrspDAO
 {
-
-	/**
-	 * System configuration to tell the minimum sum percentage (ConfirmedQty/QtyEntered) that is accepted for a ordrsp entry.
-	 */
-	private static final String SYS_CONFIG_MinimumPercentage = "de.metas.edi.ORDRSP.MinimumPercentage";
-	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
-
 	@Override
 	public List<I_EDI_OrdrspLine> retrieveAllOrdrspLines(final I_EDI_Ordrsp ordrsp)
 	{
@@ -127,5 +125,38 @@ public class OrdrspDAO implements IOrdrspDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_EDI_Ordrsp_ID, ordrsp.getEDI_Ordrsp_ID())
 				.create()
 				.match();
+	}
+
+	@Override
+	public I_EDI_OrdrspLine retrieveUnsentOrdrspLine(@CacheModel final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_EDI_Ordrsp.class, shipmentSchedule)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Ordrsp.COLUMN_EDI_ExportStatus, X_EDI_Ordrsp.EDI_EXPORTSTATUS_Pending)
+				.andCollectChildren(I_EDI_OrdrspLine.COLUMN_EDI_Ordrsp_ID, I_EDI_OrdrspLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_OrdrspLine.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.addEqualsFilter(I_EDI_OrdrspLine.COLUMNNAME_QuantityQualifier, X_EDI_OrdrspLine.QUANTITYQUALIFIER_ItemAccepted)
+				.create()
+				.firstOnly(I_EDI_OrdrspLine.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_EDI_OrdrspLine.Table_Name + "#by#" + I_EDI_OrdrspLine.COLUMNNAME_EDI_Ordrsp_ID + "#" + I_EDI_OrdrspLine.COLUMNNAME_Line + "#" + I_EDI_OrdrspLine.COLUMNNAME_EDI_OrdrspLine_ID)
+	public List<I_EDI_OrdrspLine> retrieveManualSiblings(@CacheModel final I_EDI_OrdrspLine ordrspLine)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_EDI_OrdrspLine.class, ordrspLine)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_OrdrspLine.COLUMNNAME_EDI_Ordrsp_ID, ordrspLine.getEDI_Ordrsp_ID())
+				.addEqualsFilter(I_EDI_OrdrspLine.COLUMNNAME_Line, ordrspLine.getLine())
+				.addNotEqualsFilter(I_EDI_OrdrspLine.COLUMNNAME_EDI_OrdrspLine_ID, ordrspLine.getEDI_OrdrspLine_ID())
+				.orderBy()
+				.addColumn(I_EDI_OrdrspLine.COLUMNNAME_QuantityQualifier, true)
+				.endOrderBy()
+				.create()
+				.list();
 	}
 }

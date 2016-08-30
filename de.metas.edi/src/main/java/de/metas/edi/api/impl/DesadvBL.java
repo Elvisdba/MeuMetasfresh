@@ -76,6 +76,12 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public I_EDI_Desadv addToDesadvCreateIfNotExistForOrder(final I_C_Order order)
 	{
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+		if (ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDateOrdered()))
+		{
+			return null;
+		}
+
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -228,8 +234,8 @@ public class DesadvBL implements IDesadvBL
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
 			desadv.setBill_Location(orderBL.getBillToLocation(order));
 
-			desadv.setEdiSenderIdentification(edibPartnerService.getEdiPartnerIdentification(orgBPartner, partnerConfigDate));
-			desadv.setEdiReceiverIdentification(edibPartnerService.getEdiPartnerIdentification(shipToPartner, partnerConfigDate));
+			desadv.setEDISenderIdentification(edibPartnerService.getEdiPartnerIdentification(orgBPartner, partnerConfigDate));
+			desadv.setEDIReceiverIdentification(edibPartnerService.getEdiPartnerIdentification(shipToPartner, partnerConfigDate));
 
 			InterfaceWrapperHelper.save(desadv);
 		}
@@ -239,6 +245,11 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public I_EDI_Desadv addToDesadvCreateIfNotExistForInOut(final I_M_InOut inOut)
 	{
+		if(!isDesadvEnabledForInOut(inOut))
+		{
+				return null;
+		}
+
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final ISSCC18CodeDAO sscc18CodeDAO = Services.get(ISSCC18CodeDAO.class);
@@ -324,6 +335,22 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		return desadv;
+	}
+
+	private boolean isDesadvEnabledForInOut(final I_M_InOut inOut)
+	{
+		final boolean desadvEnabled;
+		final IEDIBPartnerService ediBPartnerService = Services.get(IEDIBPartnerService.class);
+		if (inOut.getC_Order_ID() > 0)
+		{
+			final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
+			desadvEnabled = ediBPartnerService.isDesadvRecipient(order.getC_BPartner(), order.getDateOrdered());
+		}
+		else
+		{
+			desadvEnabled = ediBPartnerService.isDesadvRecipient(inOut.getC_BPartner(), inOut.getDateOrdered());
+		}
+		return desadvEnabled;
 	}
 
 	@Override
@@ -460,10 +487,10 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Execute the actual printing process
 		ProcessCtl.process(
-				null,  // ASyncProcess parent = null => run synchronous
-				0,  // WindowNo
-				null,  // IProcessParameter
-				processInfo,  // ProcessInfo
+				null,     // ASyncProcess parent = null => run synchronous
+				0,     // WindowNo
+				null,     // IProcessParameter
+				processInfo,     // ProcessInfo
 				ITrx.TRX_None);
 
 		//

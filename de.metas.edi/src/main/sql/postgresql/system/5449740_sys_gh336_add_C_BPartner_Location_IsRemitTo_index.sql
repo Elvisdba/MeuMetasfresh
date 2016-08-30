@@ -63,7 +63,7 @@ CREATE TRIGGER IsRemitTo_tg BEFORE INSERT OR UPDATE  ON C_BPartner_Location FOR 
 
 --
 -- Update: we don't need to be this strict.
--- It's enough (and still easily implemented) if the UC about isRemitTo is only enforced among only C_BPartner_Locations *with a GLN*:
+-- It's enough (and still easily implemented) if the UC about isRemitTo is only enforced among C_BPartner_Locations *with a GLN*
 --
 -- Aug 29, 2016 7:40 AM
 -- URL zum Konzept

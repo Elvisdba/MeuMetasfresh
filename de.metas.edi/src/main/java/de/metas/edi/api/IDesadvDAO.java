@@ -10,12 +10,12 @@ package de.metas.edi.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,8 +40,16 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 public interface IDesadvDAO extends ISingletonService
 {
 	/**
+	 * System configuration to tell the minimum sum percentage (QtyDeliveredInUOM/QtyEntered) that is accepted for a desadv entry.
+	 *
+	 * @see #retrieveMinimumSumPercentage()
+	 */
+	String SYS_CONFIG_MinimumPercentage = "de.metas.edi.DESADV.MinimumPercentage";
+	String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
+
+	/**
 	 * Retrieves the desadv record with the given POReference. If there is none, it returns <code>null</code>.
-	 * 
+	 *
 	 * @param poReference
 	 * @param ctxAware
 	 * @return the desadv for the given <code>poReference</code>, or <code>null</code> if none exists.
@@ -50,21 +58,21 @@ public interface IDesadvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
-	 * 
+	 *
 	 * @param orderLine
 	 * @return
 	 */
 	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line);
 
 	/**
-	 * 
+	 *
 	 * @param document
 	 * @return all desadv lines (incl inactive ones) that reference the given <code>desadv</code>.
 	 */
 	List<I_EDI_DesadvLine> retrieveAllDesadvLines(I_EDI_Desadv desadv);
 
 	/**
-	 * 
+	 *
 	 * @param desadv
 	 * @return all <code>M_InOut</code>s (incl inactive ones) that reference the given <code>desadv</code>.
 	 */
@@ -72,14 +80,14 @@ public interface IDesadvDAO extends ISingletonService
 
 	/**
 	 * Determine if there are any inOuts referencing the given desadv, including inactive ones. Use the desadv's ctx and trxName.
-	 * 
+	 *
 	 * @param desadv
 	 * @return
 	 */
 	boolean hasInOuts(I_EDI_Desadv desadv);
 
 	/**
-	 * 
+	 *
 	 * @param desadvLine
 	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
 	 */
@@ -87,7 +95,7 @@ public interface IDesadvDAO extends ISingletonService
 
 	/**
 	 * Determine if there are any order lines referencing the given desadvLine, including inactive order lines. Use the desadvLine's ctx and trxName.
-	 * 
+	 *
 	 * @param desadvLine
 	 * @return
 	 */
@@ -101,7 +109,7 @@ public interface IDesadvDAO extends ISingletonService
 
 	/**
 	 * Determine if there are any desadv lines referencing the given desadv, including inactive ones. Use the desadv's ctx and trxName.
-	 * 
+	 *
 	 * @param desadv
 	 * @return
 	 */
@@ -109,7 +117,7 @@ public interface IDesadvDAO extends ISingletonService
 
 	/**
 	 * Determine if there are any inout lines referencing the given desadvLine, including inactive inout lines. Use the desadvLine's ctx and trxName.
-	 * 
+	 *
 	 * @param desadvLine
 	 * @return
 	 */
@@ -117,7 +125,7 @@ public interface IDesadvDAO extends ISingletonService
 
 	/**
 	 * Determine if there are any orders referencing the given desadv, including inactive ones. Use the desadv's ctx and trxName.
-	 * 
+	 *
 	 * @param desadv
 	 * @return
 	 */
@@ -136,8 +144,8 @@ public interface IDesadvDAO extends ISingletonService
 	I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(I_EDI_DesadvLine desadvLine);
 
 	/**
-	 * Get the value of the minimum sum percentage from the sysconfig 'de.metas.esb.edi.DefaultMinimumPercentage'
-	 * 
+	 * Get the value of the minimum sum percentage from the sysconfig {@value #SYS_CONFIG_MinimumPercentage}.
+	 *
 	 * @return
 	 */
 	BigDecimal retrieveMinimumSumPercentage();

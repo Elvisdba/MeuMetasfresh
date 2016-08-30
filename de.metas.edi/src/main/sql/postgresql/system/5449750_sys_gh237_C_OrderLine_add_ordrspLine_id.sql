@@ -42,7 +42,7 @@ ALTER TABLE C_OrderLine ADD EDI_OrdrspLine_ID NUMERIC(10) DEFAULT NULL
 ;
 
 --
--- bonus: add indeces and FK contraints for C_ORder and C_OrderLine
+-- bonus: add indeces and FK contraints for C_Order and C_OrderLine
 --
 
 CREATE INDEX c_orderline_edi_ordrspline
