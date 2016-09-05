@@ -73,6 +73,8 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
 	{
+		// TODO for issue: https://github.com/metasfresh/metasfresh/issues/358 check if there are existing inout's and add them as well.
+
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
