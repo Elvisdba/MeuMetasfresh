@@ -36,6 +36,8 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
+import de.metas.order.IOrderPA;
+
 public interface IOrderBL extends ISingletonService
 {
 
@@ -250,7 +252,8 @@ public interface IOrderBL extends ISingletonService
 	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
 
 	/**
-	 * Close given order line (i.e. set QtyOrdered=QtyDelivered) and update reservations.
+	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
+	 * Also update the order line's reservation via {@link IOrderPA#reserveStock(I_C_Order, I_C_OrderLine...)}.
 	 *
 	 * This method is saving the order line.
 	 *
