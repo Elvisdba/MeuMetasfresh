@@ -10,12 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.34.33 (2016-36)
+# metasfresh 4.x.x (2016-37)
 
 upcoming
 
 ## Features
+ * FRESH-112 metasfresh web 
+   - integrate recentbackend related changes changes
+
+## Fixes
+ * #366 Faulty unique constraint on M_PriceList
+
+# metasfresh 4.34.33 (2016-36)
+
+RC for this week
+
+## Features
 * #297 Performance problems related to zoom-to
+* #249 Referenzliste in AttributeValue
+  - cleanup
+* #347 change default docaction after complete
 
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
