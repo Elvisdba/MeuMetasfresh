@@ -48,7 +48,7 @@ import org.junit.Before;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
-import de.metas.edi.esb.route.AbstractEDIRoute;
+import de.metas.edi.esb.compudata.route.AbstractEDIRoute;
 
 @ContextConfiguration
 public abstract class AbstractEDITest extends CamelTestSupport

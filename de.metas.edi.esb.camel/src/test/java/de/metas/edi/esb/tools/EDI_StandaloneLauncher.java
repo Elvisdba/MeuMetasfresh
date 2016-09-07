@@ -33,7 +33,7 @@ import org.apache.activemq.broker.TransportConnector;
 import org.junit.Ignore;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import de.metas.edi.esb.route.imports.XLSOLCandRoute;
+import de.metas.edi.esb.xls.route.imports.XLSOLCandRoute;
 
 /**
  * Starts EDI ESB standalone server.

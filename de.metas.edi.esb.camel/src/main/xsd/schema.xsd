@@ -289,31 +289,31 @@
 	<xsd:element name="XLS_Imp_C_OLCand" type="XLS_Imp_C_OLCandType" />
 	<xsd:simpleType name="QuantityQualifierEnum">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="IA">
+			<xsd:enumeration value="10_IA">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<jaxb:typesafeEnumMember name="ItemAccepted" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
-			<xsd:enumeration value="CK">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="ItemCancelled" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="IB">
+			<xsd:enumeration value="20_IB">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<jaxb:typesafeEnumMember name="ItemBackordered" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
-			<xsd:enumeration value="IR">
+			<xsd:enumeration value="30_IR">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<jaxb:typesafeEnumMember name="ItemRejected" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="40_CK">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="ItemCancelled" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
@@ -321,6 +321,7 @@
 	</xsd:simpleType>
 	<xsd:element name="EDI_Exp_Ordrsp" type="EDI_Exp_OrdrspType" />
 	<xsd:element name="EDI_Exp_OrdrspLine" type="EDI_Exp_OrdrspLineType" />
+	<xsd:element name="EDI_Imp_Ordrsp_Feedback" type="EDI_Imp_Ordrsp_FeedbackType" />
 	<xsd:complexType name="EDI_Exp_C_BPartner_Product_vType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="ProductNo" type="xsd:string" />
@@ -839,9 +840,16 @@
 		<xsd:attribute ref="TrxName" />
 		<xsd:attribute ref="AD_Session_ID" />
 	</xsd:complexType>
+	<xsd:complexType name="EDI_Exp_C_TaxType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Name" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="Rate" type="xsd:decimal" />
+		</xsd:sequence>
+	</xsd:complexType>
 	<xsd:complexType name="EDI_Exp_OrdrspLineType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="ConfirmedQty" type="xsd:decimal" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="C_Tax_ID" type="EDI_Exp_C_TaxType" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="DeliveryDate" type="xsd:date" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="EDI_OrdrspLine_ID" type="xsd:integer" />
@@ -905,5 +913,5 @@
 		<xsd:attribute ref="TrxName" />
 		<xsd:attribute ref="AD_Session_ID" />
 	</xsd:complexType>
-	<xsd:element name="EDI_Imp_Ordrsp_Feedback" type="EDI_Imp_Ordrsp_FeedbackType" />
+	<xsd:element name="EDI_Exp_C_Tax" type="EDI_Exp_C_TaxType" />
 </xsd:schema>

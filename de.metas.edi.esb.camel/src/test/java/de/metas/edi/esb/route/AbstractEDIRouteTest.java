@@ -38,9 +38,9 @@ import org.junit.Before;
 import de.metas.edi.esb.commons.AbstractEDITest;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.route.exports.EDIDesadvRoute;
-import de.metas.edi.esb.route.exports.EDIInvoiceRoute;
-import de.metas.edi.esb.route.imports.EDIOrderRoute;
+import de.metas.edi.esb.compudata.route.exports.EDIDesadvRoute;
+import de.metas.edi.esb.compudata.route.exports.EDIInvoiceRoute;
+import de.metas.edi.esb.compudata.route.imports.EDIOrderRoute;
 
 public abstract class AbstractEDIRouteTest extends AbstractEDITest
 {

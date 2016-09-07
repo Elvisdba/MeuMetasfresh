@@ -30,6 +30,7 @@ import java.util.Map;
 import org.junit.Assert;
 
 import de.metas.edi.esb.jaxb.XLSImpCOLCandType;
+import de.metas.edi.esb.xls.util.XLS_OLCand_Row;
 
 public class XLS_OLCand_Row_Expectations
 {

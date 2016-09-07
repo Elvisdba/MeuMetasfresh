@@ -67,7 +67,7 @@ public class EDI_Desadv_Create_From_C_Order
 			@Override
 			public void process(final I_C_Order order) throws Exception
 			{
-				final I_EDI_Desadv desadv = desadvBL.addToDesadvCreateForOrderIfNotExist(order);
+				final I_EDI_Desadv desadv = desadvBL.addToDesadvCreateIfNotExistForOrder(order);
 				if (desadv == null)
 				{
 					ILoggable.THREADLOCAL.getLoggable().addLog("Could not create desadv for C_Order_ID=" + order.getDocumentNo());
@@ -92,7 +92,7 @@ public class EDI_Desadv_Create_From_C_Order
 						.list();
 				for (final I_M_InOut inOut : inOuts)
 				{
-					final I_EDI_Desadv desadvforInOut = desadvBL.addToDesadvCreateForInOutIfNotExist(inOut);
+					final I_EDI_Desadv desadvforInOut = desadvBL.addToDesadvCreateIfNotExistForInOut(inOut);
 					if (desadvforInOut == null)
 					{
 						ILoggable.THREADLOCAL.getLoggable().addLog("Could not add M_InOut_ID=" + inOut.getDocumentNo() + " to the desadv");

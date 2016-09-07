@@ -37,6 +37,7 @@ import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.EDIImpCUOMLookupUOMSymbolType;
 import de.metas.edi.esb.jaxb.XLSImpCOLCandType;
+import de.metas.edi.esb.xls.util.XLS_OLCand_Row;
 
 /**
  * Defines and asserts expectations on an {@link XLS_OLCand_Row} or {@link XLSImpCOLCandType}.

@@ -107,7 +107,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- EDI dependency to install in smx, do the following: extract the features.xml 
+		<!-- EDI dependency; to install in smx, do the following: extract the features.xml 
 			file from the smooks-all.jar and store it for example as /home/servicemix/esb/bundles/milyn-smooks-1.5.1-feature.xml 
 			enter the following from smx-console feature:repo-add file:///home/servicemix/esb/bundles/milyn-smooks-1.5.1-feature.xml 
 			feature:install smooks -->
@@ -124,6 +124,14 @@
 					<groupId>xerces</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!-- I didn't find this depdendency in a maven repo, but had to clone and build and deploy from
+		    https://github.com/smooks/unedifact/releases/tag/v1.6.0  -->
+		<dependency>
+			<groupId>org.milyn.edi.unedifact</groupId>
+			<artifactId>d96a-binding</artifactId>
+			<version>1.6</version>
 		</dependency>
 
 		<!-- SLF4J Logger dependency -->
