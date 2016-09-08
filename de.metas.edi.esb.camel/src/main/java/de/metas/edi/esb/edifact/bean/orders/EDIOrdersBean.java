@@ -4,6 +4,7 @@ import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
 import static de.metas.edi.esb.commons.ValidationHelper.validateBigIntegerString;
 import static de.metas.edi.esb.commons.ValidationHelper.validateCalendarString;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,20 +20,28 @@ import org.milyn.edi.unedifact.d96a.ORDERS.Orders;
 import org.milyn.edi.unedifact.d96a.ORDERS.SegmentGroup1;
 import org.milyn.edi.unedifact.d96a.ORDERS.SegmentGroup2;
 import org.milyn.edi.unedifact.d96a.ORDERS.SegmentGroup25;
+import org.milyn.edi.unedifact.d96a.ORDERS.SegmentGroup7;
+import org.milyn.edi.unedifact.d96a.common.CUXCurrencies;
 import org.milyn.edi.unedifact.d96a.common.DTMDateTimePeriod;
+import org.milyn.edi.unedifact.d96a.common.LINLineItem;
 import org.milyn.edi.unedifact.d96a.common.NADNameAndAddress;
 import org.milyn.edi.unedifact.d96a.common.RFFReference;
 import org.milyn.edi.unedifact.d96a.common.field.C082PartyIdentificationDetails;
+import org.milyn.edi.unedifact.d96a.common.field.C212ItemNumberIdentification;
+import org.milyn.edi.unedifact.d96a.common.field.C5041CurrencyDetails;
 import org.milyn.edi.unedifact.d96a.common.field.C506Reference;
 import org.milyn.edi.unedifact.d96a.common.field.C507DateTimePeriod;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.orders.OLCandUtils;
 import de.metas.edi.esb.compudata.pojo.desadv.H000;
 import de.metas.edi.esb.compudata.route.imports.EDIOrderRoute;
 import de.metas.edi.esb.jaxb.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.EDIImpADInputDataSourceLookupINType;
+import de.metas.edi.esb.jaxb.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.EDIImpCOLCandType;
+import de.metas.edi.esb.jaxb.EDIMProductLookupUPCVType;
 import de.metas.edi.esb.jaxb.ObjectFactory;
 
 public class EDIOrdersBean
@@ -77,8 +86,9 @@ public class EDIOrdersBean
 			olCand.setADUserEnteredByID(ADUserEnteredByID);
 
 			// TODO: decide if deliveryRule and deliveryViaRule shall be deducted from the ORDERS instance.
-
 			setHeaderData(orders, olCand);
+
+			setLineData(line, olCand);
 
 			final String e7140ItemNumber = line.getLINLineItem().getC212ItemNumberIdentification().getE7140ItemNumber();
 			validateBigIntegerString(e7140ItemNumber, "Unable to parse element 'LIN030-010 7140 Item number' from string " + e7140ItemNumber);
@@ -126,7 +136,7 @@ public class EDIOrdersBean
 			{
 				// olCand.setDatePromisedFrom(date)
 			}
-		}                  // DTM - DATE/TIME/PERIOD
+		} // DTM - DATE/TIME/PERIOD
 
 		for (final SegmentGroup1 segmentGroup1 : orders.getSegmentGroup1())
 		{
@@ -162,7 +172,8 @@ public class EDIOrdersBean
 			}
 		}        // RFF - REFERENCE
 
-		final Map<String, NADNameAndAddress> qualifier2gln = new HashMap<>();
+		final Map<String, NADNameAndAddress> qualifier2nad = new HashMap<>();
+		final Map<String, String> qualifier2gln = new HashMap<>();
 
 		for (final SegmentGroup2 segmentGroup2 : orders.getSegmentGroup2())
 		{
@@ -170,19 +181,76 @@ public class EDIOrdersBean
 
 			final String e3035PartyQualifier = nadNameAndAddress.getE3035PartyQualifier(); // NAD010 3035 Party qualifier; Description: Code giving specific meaning to a party.
 			final C082PartyIdentificationDetails c082PartyIdentificationDetails = nadNameAndAddress.getC082PartyIdentificationDetails(); // NAD020 C082 PARTY IDENTIFICATION DETAILS; Description: Identification of a transaction party by code.
+
+			final String e3039PartyIdIdentification = c082PartyIdentificationDetails.getE3039PartyIdIdentification(); // NAD020-010 3039 Party id. identification
 			final String e3055CodeListResponsibleAgencyCoded = c082PartyIdentificationDetails.getE3055CodeListResponsibleAgencyCoded(); // NAD020-030 3055 Code list responsible agency, coded; Description: Code identifying the agency responsible for a code list.
 			assumeValue(e3055CodeListResponsibleAgencyCoded, "9", "NAD020-030 3055 Code list responsible agency, coded"); // 9 = EAN (International Article Numbering association)
 
-			qualifier2gln.put(e3035PartyQualifier, nadNameAndAddress);
+			qualifier2nad.put(e3035PartyQualifier, nadNameAndAddress);
+			qualifier2gln.put(e3035PartyQualifier, e3039PartyIdIdentification);
 		}
-		final NADNameAndAddress buyerNAD = qualifier2gln.get("BY");   // BY = Buyer; Description: (3002) Party to which merchandise is sold.
-		final NADNameAndAddress supplierNAD = qualifier2gln.get("SU");   // SU = Supplier; Description: (3280) Party which manufactures or otherwise has possession of goods,and consigns or makes them available in trade.
-		final NADNameAndAddress deliveryNAD = qualifier2gln.get("DP");   // DP = Delivery party; Description: (3144) Party to which goods should be delivered, if not identical with
-		final NADNameAndAddress invoiceeNAD = qualifier2gln.get("IV");   // IV = Invoicee; Description: (3006) Party to whom an invoice is issued.
 
-		// TODO: create and set values to olcand (have a look at the compudata bean, maybe extract the code into a common method)
+		// TODO: see "Q5" at https://metasfresh.atlassian.net/wiki/display/FRESHteam/le87+-+LETS+GmbH+Projektbericht#le87-LETSGmbHProjektbericht-OffeneFragenzuEDI
+		final NADNameAndAddress buyerNAD = qualifier2nad.get("BY");   // BY = Buyer; Description: (3002) Party to which merchandise is sold.
+		final NADNameAndAddress supplierNAD = qualifier2nad.get("SU");   // SU = Supplier; Description: (3280) Party which manufactures or otherwise has possession of goods,and consigns or makes them available in trade.
+		final NADNameAndAddress deliveryNAD = qualifier2nad.get("DP");   // DP = Delivery party; Description: (3144) Party to which goods should be delivered, if not identical with
+		final NADNameAndAddress invoiceeNAD = qualifier2nad.get("IV");   // IV = Invoicee; Description: (3006) Party to whom an invoice is issued.
 
+		OLCandUtils.setBartnerAndLocationFields(olCand,
+				qualifier2gln.get("BY"),
+				qualifier2gln.get("DP"),
+				qualifier2gln.get("IV"),
+				Util.coalesce(qualifier2gln.get("SN"), qualifier2gln.get("UC"))); // the amazon spec mentions neither SN nor UC, but compudata specifies "StoreNumber" field which is identified with "EAN Verkaufstelle (SN/UC)".
 		// NAD - NAME AND ADDRESS
+
+		// about
+		// RFF - REFERENCE (VAT-ID): see Q6 at https://metasfresh.atlassian.net/wiki/display/FRESHteam/le87+-+LETS+GmbH+Projektbericht#le87-LETSGmbHProjektbericht-OffeneFragenzuEDI
+		// note that the RFF is probably contained in segmentGroup2.getSegmentGroup3().get(0).getRFFReference();
+
+		final List<SegmentGroup7> segmentGroup7 = orders.getSegmentGroup7();
+		if(segmentGroup7.size() != 1)
+		{
+			throw new RuntimeCamelException("We expect SegmentGroup7 to be contained only once");
+		}
+		final CUXCurrencies cuxCurrencies = segmentGroup7.get(0).getCUXCurrencies(); // CUX CURRENCIES
+		final C5041CurrencyDetails c5041CurrencyDetails = cuxCurrencies.getC5041CurrencyDetails(); // CUX010 C504 CURRENCY DETAILS
+		final String e6347CurrencyDetailsQualifier = c5041CurrencyDetails.getE6347CurrencyDetailsQualifier(); // CUX010-010 6347 Currency details qualifier
+		assumeValue(e6347CurrencyDetailsQualifier, "2", "CUX010-010 6347 Currency details qualifier"); // 2 = Reference currency; Description: The currency applicable to amounts stated. It may have to be converted.
+		final String e6345CurrencyCoded = c5041CurrencyDetails.getE6345CurrencyCoded(); // CUX010-020 6345 Currency, coded;
+		final String e6343CurrencyQualifier = c5041CurrencyDetails.getE6343CurrencyQualifier(); // CUX010-030 6343 Currency qualifier; Description: Code giving specific meaning to data element 6345 Currency.
+		assumeValue(e6343CurrencyQualifier, "9", "CUX010-030 6343 Currency qualifier"); // 9 = Order currency; Description: The name or symbol of the monetary unit used in an order.
+
+		final EDIImpCCurrencyLookupISOCodeType currencyLookup = resolveGenericLookup(EDIImpCCurrencyLookupISOCodeType.class,
+				Constants.LOOKUP_TEMPLATE_ISOCode.createMandatoryValueLookup(e6345CurrencyCoded));
+		olCand.setCCurrencyID(currencyLookup);
+		// CUX - CURRENCIES
+
+		// now comes "Segment Group 25" with the individual order lines.
+
+		// orders.getUNSSectionControl();
+		// about
+		// UNS - SECTION CONTROL: there is nothing for us to import
+
+		// orders.getCNTControlTotal();
+		// about
+		// CNT - CONTROL TOTAL: there is nothing to import. maybe we should still validate it to check the ORDERS's integrety
+	}
+
+	private void setLineData(SegmentGroup25 segmentGroup25, EDIImpCOLCandType olCand)
+	{
+		final LINLineItem linLineItem = segmentGroup25.getLINLineItem();
+		final BigDecimal e1082LineItemNumber = linLineItem.getE1082LineItemNumber(); // LIN010 1082 Line item number
+		olCand.setLine(e1082LineItemNumber.toBigInteger());
+
+		final C212ItemNumberIdentification c212ItemNumberIdentification = linLineItem.getC212ItemNumberIdentification(); // LIN030 C212 ITEM NUMBER IDENTIFICATION
+		final String e7140ItemNumber = c212ItemNumberIdentification.getE7140ItemNumber(); // LIN030-010 7140 Item number
+		final EDIMProductLookupUPCVType productLookupUPCVType = factory.createEDIMProductLookupUPCVType();
+		productLookupUPCVType.setGLN(olCand.getCBPartnerID().getGLN()); // need the bpartner's GLN for a save lookup!!
+		productLookupUPCVType.setUPC(e7140ItemNumber);
+		olCand.setMProductID(productLookupUPCVType);
+
+		// next LIN030-020 7143 Item number type, coded
+
 	}
 
 	private void assumeValue(String actual, String expected, String fieldIdentifier)

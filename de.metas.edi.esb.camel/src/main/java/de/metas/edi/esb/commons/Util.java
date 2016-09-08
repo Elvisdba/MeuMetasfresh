@@ -735,4 +735,16 @@ public final class Util
 		return result;
 	}
 
+	public static String coalesce(final String... values)
+	{
+		for(final String value : values)
+		{
+			if(!isEmpty(value))
+			{
+				return value;
+			}
+		}
+		return null;
+	}
+
 }

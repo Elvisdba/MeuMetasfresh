@@ -37,6 +37,7 @@ import org.apache.camel.Message;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.orders.OLCandUtils;
 import de.metas.edi.esb.compudata.pojo.orders.H000;
 import de.metas.edi.esb.compudata.pojo.orders.H100;
 import de.metas.edi.esb.compudata.pojo.orders.H110;
@@ -49,9 +50,7 @@ import de.metas.edi.esb.compudata.route.imports.EDIOrderRoute;
 import de.metas.edi.esb.jaxb.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.EDIADOrgLookupBPLGLNVType;
-import de.metas.edi.esb.jaxb.EDICBPartnerLookupBPLGLNVType;
 import de.metas.edi.esb.jaxb.EDIImpADInputDataSourceLookupINType;
-import de.metas.edi.esb.jaxb.EDIImpCBPartnerLocationLookupGLNType;
 import de.metas.edi.esb.jaxb.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.EDIImpCOLCandType;
 import de.metas.edi.esb.jaxb.EDIImpCUOMLookupUOMSymbolType;
@@ -256,64 +255,20 @@ public class EDICompudataOrdersBean
 		final String productDescription = trimString(p100.getArtDescription());
 		olcand.setProductDescription(productDescription);
 
-		//
+		// StoreNumber - SN/UC = GLN of DropShip_BPartner and DropShip_Location
 		// This is also the GLN of used in BPartner lookup for store
 		final String storeNumberGLN = trimString(h100.getStoreNumber());
 
-		// BuyerID = Main GLN of C_BPartner and C_BPartner_Location
+		// BuyerID - BY = Main GLN of C_BPartner and C_BPartner_Location
 		final String buyerGLN = trimString(h100.getBuyerID());
-		{
-			final EDICBPartnerLookupBPLGLNVType buyerBPartner = resolveGenericLookup(EDICBPartnerLookupBPLGLNVType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createMandatoryValueLookup(buyerGLN),
-					Constants.LOOKUP_TEMPLATE_StoreGLN.createNonMandatoryValueLookup(storeNumberGLN));
-			olcand.setCBPartnerID(buyerBPartner);
 
-			final EDIImpCBPartnerLocationLookupGLNType buyerLocation = resolveGenericLookup(EDIImpCBPartnerLocationLookupGLNType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createMandatoryValueLookup(buyerGLN),
-					Constants.LOOKUP_TEMPLATE_C_BPartner_ID.createMandatoryValueLookup(buyerBPartner));
-			olcand.setCBPartnerLocationID(buyerLocation);
-		}
-
-		// DeliveryID = GLN of HandOver_Partner and HandOver_Location
+		// DeliveryID - DP = GLN of HandOver_Partner and HandOver_Location
 		final String deliveryGLN = trimString(h100.getDeliveryID());
-		{
-			final EDICBPartnerLookupBPLGLNVType deliveryBPartner = resolveGenericLookup(EDICBPartnerLookupBPLGLNVType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createMandatoryValueLookup(deliveryGLN),
-					Constants.LOOKUP_TEMPLATE_StoreGLN.createNonMandatoryValueLookup(storeNumberGLN)); // TODO check specs
-			olcand.setHandOverPartnerID(deliveryBPartner);
 
-			final EDIImpCBPartnerLocationLookupGLNType deliveryLocation = resolveGenericLookup(EDIImpCBPartnerLocationLookupGLNType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createNonMandatoryValueLookup(deliveryGLN),
-					Constants.LOOKUP_TEMPLATE_C_BPartner_ID.createMandatoryValueLookup(deliveryBPartner));
-			olcand.setHandOverLocationID(deliveryLocation);
-		}
-
-		// StoreNumber = GLN of DropShip_BPartner and DropShip_Location
-		{
-			final EDICBPartnerLookupBPLGLNVType storeBPartner = resolveGenericLookup(EDICBPartnerLookupBPLGLNVType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createMandatoryValueLookup(buyerGLN),
-					Constants.LOOKUP_TEMPLATE_StoreGLN.createMandatoryValueLookup(storeNumberGLN));
-			olcand.setDropShipBPartnerID(storeBPartner);
-
-			final EDIImpCBPartnerLocationLookupGLNType storeLocation = resolveGenericLookup(EDIImpCBPartnerLocationLookupGLNType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createNonMandatoryValueLookup(storeNumberGLN),
-					Constants.LOOKUP_TEMPLATE_C_BPartner_ID.createMandatoryValueLookup(storeBPartner));
-			olcand.setDropShipLocationID(storeLocation);
-		}
-
-		// InvoiceID = GLN of Bill_BPartner and Bill_Location
+		// InvoiceID - IV = GLN of Bill_BPartner and Bill_Location
 		final String invoiceGLN = trimString(h100.getInvoiceID());
-		{
-			final EDICBPartnerLookupBPLGLNVType invoiceBPartner = resolveGenericLookup(EDICBPartnerLookupBPLGLNVType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createMandatoryValueLookup(invoiceGLN),
-					Constants.LOOKUP_TEMPLATE_StoreGLN.createNonMandatoryValueLookup(storeNumberGLN));
-			olcand.setBillBPartnerID(invoiceBPartner);
 
-			final EDIImpCBPartnerLocationLookupGLNType invoiceLocation = resolveGenericLookup(EDIImpCBPartnerLocationLookupGLNType.class,
-					Constants.LOOKUP_TEMPLATE_GLN.createNonMandatoryValueLookup(invoiceGLN),
-					Constants.LOOKUP_TEMPLATE_C_BPartner_ID.createMandatoryValueLookup(invoiceBPartner));
-			olcand.setBillLocationID(invoiceLocation);
-		}
+		OLCandUtils.setBartnerAndLocationFields(olcand, buyerGLN, deliveryGLN, invoiceGLN, storeNumberGLN);
 
 		final String upc = trimString(p100.getEanArtNo());
 		//
