@@ -44,7 +44,7 @@ import de.metas.edi.esb.jaxb.EDIImpCOLCandType;
 import de.metas.edi.esb.jaxb.EDIMProductLookupUPCVType;
 import de.metas.edi.esb.jaxb.ObjectFactory;
 
-public class EDIOrdersBean
+public class EdifactOrdersImportBean
 {
 	public static final String METHOD_createMetasfreshData = "createMetasfreshData";
 

@@ -63,7 +63,7 @@ import de.metas.edi.esb.jaxb.EDIExpOrdrspLineType;
 import de.metas.edi.esb.jaxb.EDIExpOrdrspType;
 import de.metas.edi.esb.jaxb.QuantityQualifierEnum;
 
-public class EDIOrdrspBean
+public class EdifactOrdrspExportBean
 {
 	public static final String METHOD_createEDIData = "createUNEdifactIntechange";
 
@@ -91,6 +91,7 @@ public class EDIOrdrspBean
 		exchange.getIn().setBody(source, UNEdifactInterchange.class);
 	}
 
+	// TODO: see if we want to migrate to java-8 and use lambda instead
 	private void sortLines(final EDIExpOrdrspType ordrsp)
 	{
 		// sort M_InOutLines

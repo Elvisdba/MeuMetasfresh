@@ -86,7 +86,7 @@ public class EDIOrdrspBeanTests
 
 		xmlOrdrsp.getEDIExpOrdrspLine().add(xmlOrdrspLine0);
 
-		final UNEdifactInterchange interchange = new EDIOrdrspBean().createInterchange(xmlOrdrsp);
+		final UNEdifactInterchange interchange = new EdifactOrdrspExportBean().createInterchange(xmlOrdrsp);
 
 		final StringWriter writer = new StringWriter();
 		factory.toUNEdifact(interchange, writer);
