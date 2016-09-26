@@ -246,10 +246,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		InterfaceWrapperHelper.save(ic);
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/origin/master
 
 		// set Quality Issue Percentage Override
 
@@ -257,10 +253,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/origin/master
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated

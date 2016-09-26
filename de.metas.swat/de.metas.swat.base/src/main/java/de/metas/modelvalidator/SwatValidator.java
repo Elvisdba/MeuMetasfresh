@@ -175,16 +175,11 @@ public class SwatValidator implements ModelValidator
 		//
 		// Services
 
-<<<<<<< HEAD
-		//task FRESH-152: BPartner Stats Updater
-		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
-=======
 		// task FRESH-152: BPartner Stats Updater
 		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
-		
+
 		// task FRESH-636: Request Creator
 		Services.registerService(IRequestCreator.class, new AsyncRequestCreator());
->>>>>>> refs/remotes/origin/master
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);
