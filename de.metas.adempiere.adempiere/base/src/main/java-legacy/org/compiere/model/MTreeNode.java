@@ -827,6 +827,10 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private int AD_Form_ID = -1;
 	private int AD_Workflow_ID = -1;
 	private int AD_Task_ID = -1;
+	private boolean isCreateNewRecord = false;
+	private String webuiNameBrowse;
+	private String webuiNameNew;
+	private String webuiNameNewBreadcrumb;
 
 	public int getAD_Window_ID()
 	{
@@ -877,4 +881,46 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	{
 		AD_Task_ID = aD_Task_ID;
 	}
+
+	public void setIsCreateNewRecord(final boolean isCreateNewRecord)
+	{
+		this.isCreateNewRecord = isCreateNewRecord;
+	}
+	
+	public boolean isCreateNewRecord()
+	{
+		return isCreateNewRecord;
+	}
+	
+	public void setWEBUI_NameBrowse (final String webuiNameBrowse)
+	{
+		this.webuiNameBrowse = webuiNameBrowse;
+	}
+
+	public String getWEBUI_NameBrowse() 
+	{
+		return webuiNameBrowse;
+	}
+	
+	public void setWEBUI_NameNew (final String webuiNameNew)
+	{
+		this.webuiNameNew = webuiNameNew;
+	}
+
+	public String getWEBUI_NameNew() 
+	{
+		return webuiNameNew;
+	}
+
+	public void setWEBUI_NameNewBreadcrumb (final String webuiNameNewBreadcrumb)
+	{
+		this.webuiNameNewBreadcrumb = webuiNameNewBreadcrumb;
+	}
+
+	public String getWEBUI_NameNewBreadcrumb() 
+	{
+		return webuiNameNewBreadcrumb;
+	}
+
+
 }   // MTreeNode

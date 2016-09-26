@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Services;
@@ -82,7 +83,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 * @param throwable
 	 * @return message; never return null
 	 */
-	protected static final String extractMessage(final Throwable throwable)
+	public static final String extractMessage(final Throwable throwable)
 	{
 		// guard against NPE, shall not happen
 		if(throwable == null)
@@ -372,6 +373,26 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 			return false;
 		}
 	}
+
+	/**
+	 * If developer mode is active, it logs a warning with given exception.
+	 * 
+	 * If the developer mode is not active, this method does nothing
+	 * 
+	 * @param logger
+	 * @param exceptionSupplier {@link AdempiereException} supplier
+	 */
+	public static final void logWarningIfDeveloperMode(final Logger logger, Supplier<? extends AdempiereException> exceptionSupplier)
+	{
+		if (!Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return;
+		}
+
+		final boolean throwIt = false;
+		final AdempiereException exception = exceptionSupplier.get();
+		exception.throwOrLog(throwIt, Level.WARN, logger);
+	}	
 
 	/**
 	 * Sets if {@link #getLocalizedMessage()} shall parse the translations.

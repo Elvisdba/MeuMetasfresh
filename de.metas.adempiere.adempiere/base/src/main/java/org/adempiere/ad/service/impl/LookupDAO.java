@@ -22,7 +22,6 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,12 +30,15 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
@@ -59,7 +61,6 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -120,6 +121,8 @@ public class LookupDAO implements ILookupDAO
 
 	/* package */static class TableRefInfo implements ITableRefInfo
 	{
+		// NOTE to developer: make sure all the fields are primitives or immutable.
+		
 		@SuppressWarnings("unused")
 		private final String name; // used only for debugging
 		private final String TableName;
@@ -147,8 +150,8 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete)
 		{
 			super();
-			
-			this.name = name; 
+
+			this.name = name;
 
 			Check.assumeNotEmpty(tableName, "tableName not empty");
 			TableName = tableName;
@@ -426,11 +429,37 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_AD_Ref_Table.Table_Name + "#by#" + I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID)
 	public ITableRefInfo retrieveTableRefInfo(final int AD_Reference_ID)
 	{
-		ITableRefInfo tableRefInfo = null;
+		final ITableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
+		if (tableRefInfo == null)
+		{
+			logger.error("No Table Reference Table ID=" + AD_Reference_ID);
+			return null;
+		}
 
+		return tableRefInfo;
+	}
+
+	@Override
+	public boolean isTableReference(final int AD_Reference_Value_ID)
+	{
+		if(AD_Reference_Value_ID <= 0)
+		{
+			return false;
+		}
+		return retrieveTableRefInfoOrNull(AD_Reference_Value_ID) != null;
+	}
+
+	@Cached(cacheName = I_AD_Ref_Table.Table_Name + "#by#" + I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID)
+	public ITableRefInfo retrieveTableRefInfoOrNull(final int AD_Reference_ID)
+	{
+		if(AD_Reference_ID <= 0)
+		{
+			logger.warn("retrieveTableRefInfoOrNull: Invalid AD_Reference_ID={}. Returning null", AD_Reference_ID);
+			return null;
+		}
+		final Object[] sqlParams = new Object[] { AD_Reference_ID };
 		final String sql = "SELECT t.TableName,ck.ColumnName AS KeyColumn,"				// 1..2
 				+ "cd.ColumnName AS DisplayColumn,rt.IsValueDisplayed,cd.IsTranslated,"	// 3..5
 				+ "rt.WhereClause,rt.OrderByClause,t.AD_Window_ID,t.PO_Window_ID, "		// 6..9
@@ -451,8 +480,10 @@ public class LookupDAO implements ILookupDAO
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, AD_Reference_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
+
+			ITableRefInfo tableRefInfo = null;
 			if (rs.next())
 			{
 				final String TableName = rs.getString(1);
@@ -481,10 +512,13 @@ public class LookupDAO implements ILookupDAO
 			}
 
 			Check.assume(!rs.next(), "Only one row in result set was expected for: {} (AD_Reference_Value_ID={})", sql, AD_Reference_ID);
+
+			return tableRefInfo;
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			logger.error(sql, e);
+			final DBException dbEx = new DBException(e, sql, sqlParams);
+			logger.error("Failed retrieving TableRefInfo for AD_Reference_ID={}", AD_Reference_ID, dbEx);
 			return null;
 		}
 		finally
@@ -493,14 +527,6 @@ public class LookupDAO implements ILookupDAO
 			rs = null;
 			pstmt = null;
 		}
-
-		if (tableRefInfo == null)
-		{
-			logger.error("No Table Reference Table ID=" + AD_Reference_ID);
-			return null;
-		}
-
-		return tableRefInfo;
 	}
 
 	@Override
@@ -562,15 +588,15 @@ public class LookupDAO implements ILookupDAO
 				"Direct_" + tableName,
 				tableName,
 				keyColumn,
-				null, // DisplayColumn,
-				false, // isValueDisplayed,
-				null, // displayColumnSQL,
-				false, // IsTranslated,
-				null, // WhereClause,
-				null, // OrderByClause,
-				-1, // ZoomWindow,
-				-1, // ZoomWindowPO,
-				-1, // overrideZoomWindow
+				null,  // DisplayColumn,
+				false,  // isValueDisplayed,
+				null,  // displayColumnSQL,
+				false,  // IsTranslated,
+				null,  // WhereClause,
+				null,  // OrderByClause,
+				-1,  // ZoomWindow,
+				-1,  // ZoomWindowPO,
+				-1,  // overrideZoomWindow
 				autoComplete // autoComplete
 		);
 		return tableRefInfo;
@@ -726,7 +752,7 @@ public class LookupDAO implements ILookupDAO
 		return isOrderByValue;
 	}
 
-	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair> implements INamePairIterator
+	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair>implements INamePairIterator
 	{
 		private final String sql;
 		private final boolean numericKey;
@@ -790,30 +816,30 @@ public class LookupDAO implements ILookupDAO
 
 			return item;
 		}
-		
+
 		private final boolean isActive(final ResultSet rs) throws SQLException
 		{
 			final boolean isActive = DisplayType.toBoolean(rs.getString(MLookupFactory.COLUMNINDEX_IsActive));
 			return isActive;
 		}
-		
+
 		private final boolean isDisplayedInUI(final ResultSet rs) throws SQLException
 		{
 			if (entityTypeColumnIndex <= 0)
 			{
 				return true;
 			}
-			
+
 			final String entityType = rs.getString(entityTypeColumnIndex);
-			if(Check.isEmpty(entityType, true))
+			if (Check.isEmpty(entityType, true))
 			{
 				return true;
 			}
-			
+
 			final boolean displayed = UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
 			return displayed;
 		}
-		
+
 		private final String getDisplayName(final ResultSet rs, final boolean isActive) throws SQLException
 		{
 			String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
@@ -862,7 +888,7 @@ public class LookupDAO implements ILookupDAO
 		final IValidationRule additionalValidationRule = NullValidationRule.instance;
 		return retrieveLookupValues(validationCtx, lookupInfo, additionalValidationRule);
 	}
-	
+
 	@Override
 	public INamePairIterator retrieveLookupValues(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final IValidationRule additionalValidationRule)
 	{
@@ -872,8 +898,7 @@ public class LookupDAO implements ILookupDAO
 
 		if (logger.isTraceEnabled())
 		{
-			Env.setContext(lookupInfo.getCtx(), Env.WINDOW_MLOOKUP, lookupInfo.getAD_Column_ID(), lookupInfo.getKeyColumnFQ(), sql);
-			logger.debug(lookupInfo.getKeyColumnFQ() + ": " + sql);
+			logger.trace(lookupInfo.getKeyColumnFQ() + ": " + sql);
 		}
 
 		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);
@@ -898,16 +923,25 @@ public class LookupDAO implements ILookupDAO
 		{
 			lookupInfoValidationRule = lookupInfo.getValidationRule();
 		}
-		
+
 		final IValidationRule validationRule = CompositeValidationRule.compose(lookupInfoValidationRule, additionalValidationRule);
 
-		final String validation = validationRule.getPrefilterWhereClause(validationCtx);
-		if (IValidationRule.WHERECLAUSE_ERROR == validation)
+		final IStringExpression sqlWhereClauseExpr = validationRule.getPrefilterWhereClause();
+		final String sqlWhereClause;
+		if(sqlWhereClauseExpr.isNullExpression())
 		{
-			return null;
+			sqlWhereClause = "";
+		}
+		else
+		{
+			sqlWhereClause = sqlWhereClauseExpr.evaluate(validationCtx, OnVariableNotFound.ReturnNoResult);
+			if(sqlWhereClauseExpr.isNoResult(sqlWhereClause))
+			{
+				return null;
+			}
 		}
 
-		final String sql = injectWhereClause(lookupInfo.getSqlQuery(), validation);
+		final String sql = injectWhereClause(lookupInfo.getSqlQuery(), sqlWhereClause);
 		return sql;
 	}
 
@@ -926,17 +960,16 @@ public class LookupDAO implements ILookupDAO
 		if (posOrder != -1)
 			sql = sql.substring(0, posOrder)
 					+ (hasWhere ? " AND " : " WHERE ")
-					+ validation
+					+ " ( " + validation + " ) "
 					+ sql.substring(posOrder);
 		else
 			sql += (hasWhere ? " AND " : " WHERE ")
-
-					+ validation;
+					+ " ( " + validation + " ) ";
 
 		return sql;
 	}
 
-	// metas  030229 : Parser fix : changes all \n that are not inside strings to spaces
+	// metas 030229 : Parser fix : changes all \n that are not inside strings to spaces
 	private static String processNewLines(final String source)
 	{
 		final StringBuilder sb = new StringBuilder();
@@ -958,8 +991,8 @@ public class LookupDAO implements ILookupDAO
 
 	@Override
 	@Cached(
-			// NOTE: short term caching because we are caching mutable values
-			expireMinutes=1)
+	// NOTE: short term caching because we are caching mutable values
+	expireMinutes = 1)
 	public NamePair retrieveLookupValue(
 			@CacheAllowMutable final IValidationContext validationCtx,
 			@CacheAllowMutable final MLookupInfo lookupInfo,
@@ -967,7 +1000,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		// Nothing to query
 		final String sqlQueryDirect = lookupInfo.getSqlQueryDirect();
-		if (key == null || sqlQueryDirect == null || sqlQueryDirect.length() == 0)
+		if (key == null || Check.isEmpty(sqlQueryDirect, true))
 		{
 			return null;
 		}
@@ -981,7 +1014,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		// 04617: applying the validation rule's prefilter where clause, to make sure that what we return is valid
-		final String validation;
+		String validation;
 		if (validationCtx == IValidationContext.DISABLED)
 		{
 			// NOTE: if validation is disabled we shall not add any where clause
@@ -989,11 +1022,16 @@ public class LookupDAO implements ILookupDAO
 		}
 		else
 		{
-			validation = lookupInfo.getValidationRule().getPrefilterWhereClause(validationCtx);
+			final IStringExpression validationExpr = lookupInfo.getValidationRule().getPrefilterWhereClause();
+			validation = validationExpr.evaluate(validationCtx, OnVariableNotFound.ReturnNoResult);
+			if(validationExpr.isNoResult(validation))
+			{
+				validation = null;
+			}
 		}
 
 		final String sql;
-		if (IValidationRule.WHERECLAUSE_ERROR == validation)
+		if (validation == null)
 		{
 			sql = sqlQueryDirect;
 		}
@@ -1038,7 +1076,8 @@ public class LookupDAO implements ILookupDAO
 				}
 
 				// 04617: apply java validation rules
-				if (!lookupInfo.getValidationRule().accept(validationCtx, item))
+				final INamePairPredicate postQueryFilter = lookupInfo.getValidationRule().getPostQueryFilter();
+				if (!postQueryFilter.accept(validationCtx, item))
 				{
 					continue;
 				}

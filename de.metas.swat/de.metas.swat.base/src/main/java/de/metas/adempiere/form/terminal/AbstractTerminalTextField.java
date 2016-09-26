@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -13,27 +13,26 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.text.DecimalFormat;
 import java.text.Format;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -124,10 +123,7 @@ public abstract class AbstractTerminalTextField
 
 	protected final void firePropertyChanged(final String propertyName, final Object valueOld, final Object valueNew)
 	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug(propertyName + ": " + valueOld + "->" + valueNew);
-		}
+		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}", System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
 
 		// Case: valueOld=valueNew=null
 		if (valueOld == valueNew)
@@ -163,7 +159,9 @@ public abstract class AbstractTerminalTextField
 	}
 
 	/**
-	 * Trigger automatically keyboard showing
+	 * Trigger automatically keyboard showing.
+	 * On swing we had the problem that a manually edited value was lost when the keyboard opened and then canceled (because no <code>FocusLost</code> event was triggered).<br>
+	 * When creating another (not-swing) implementation, please make sure that doesn't happen
 	 */
 	protected void showKeyboard()
 	{
@@ -211,7 +209,7 @@ public abstract class AbstractTerminalTextField
 			activeKeyboard = null;
 			if (action.equals(textField.getAction()))
 			{
-				textField.setValue(oldValue.toString());
+				textField.setValue(oldValue.toString(), true); // fireEvent=true
 				textField.setText(oldValue.toString());
 			}
 			else
@@ -286,12 +284,6 @@ public abstract class AbstractTerminalTextField
 
 		factories.clear();
 		keyLayout = null;
-
-		if (activeKeyboard != null)
-		{
-			activeKeyboard.dispose();
-			activeKeyboard = null;
-		}
 	}
 
 	protected float getFontSize()

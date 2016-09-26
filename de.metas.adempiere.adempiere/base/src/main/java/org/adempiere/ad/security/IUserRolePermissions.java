@@ -56,6 +56,7 @@ public interface IUserRolePermissions
 	Permission PERMISSION_ChangeLog = ResourceAsPermission.ofName("IsChangeLog");
 	Permission PERMISSION_MenuAvailable = ResourceAsPermission.ofName("IsMenuAvailable");
 	Permission PERMISSION_AllowLoginDateOverride = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowLoginDateOverride);
+	Permission PERMISSION_UseBetaFunctions = ResourceAsPermission.ofName("UseBetaFunctions");
 	//
 	Permission PERMISSION_InfoWindow_Product = InfoWindowPermission.ofInfoWindowKey("InfoProduct");
 	Permission PERMISSION_InfoWindow_BPartner = InfoWindowPermission.ofInfoWindowKey("InfoBPartner");
@@ -171,6 +172,8 @@ public interface IUserRolePermissions
 	Set<OrgResource> getLoginOrgs();
 
 	int getOrg_Tree_ID();
+	
+	int getMenu_Tree_ID();
 
 	boolean isShowPreference();
 	UserPreferenceLevelConstraint getPreferenceLevel();

@@ -45,6 +45,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
@@ -184,12 +185,14 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 		//
 		// Create MTable
-		m_mTable = new GridTable(m_vo.getCtx(), m_vo.AD_Table_ID, m_vo.TableName, m_vo.WindowNo, m_vo.TabNo, true, virtual);
+		m_mTable = new GridTable(m_vo.getCtx(), m_vo.getAD_Table_ID(), m_vo.getTableName(), m_vo.getWindowNo(), m_vo.getTabNo(), true, virtual);
 		m_mTable.setReadOnly(m_vo.isReadOnly() || m_vo.isView());
 		m_mTable.setDeleteable(m_vo.isDeleteable());
 		m_mTable.setGridTab(this); // metas-2009_0021_AP1_G140
 
-		calloutExecutor = new CalloutExecutor(vo.getCtx(), vo.getWindowNo());
+		calloutExecutor = CalloutExecutor.builder()
+				.setTableName(m_vo.getTableName())
+				.build();
 		// Load Tab
 		// initTab(false);
 	}	// GridTab
@@ -339,7 +342,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public boolean initTab(final boolean async)
 	{
-		log.debug("#{} - Async={} - Where={}", m_vo.getTabNo(), async, m_vo.getWhereClause());
+		log.debug("initTab: {} - Async={} - Where={}", this, async, m_vo.getWhereClause());
 		if (isLoadComplete())
 		{
 			return true;
@@ -397,7 +400,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	protected void dispose()
 	{
-		log.debug("#" + m_vo.TabNo);
+		log.debug("dispose: {}", this);
 		m_OrderBys = null;
 		//
 		m_parents.clear();
@@ -441,7 +444,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	private boolean loadFields()
 	{
-		log.debug("#" + m_vo.TabNo);
+		log.debug("loadFields: {}", this);
 
 		if (m_vo.getFields().isEmpty())
 		{
@@ -575,12 +578,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		//
 		if (list.size() > 0 && LogManager.isLevelFiner())
 		{
-			final StringBuffer sb = new StringBuffer();
+			final StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < list.size(); i++)
 			{
 				sb.append(list.get(i)).append(" ");
 			}
-			log.trace("(" + m_vo.Name + ") " + sb.toString());
+			log.trace("DependentOn {}: {} ", m_vo, sb);
 		}
 		return list;
 	}   // getDependentOn
@@ -762,9 +765,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// Log tab info
 		if (log.isDebugEnabled())
 		{
-			log.debug("#" + m_vo.TabNo
-					+ " - Only Current Rows=" + onlyCurrentRows
-					+ ", Days=" + onlyCurrentDays + ", Detail=" + isDetail());
+			log.debug("query: {} - Only Current Rows={}, Days={}, Detail={}", this, onlyCurrentRows, onlyCurrentDays, isDetail());
 		}
 
 		// is it same query?
@@ -906,7 +907,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		/**
 		 * Query
 		 */
-		log.debug("#" + m_vo.TabNo + " - " + where);
+		log.debug("{} - {}", this, where);
 		// metas: begin: select same row after refresh
 		int row_id = m_mTable.isOpen() ? getCurrentRow() : 0;
 		int keyNo = getKeyID(row_id);
@@ -1169,7 +1170,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	
 	public void dataRefreshAll(final boolean retainCurrentRowIfAny)
 	{
-		log.debug("#" + m_vo.TabNo);
+		log.debug("dataRefreshAll: {}", this);
 		/** @todo does not work with alpha key */
 		final int keyNo = m_mTable.getKeyID(m_currentRow);
 		
@@ -1241,7 +1242,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public void dataRefresh(final int row)
 	{
-		log.debug("#" + m_vo.TabNo + " - row=" + row);
+		log.debug("dataRefresh: {}, row={}", this, row);
 		m_mTable.dataRefresh(row);
 		setCurrentRow(row, true);
 		fireStateChangeEvent(StateChangeEventType.DATA_REFRESH);
@@ -1256,7 +1257,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	@Override
 	public boolean dataSave(final boolean manualCmd)
 	{
-		log.debug("#" + m_vo.TabNo + " - row=" + m_currentRow);
+		log.debug("dataSave: {}, row={}", this, m_currentRow);
 		try
 		{
 			if (hasChangedCurrentTabAndParents())
@@ -1306,7 +1307,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		catch (final Exception e)
 		{
-			log.error("#" + m_vo.TabNo + " - row=" + m_currentRow, e);
+			log.error("{} - row={}", this, m_currentRow, e);
 		}
 		return false;
 	}   // dataSave
@@ -1332,11 +1333,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			// get parent tab
 			// the parent tab is the first tab above with level = this_tab_level-1
-			int level = m_vo.TabLevel;
+			int level = getTabLevel();
 			for (int i = m_window.getTabIndex(this) - 1; i >= 0; i--)
 			{
 				final GridTab parentTab = m_window.getTab(i);
-				if (parentTab.m_vo.TabLevel == level - 1)
+				if (parentTab.getTabLevel() == level - 1)
 				{
 					// this is parent tab
 					if (parentTab.m_mTable.hasChanged(parentTab.m_currentRow))
@@ -1351,7 +1352,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 						// search for the next parent
 						if (parentTab.isDetail())
 						{
-							level = parentTab.m_vo.TabLevel;
+							level = parentTab.getTabLevel();
 						}
 						else
 						{
@@ -1370,11 +1371,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			// get parent tab
 			// the parent tab is the first tab above with level = this_tab_level-1
-			int level = m_vo.TabLevel;
+			int level = getTabLevel();
 			for (int i = m_window.getTabIndex(this) - 1; i >= 0; i--)
 			{
 				final GridTab parentTab = m_window.getTab(i);
-				if (parentTab.m_vo.TabLevel == level - 1)
+				if (parentTab.getTabLevel() == level - 1)
 				{
 					// metas: nach letztem Merge von Teo war diese aenderung vorhanden
 					// if (parentTab.getAD_Table_ID() == getAD_Table_ID()) {
@@ -1384,7 +1385,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					// search for the next parent
 					if (parentTab.isDetail())
 					{
-						level = parentTab.m_vo.TabLevel;
+						level = parentTab.getTabLevel();
 					}
 					else
 					{
@@ -1429,7 +1430,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public void dataIgnore()
 	{
-		log.debug("#" + m_vo.TabNo);
+		log.debug("dataIgnore: {}", this);
 		//
 		final int currentRow = m_currentRow;
 		int previousRow = m_currentRow;
@@ -1447,7 +1448,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		fireStateChangeEvent(StateChangeEventType.DATA_IGNORE);
-		log.debug("#" + m_vo.TabNo + "- fini");
+		log.debug("dataIgnore finish: {}", this);
 	}   // dataIgnore
 
 	/**
@@ -1461,16 +1462,16 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		Check.assumeNotNull(copyMode, "copyMode not null");
 
 		// metas: end
-		log.debug("#" + m_vo.TabNo);
+		log.debug("dataNew: {}, copyMode={}", this, copyMode);
 		if (!isInsertRecord())
 		{
-			log.warn("Inset Not allowed in TabNo=" + m_vo.TabNo);
+			log.warn("Insert not allowed for {}", this);
 			return false;
 		}
 
 		// Prevent New Where Main Record is processed
 		// but not apply for TabLevel=0 - teo_sarca [ 1673902 ]
-		if (m_vo.TabLevel > 0 && m_vo.TabNo > 0)
+		if (getTabLevel() > 0 && getTabNo() > 0)
 		{
 			if (isParentProcessedOrNotActive())
 			{
@@ -1548,7 +1549,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public boolean dataDelete()
 	{
-		log.debug("#" + m_vo.TabNo + " - row=" + m_currentRow);
+		log.debug("dataDelete: {}, row={}", this, m_currentRow);
 		final boolean retValue = m_mTable.dataDelete(m_currentRow);
 		setCurrentRow(m_currentRow, true);
 		fireStateChangeEvent(StateChangeEventType.DATA_DELETE);
@@ -1577,7 +1578,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getName()
 	{
-		return m_vo.Name;
+		return m_vo.getName();
 	}	// getName
 
 	/**
@@ -1587,7 +1588,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getDescription()
 	{
-		return m_vo.Description;
+		return m_vo.getDescription();
 	}	// getDescription
 
 	/**
@@ -1597,7 +1598,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getHelp()
 	{
-		return m_vo.Help;
+		return m_vo.getHelp();
 	}	// getHelp
 
 	/**
@@ -1607,7 +1608,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public int getTabLevel()
 	{
-		return m_vo.TabLevel;
+		return m_vo.getTabLevel();
 	}   // getTabLevel
 
 	/**
@@ -1617,7 +1618,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getCommitWarning()
 	{
-		return m_vo.CommitWarning;
+		return m_vo.getCommitWarning();
 	}   // getCommitWarning
 
 	/**
@@ -1649,7 +1650,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		m_keyColumnName = keyColumnName;
 		final Properties ctx = getCtx();
-		Env.setContext(ctx, m_vo.WindowNo, m_vo.TabNo, CTX_KeyColumnName, keyColumnName);
+		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_KeyColumnName, keyColumnName);
 
 		attachmentsMap.setKeyColumnName(keyColumnName);
 	}
@@ -1678,9 +1679,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// Set parent column name (if any)
 		if (m_vo.getParent_Column_ID() > 0)
 		{
-			m_parentColumnName = DB.getSQLValueString(ITrx.TRXNAME_None,
-					"SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?",
-					m_vo.getParent_Column_ID());
+			m_parentColumnName = Services.get(IADTableDAO.class).retrieveColumnName(m_vo.getParent_Column_ID());
 		}
 		else
 		{
@@ -1700,22 +1699,21 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		else
 		{
-			if (m_vo.getAD_Column_ID() <= 0)
+			final int linkColumnId = m_vo.getAD_Column_ID();
+			if (linkColumnId <= 0)
 			{
 				return;
 			}
 			// we have a link column identified (primary parent column)
 			else
 			{
-				m_linkColumnName = DB.getSQLValueString(ITrx.TRXNAME_None,
-						"SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?",
-						m_vo.getAD_Column_ID());
-				log.debug("AD_Column_ID=" + m_vo.getAD_Column_ID() + " - " + m_linkColumnName);
+				m_linkColumnName = Services.get(IADTableDAO.class).retrieveColumnName(linkColumnId);
+				log.debug("AD_Column_ID={} - {}", linkColumnId, m_linkColumnName);
 			}
 		}
 
 		final Properties ctx = getCtx();
-		Env.setContext(ctx, m_vo.WindowNo, m_vo.TabNo, CTX_LinkColumnName, m_linkColumnName);
+		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_LinkColumnName, m_linkColumnName);
 	}	// setLinkColumnName
 
 	/**
@@ -1822,7 +1820,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	public boolean isDetail()
 	{
 		// First Tab Level is not a detail
-		if (m_vo.TabLevel == 0)
+		if (m_vo.getTabLevel() == 0)
 		{
 			return false;
 		}
@@ -1861,7 +1859,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public final int getTabNo()
 	{
-		return m_vo.TabNo;
+		return m_vo.getTabNo();
 	}	// getTabNo
 
 	/**
@@ -1905,7 +1903,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// ** dynamic content ** uses get_ValueAsString
 		final ILogicExpression readOnlyLogic = m_vo.getReadOnlyLogic();
 		final boolean readOnly = readOnlyLogic.evaluate(this, true); // ignoreUnparsable=true // metas: 03093
-		log.trace(m_vo.Name + " (" + readOnlyLogic + ") => " + readOnly);
+		log.trace("Evaluated IsReadOnly: {} {} => {}", m_vo, readOnlyLogic, readOnly);
 		if (readOnly)
 		{
 			return true;
@@ -2433,7 +2431,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public void loadChats()
 	{
-		log.debug("#" + m_vo.TabNo);
+		log.debug("loadChats: {}", this);
 		if (!canHaveAttachment())
 		{
 			return;
@@ -2527,7 +2525,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	public void loadLocks()
 	{
 		final int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
-		log.debug("#" + m_vo.TabNo + " - AD_User_ID=" + AD_User_ID);
+		log.debug("loadLocks: {}, AD_User_ID={}", this, AD_User_ID);
 		if (!canHaveAttachment())
 		{
 			return;
@@ -2628,7 +2626,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	@Override
 	public void dataStatusChanged(final DataStatusEvent e)
 	{
-		log.debug("#" + m_vo.TabNo + " - " + e.toString());
+		log.debug("dataStatusChanged: {} - {}", this, e);
 		final int oldCurrentRow = e.getCurrentRow();
 		m_DataStatusEvent = e;          // save it
 		// when sorted set current row to 0
@@ -3442,12 +3440,14 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	public String toString()
 	{
 		final ToStringHelper builder = MoreObjects.toStringHelper(this);
-		if (m_vo != null)
+		final GridTabVO vo = m_vo;
+		if (vo != null)
 		{
-			builder.add("TabNo", m_vo.getTabNo())
-					.add("Name", m_vo.getName())
-					.add("AD_Tab_ID", m_vo.getAD_Tab_ID())
-					.add("TableName", m_vo.getTableName());
+			builder.add("TabNo", vo.getTabNo())
+					.add("TabLevel", vo.getTabLevel())
+					.add("Name", vo.getName())
+					.add("AD_Tab_ID", vo.getAD_Tab_ID())
+					.add("TableName", vo.getTableName());
 		}
 		else
 		{
@@ -3659,8 +3659,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	// metas: changed from private to public
 	public int getParentTabNo()
 	{
-		int tabNo = m_vo.TabNo;
-		int currentLevel = m_vo.TabLevel;
+		int tabNo = getTabNo();
+		int currentLevel = getTabLevel();
 
 		// usually, the parent tab's level is currentLevel - 1, but sometimes the "level-gap" might be larger, like e.g. in the Rechnung window (MatchInv-level is 2, parent tab's level is 0)
 		final int parentLevelMax = currentLevel - 1;
@@ -3673,7 +3673,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			if (tabNo < 0)
 			{
-				log.warn("No parent TabNo found for '" + this + "': TabNo=" + m_vo.TabNo + ", TabLevel=" + m_vo.TabLevel + ", expected parent TabLevel=" + parentLevelMax);
+				log.warn("No parent TabNo found for '{}'. Expected parent TabLevel={}", this, parentLevelMax);
 				break;
 			}
 			tabNo--;

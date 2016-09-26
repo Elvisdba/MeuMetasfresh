@@ -13,15 +13,14 @@ package de.metas.edi.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -80,19 +79,19 @@ public class EDI_Desadv_Aggregate_M_InOuts extends SvrProcess
 		final Iterator<I_M_InOut> inOuts = queryBL
 				.createQueryBuilder(I_M_InOut.class, getCtx(), getTrxName())
 
-				// the default filters
+		// the default filters
 				.addOnlyActiveRecordsFilter()
 
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, null) // not yet assigned
+		.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, null) // not yet assigned
 
-				// not yet sent
+		// not yet sent
 				.addNotInArrayFilter(I_EDI_Document.COLUMNNAME_EDI_ExportStatus,
 						Arrays.asList(I_EDI_Document.EDI_EXPORTSTATUS_Sent, I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted))
 
-				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx, true)
+		.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx, true)
 
-				.addInArrayFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus,
-						DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+		.addInArrayFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus,
+				DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 
 				.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)
 
@@ -100,21 +99,28 @@ public class EDI_Desadv_Aggregate_M_InOuts extends SvrProcess
 
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsEdiEnabled, true)
 
-				.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, ediRecipient)
+		// task 08926: make sure the inout has EdiEnabled
 
-				// the specific process filter (if any)
+		.addEqualsFilter(I_M_InOut.COLUMNNAME_IsEdiEnabled, true)
+
+		.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, ediRecipient)
+
+		// the specific process filter (if any)
 				.filter(processQueryFilter)
 
-				.create()
+		.create()
 				.iterate(I_M_InOut.class);
 
 		final ITrxItemProcessor<I_M_InOut, Void> processor = mkProcessor();
 
 		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
-		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(getCtx(), ITrx.TRX_None);
 
-		final ITrxItemProcessorExecutor<I_M_InOut, Void> executor = executorService.createExecutor(processorCtx, processor);
-		executor.setExceptionHandler(FailTrxItemExceptionHandler.instance);
+		final ITrxItemProcessorExecutor<I_M_InOut, Void> executor = executorService.<I_M_InOut, Void> createExecutor()
+				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
+				.setProcessor(processor)
+				.build();
+
 		executor.execute(inOuts);
 
 		return "OK";

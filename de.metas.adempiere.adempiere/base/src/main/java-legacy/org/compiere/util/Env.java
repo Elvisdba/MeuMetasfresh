@@ -21,9 +21,6 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Window;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
@@ -43,12 +40,12 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -60,9 +57,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_Language;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MLookupCache;
 import org.compiere.model.MSession;
 import org.compiere.model.PO;
 import org.compiere.swing.CFrame;
@@ -254,8 +249,6 @@ public final class Env
 	public static final int WINDOW_MAIN = 0;
 	/** WindowNo for Find */
 	public static final int WINDOW_FIND = 1110;
-	/** WinowNo for MLookup */
-	public static final int WINDOW_MLOOKUP = 1111;
 	/** WindowNo for PrintCustomize */
 	public static final int WINDOW_CUSTOMIZE = 1112;
 	/** WindowNo for PrintCustomize */
@@ -521,7 +514,7 @@ public final class Env
 			ctx.remove(key);
 
 			// If the key we just removed exists on underlying "defaults", we are just setting it here using null marker.
-			if (ctx.getProperty(key, null) != null)
+			if (getProperty(ctx, key) != null)
 			{
 				final String nullValue = getNullPropertyValue(key);
 				ctx.setProperty(key, nullValue);
@@ -1194,6 +1187,11 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}	// getAD_Role_ID
+	
+//	public static void setAD_Role_ID(Properties ctx, final int adRoleId)
+//	{
+//		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
+//	}	// getAD_Role_ID
 
 	public static IUserRolePermissions getUserRolePermissions()
 	{
@@ -1203,12 +1201,21 @@ public final class Env
 
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
-		final int adRoleId = Env.getAD_Role_ID(ctx);
-		final int adUserId = Env.getAD_User_ID(ctx);
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final Date date = Env.getDate(ctx);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(adRoleId, adUserId, adClientId, date);
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
+	
+	public static IUserRolePermissions getUserRolePermissions(final UserRolePermissionsKey key)
+	{
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
+	}
+	
+	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
+	{
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+	}
+
 
 	public static void resetUserRolePermissions()
 	{
@@ -1245,16 +1252,16 @@ public final class Env
 		//
 		if (!system)         	// User Preferences
 		{
-			retValue = ctx.getProperty(createPreferenceName(AD_Window_ID, context));// Window Pref
+			retValue = getProperty(ctx, createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
-				retValue = ctx.getProperty(createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
+				retValue = getProperty(ctx, createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
 		}
 		else
 		// System Preferences
 		{
-			retValue = ctx.getProperty("#" + context);   				// Login setting
+			retValue = getProperty(ctx, "#" + context);   				// Login setting
 			if (retValue == null)
-				retValue = ctx.getProperty("$" + context);   			// Accounting setting
+				retValue = getProperty(ctx, "$" + context);   			// Accounting setting
 		}
 		//
 		return (retValue == null ? "" : retValue);
@@ -1429,70 +1436,38 @@ public final class Env
 	 */
 	public static void verifyLanguage(final Language language)
 	{
-		// metas: method changed for Global Language Support
-		final List<String> AD_Languages = new ArrayList<String>();
-		String sql = "SELECT "
-				+ " " + I_AD_Language.COLUMNNAME_AD_Language
-				+ " FROM " + I_AD_Language.Table_Name
-				+ " WHERE IsActive='Y'"
-				+ " AND (" + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y' OR " + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y')"
-				+ " ORDER BY " + I_AD_Language.COLUMNNAME_IsBaseLanguage + " DESC"
-				+ ", " + I_AD_Language.COLUMNNAME_IsSystemLanguage + " DESC"
-				+ ", " + I_AD_Language.COLUMNNAME_AD_Language;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				String AD_Language = rs.getString(1);
-				if (AD_Language.equals(language.getAD_Language()))
-				{
-					return;
-				}
-				AD_Languages.add(AD_Language);
-			}
-		}
-		catch (SQLException e)
-		{
-			s_log.error("Failed loading available languages", new DBException(e, sql));
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
+		Check.assumeNotNull(language, "Parameter language is not null");
+		final String searchAD_Language = language.getAD_Language();
 
-		// No Language - set to System
-		if (AD_Languages.size() == 0)
+		//
+		// Get available languages, having BaseLanguage first and then System Language
+		final List<String> AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableAD_LanguagesForMatching(getCtx());
+		
+		//
+		// Check if we have a perfect match
+		if(AD_Languages.contains(searchAD_Language))
 		{
-			s_log.warn("NO System Language - Set to Base Language: {}", Language.getBaseAD_Language());
-			language.setAD_Language(Language.getBaseAD_Language());
 			return;
 		}
 
-		for (int i = 0; i < AD_Languages.size(); i++)
+		//
+		// Pick a similar language (with different country code and/or variant)
+		final String searchLangPart = searchAD_Language.substring(0, 2);
+		for (final String AD_Language : AD_Languages)
 		{
-			String AD_Language = AD_Languages.get(i);	// en_US
-			String lang = AD_Language.substring(0, 2);			// en
-			//
-			String langCompare = language.getAD_Language().substring(0, 2);
-			if (lang.equals(langCompare))
+			final String lang = AD_Language.substring(0, 2); // en
+			if (lang.equals(searchLangPart))
 			{
-				s_log.debug("Found similar Language {}", AD_Language);
+				s_log.debug("Found similar Language {} for {}", AD_Language, language);
 				language.setAD_Language(AD_Language);
 				return;
 			}
 		}
 
-		// We found same language
-		// if (!"0".equals(Msg.getMsg(AD_Language, "0")))
-
-		s_log.warn("Not System Language={} - Set to Base Language: {}", language, Language.getBaseAD_Language());
-		language.setAD_Language(Language.getBaseAD_Language());
+		// No Language - set to Base Language
+		final String baseAD_Language = Language.getBaseAD_Language();
+		s_log.warn("Not System/Base Language={} - Set to Base Language: {}", language, baseAD_Language);
+		language.setAD_Language(baseAD_Language);
 	}   // verifyLanguage
 
 	/**************************************************************************
@@ -1584,9 +1559,6 @@ public final class Env
 		final String ctxWindowPrefix = WindowNo + "|";
 		removeContextForPrefix(ctx, ctxWindowPrefix);
 
-		// Clear Lookup Cache
-		MLookupCache.cacheReset(WindowNo);
-		// MLocator.cacheReset(WindowNo);
 		//
 		if (Ini.isClient())
 			removeWindow(WindowNo);
@@ -2159,7 +2131,7 @@ public final class Env
 
 			if (key.startsWith("#") || key.startsWith("$"))
 			{
-				final String value = ctx.getProperty(key, null);
+				final String value = getProperty(ctx, key);
 				if (!isPropertyValueNull(key, value))
 				{
 					ctxLight.put(key, value);
@@ -2232,22 +2204,9 @@ public final class Env
 	 */
 	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final Scope scope)
 	{
-		final CtxName name = CtxName.parse(context);
-		return getContext(ctx, WindowNo, TabNo, name, scope);
-	}
-
-	/**
-	 *
-	 * @param ctx
-	 * @param WindowNo
-	 * @param TabNo
-	 * @param name
-	 * @param scope
-	 * @return value or {@link #CTXVALUE_NullString}
-	 */
-	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final CtxName name, final Scope scope)
-	{
 		Check.assumeNotNull(ctx, "ctx not null");
+		
+		final CtxName name = CtxName.parse(context);
 		Check.assumeNotNull(name, "name not null");
 
 		boolean isExplicitGlobal = name.isExplicitGlobal();
@@ -2343,6 +2302,11 @@ public final class Env
 		}
 	}
 
+	/**
+	 * @param ctx
+	 * @param context
+	 * @return string value or <code>null</code> if it does not exist
+	 */
 	private static final String getProperty(final Properties ctx, final String context)
 	{
 		if (ctx == null || context == null)
@@ -2636,6 +2600,16 @@ public final class Env
 	public static Timestamp getDate(final Properties ctx)
 	{
 		return getContextAsDate(ctx, WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	/**
+	 * @return value or <code>null</code> if the value was not present and value initializer was null
+	 */
+	public static <V> V get(final Properties ctx, final String propertyName)
+	{
+		@SuppressWarnings("unchecked")
+		final V value = (V)ctx.get(propertyName);
+		return value;
 	}
 
 	/**

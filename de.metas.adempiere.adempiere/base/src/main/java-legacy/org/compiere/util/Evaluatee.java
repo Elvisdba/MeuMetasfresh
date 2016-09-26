@@ -16,11 +16,14 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 import de.metas.logging.LogManager;
 
 /**
  * Evaluator source.
- * 
+ *
  * To create {@link Evaluatee} instances, please use {@link Evaluatees}.
  *
  * @author Jorg Janke
@@ -28,6 +31,12 @@ import de.metas.logging.LogManager;
  */
 public interface Evaluatee
 {
+	@SuppressWarnings("unchecked")
+	default <T> T get_ValueAsObject(String variableName)
+	{
+		return (T)get_ValueAsString(variableName);
+	}
+
 	/**
 	 * Get Variable Value
 	 *
@@ -38,7 +47,7 @@ public interface Evaluatee
 
 	/**
 	 * Get variable value as integer.
-	 * 
+	 *
 	 * @param variableName
 	 * @param defaultValue
 	 * @return
@@ -48,19 +57,33 @@ public interface Evaluatee
 	 *         <li>or <code>defaultValue</code> in case the value was not parseable as integer
 	 *         </ul>
 	 */
-	default int get_ValueAsInt(final String variableName, final int defaultValue)
+	default Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
 	{
 		final String valueStr = get_ValueAsString(variableName);
-		if (valueStr == null || valueStr.isEmpty())
+		return convertToInteger(variableName, valueStr, defaultValue);
+	}
+
+	/**
+	 * @return default value or null; never throws exception
+	 */
+	/* private */static Integer convertToInteger(final String variableName, String valueStr, final Integer defaultValue)
+	{
+		if (Env.isPropertyValueNull(variableName, valueStr))
+		{
+			return defaultValue;
+		}
+
+		valueStr = valueStr.trim();
+		if (valueStr.isEmpty())
 		{
 			return defaultValue;
 		}
 
 		try
 		{
-			return Integer.parseInt(valueStr.trim());
+			return Integer.parseInt(valueStr);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Integer. Returning default value: {}", variableName, valueStr, defaultValue, e);
 			return defaultValue;
@@ -69,7 +92,7 @@ public interface Evaluatee
 
 	/**
 	 * Get variable value as boolean.
-	 * 
+	 *
 	 * @param variableName
 	 * @param defaultValue
 	 * @return
@@ -79,10 +102,72 @@ public interface Evaluatee
 	 *         <li>or <code>defaultValue</code> in case the value was not parseable as boolean
 	 *         </ul>
 	 */
-	default boolean get_ValueAsBoolean(final String variableName, final boolean defaultValue)
+	default Boolean get_ValueAsBoolean(final String variableName, final Boolean defaultValue)
 	{
 		final String valueStr = get_ValueAsString(variableName);
 		return DisplayType.toBoolean(valueStr, defaultValue);
 	}
 
+	default BigDecimal get_ValueAsBigDecimal(final String variableName, final BigDecimal defaultValue)
+	{
+		final String valueStr = get_ValueAsString(variableName);
+		return convertToBigDecimal(variableName, valueStr, defaultValue);
+	}
+
+	/**
+	 * @return default value or null; never throws exception
+	 */
+	/* private */static BigDecimal convertToBigDecimal(final String variableName, String valueStr, final BigDecimal defaultValue)
+	{
+		if (Env.isPropertyValueNull(variableName, valueStr))
+		{
+			return defaultValue;
+		}
+
+		valueStr = valueStr.trim();
+		if (valueStr.isEmpty())
+		{
+			return defaultValue;
+		}
+
+		try
+		{
+			return new BigDecimal(valueStr);
+		}
+		catch (final Exception e)
+		{
+			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to BigDecimal. Returning default value: {}", variableName, valueStr, defaultValue, e);
+			return defaultValue;
+		}
+	}
+
+	default java.util.Date get_ValueAsDate(final String variableName, final java.util.Date defaultValue)
+	{
+		final String valueStr = get_ValueAsString(variableName);
+		return convertToDate(variableName, valueStr, defaultValue);
+	}
+
+	/* private */static java.util.Date convertToDate(final String variableName, final String valueStr, final java.util.Date defaultValue)
+	{
+		if (valueStr == null || valueStr.isEmpty())
+		{
+			return defaultValue;
+		}
+
+		try
+		{
+			final Timestamp value = Env.parseTimestamp(valueStr);
+			return value == null ? defaultValue : value;
+		}
+		catch (final Exception e)
+		{
+			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Date. Returning default value: {}", variableName, valueStr, defaultValue, e);
+			return defaultValue;
+		}
+	}
+
+	default Evaluatee andComposeWith(final Evaluatee other)
+	{
+		return Evaluatees.compose(this, other);
+	}
 }	// Evaluatee

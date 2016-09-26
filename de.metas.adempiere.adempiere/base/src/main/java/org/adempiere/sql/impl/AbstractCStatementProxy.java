@@ -10,18 +10,17 @@ package org.adempiere.sql.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -45,15 +44,12 @@ import org.compiere.util.Trx;
 
 /* package */abstract class AbstractCStatementProxy<ST extends Statement> implements CStatement
 {
-	// /** Logger */
-	// private static final transient Logger log = CLogMgt.getLogger(AbstractCStatementProxy.class);
-
 	private Connection m_conn = null;
 	private boolean closed = false;
 
 	/** Used if local */
 	private transient ST p_stmt = null;
-	/** Value Object */
+	/** Value Object, never null */
 	private final CStatementVO p_vo;
 
 	public AbstractCStatementProxy(final CStatementVO vo)
@@ -69,7 +65,7 @@ import org.compiere.util.Trx;
 		try
 		{
 			Connection conn = null;
-			final Trx trx = getTrx();
+			final Trx trx = getTrx(p_vo);
 			if (trx != null)
 			{
 				conn = trx.getConnection();
@@ -94,16 +90,16 @@ import org.compiere.util.Trx;
 		}
 	}
 
+	protected final CStatementVO getVO()
+	{
+		return p_vo;
+	}
+
 	protected abstract ST createStatement(final Connection conn, final CStatementVO vo) throws SQLException;
 
 	protected final ST getStatementImpl()
 	{
 		return p_stmt;
-	}
-
-	protected final CStatementVO getVO()
-	{
-		return p_vo;
 	}
 
 	@Override
@@ -405,7 +401,7 @@ import org.compiere.util.Trx;
 	{
 		return getStatementImpl().isCloseOnCompletion();
 	}
-	
+
 	@Override
 	public final void finalize() throws Throwable
 	{
@@ -420,9 +416,10 @@ import org.compiere.util.Trx;
 	@Override
 	public final String getSql()
 	{
-		if (p_vo != null)
+		final CStatementVO vo = this.p_vo;
+		if (vo != null)
 		{
-			return p_vo.getSql();
+			return vo.getSql();
 		}
 		return null;
 	}
@@ -469,15 +466,15 @@ import org.compiere.util.Trx;
 		}
 	}
 
-	protected final Trx getTrx()
+	private static final Trx getTrx(final CStatementVO vo)
 	{
-		if (p_vo == null)
+		if (vo == null)
 		{
 			return null;
 		}
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final String trxName = p_vo.getTrxName();
+		final String trxName = vo.getTrxName();
 		if (trxManager.isNull(trxName))
 		{
 			return (Trx)ITrx.TRX_None;
@@ -489,5 +486,11 @@ import org.compiere.util.Trx;
 			// NOTE: we assume trx if of type Trx because we need to invoke getConnection()
 			return (Trx)trx;
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return "AbstractCStatementProxy [m_conn=" + m_conn + ", closed=" + closed + ", p_vo=" + p_vo + "]";
 	}
 }

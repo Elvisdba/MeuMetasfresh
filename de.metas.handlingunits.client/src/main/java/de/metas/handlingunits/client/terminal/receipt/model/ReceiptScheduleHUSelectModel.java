@@ -13,12 +13,12 @@ package de.metas.handlingunits.client.terminal.receipt.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
@@ -53,12 +54,12 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -265,29 +266,38 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		//
 		// Get/Create and Edit LU/TU configuration
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-		{
 
-			@Override
-			public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-			{
-				final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
-
-				//
-				// Ask user to edit the configuration
-				final LUTUConfigurationEditorModel lutuConfigurationModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
-				if (!editorCallback.editLUTUConfiguration(lutuConfigurationModel))
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager
+				.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
 				{
-					// User cancelled => do nothing
-					return null;
-				}
+					@Override
+					public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
+					{
+						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
-				//
-				// Update the LU/TU configuration on which we are working using what user picked
-				lutuConfigurationModel.save(lutuConfiguration); // FIXME: pick the config which was edited
-				return lutuConfiguration;
-			}
-		});
+						//
+						// Ask user to edit the configuration in another dialog
+						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+						{
+							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
+
+							if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
+							{
+								return null;// User cancelled => do nothing
+							}
+
+							//
+							// Update the LU/TU configuration on which we are working using what user picked
+							lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
+						}
+						catch (Exception e)
+						{
+							throw AdempiereException.wrapIfNeeded(e);
+						}
+
+						return lutuConfiguration;
+					}
+				});
 
 		//
 		// No configuration => user cancelled => don't open editor
@@ -329,50 +339,58 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final ITerminalContext terminalContext = getTerminalContext();
 		final ReceiptScheduleFiltering service = getService();
 
-		//
-		// Create LU/TU configuration panel
-		// NOTE: we will create one CU Key for each receipt schedule
-		final LUTUConfigurationEditorModel lutuConfigurationEditingModel = new LUTUConfigurationEditorModel(terminalContext);
-		lutuConfigurationEditingModel.setQtyCUReadonly(false);
-		final List<ReceiptScheduleCUKey> cuKeys = new ArrayList<>();
-		Integer bpartnerId = null;
-		for (final IPOSTableRow row : rows)
-		{
-			final ReceiptScheduleTableRow receiptScheduleRow = service.getReceiptScheduleTableRow(row);
+		final List<I_M_HU> hus = new ArrayList<>(); // this will hold the LUTU-Editor's result
 
-			// Make sure all receipt schedules are about same BPartner
-			final int receiptScheduleBPartnerId = receiptScheduleRow.getC_BPartner_ID();
-			if (bpartnerId != null && bpartnerId != receiptScheduleBPartnerId)
+		try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+		{
+			//
+			// Create LU/TU configuration panel
+			// NOTE: we will create one CU Key for each receipt schedule
+			final LUTUConfigurationEditorModel lutuConfigurationEditingModel = new LUTUConfigurationEditorModel(terminalContext);
+			lutuConfigurationEditingModel.setQtyCUReadonly(false);
+			final List<ReceiptScheduleCUKey> cuKeys = new ArrayList<>();
+			Integer bpartnerId = null;
+			for (final IPOSTableRow row : rows)
 			{
-				throw new TerminalException("@NotMatched@: @C_BPartner_ID@");
+				final ReceiptScheduleTableRow receiptScheduleRow = service.getReceiptScheduleTableRow(row);
+
+				// Make sure all receipt schedules are about same BPartner
+				final int receiptScheduleBPartnerId = receiptScheduleRow.getC_BPartner_ID();
+				if (bpartnerId != null && bpartnerId != receiptScheduleBPartnerId)
+				{
+					throw new TerminalException("@NotMatched@: @C_BPartner_ID@");
+				}
+				bpartnerId = receiptScheduleBPartnerId;
+
+				// Create CUKey for receipt schedule
+				final ReceiptScheduleCUKey cuKey = new ReceiptScheduleCUKey(terminalContext, receiptScheduleRow);
+				cuKeys.add(cuKey);
 			}
-			bpartnerId = receiptScheduleBPartnerId;
+			lutuConfigurationEditingModel.setCUKeys(cuKeys);
 
-			// Create CUKey for receipt schedule
-			final ReceiptScheduleCUKey cuKey = new ReceiptScheduleCUKey(terminalContext, receiptScheduleRow);
-			cuKeys.add(cuKey);
-		}
-		lutuConfigurationEditingModel.setCUKeys(cuKeys);
-
-		//
-		// Ask the user to customize it
-		final boolean edited = editorCallback.editLUTUConfiguration(lutuConfigurationEditingModel);
-		if (!edited)
-		{
-			// User cancelled => do nothing
-			return null;
-		}
-
-		//
-		// Create one VHU for each CU Key were user entered some quantity
-		final List<I_M_HU> hus = new ArrayList<>();
-		for (final ReceiptScheduleCUKey cuKey : cuKeys)
-		{
-			final I_M_HU vhu = cuKey.createVHU();
-			if (vhu != null)
+			//
+			// Ask the user to customize it
+			final boolean edited = editorCallback.editLUTUConfiguration(lutuConfigurationEditingModel);
+			if (!edited)
 			{
-				hus.add(vhu);
+				// User cancelled => do nothing
+				return null;
 			}
+
+			//
+			// Create one VHU for each CU Key were user entered some quantity
+			for (final ReceiptScheduleCUKey cuKey : cuKeys)
+			{
+				final I_M_HU vhu = cuKey.createVHU();
+				if (vhu != null)
+				{
+					hus.add(vhu);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		//
@@ -517,9 +535,9 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 			{
 				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
 				ProcessCtl.process(
-						null,  // ASyncProcess parent
+						null,      // ASyncProcess parent
 						terminalContext.getWindowNo(),
-						null,  // IProcessParameter
+						null,      // IProcessParameter
 						pi,
 						localTrx);
 			}
@@ -563,10 +581,8 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	}
 
 	@Override
-	public void dispose()
+	public String toString()
 	{
-		super.dispose();
-
-		DisposableHelper.disposeAll(purchaseOrderKeyLayout);
+		return "ReceiptScheduleHUSelectModel [purchaseOrderKeyLayout=" + purchaseOrderKeyLayout + ", rowsFilter=" + rowsFilter + "]";
 	}
 }

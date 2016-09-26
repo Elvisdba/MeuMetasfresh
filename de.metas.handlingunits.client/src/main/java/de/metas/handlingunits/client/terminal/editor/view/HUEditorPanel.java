@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.editor.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Toolkit;
@@ -42,7 +41,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.util.DisplayType;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IFocusableComponent;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -176,19 +174,27 @@ public class HUEditorPanel
 	 */
 	private ITerminalTextField barcodeField;
 	private ITerminalLabel barcodeLabel;
-	
+
 	/**
 	 * Button used to mark selected HUs as scheduled for Quality Inspection.
+	 *
 	 * @task 08639
 	 */
 	private ITerminalButton bMarkAsQualityInspection;
 	private boolean markAsQualityInspectionButtonDisplayed = false; // default: false - will be enabled only in some particular HU Editors
+
+	private boolean disposed = false;
+
 	public static final String ACTION_MarkAsQualityInspection = "de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel.MarkAsQualityInspection";
 	public static final String ACTION_UnMarkAsQualityInspection = "de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel.UnMarkAsQualityInspection";
 	/** Flag used to completely hide/disable the Quality Inspection button */
 	private static final String SYSCONFIG_QualityInspectionButtonDisabled = "de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel.MarkAsQualityInspection.Disabled";
 
-
+	/**
+	 * Crates a new panel, with the already prepared model (lutu-config and stuff)
+	 *
+	 * @param model
+	 */
 	public HUEditorPanel(final HUEditorModel model)
 	{
 		super();
@@ -213,7 +219,7 @@ public class HUEditorPanel
 
 			//
 			final HUFilterPropertiesModel huKeyFilterModel = model.getHUKeyFilterModel();
-			if(huKeyFilterModel != null)
+			if (huKeyFilterModel != null)
 			{
 				huKeyFilterPanel = factory.createPropertiesPanel(layoutConstants.getProperty(IHUPOSLayoutConstants.PROPERTY_HUEditor_HUKeyFilter_Container_Constraints));
 				huKeyFilterPanel.disableFireValueChangedOnFocusLost(); // 07636: On key typed, do not set internal value on models yet (Performance issues).
@@ -344,7 +350,7 @@ public class HUEditorPanel
 					}
 				});
 			}
-			
+
 			//
 			// Button: Mark as scheduled for Quality Inspection (task 08639)
 			{
@@ -380,6 +386,8 @@ public class HUEditorPanel
 		//
 		// Load from model (initially)
 		load();
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	protected final ITerminalFactory getTerminalFactory()
@@ -466,7 +474,7 @@ public class HUEditorPanel
 
 	/**
 	 * Create and add more action buttons on buttons panel.
-	 * 
+	 *
 	 * If you want to also control the created buttons status (e.g. enable/disable them in some circumstances), please also implement {@link #updateActionButtonsStatus()}.
 	 *
 	 * @param buttonsPanel
@@ -475,12 +483,12 @@ public class HUEditorPanel
 	{
 		// nothing on this level
 	}
-	
+
 	/**
 	 * Called when editor status changed (i.e. user selected/deselected something, current key changed etc).
-	 * 
+	 *
 	 * The intention is to allow the extending classes to update their custom action buttons status.
-	 * 
+	 *
 	 * @see #createAndAddActionButtons(IContainer)
 	 */
 	protected void updateActionButtonsStatus()
@@ -560,9 +568,9 @@ public class HUEditorPanel
 
 		bSplit.setEnabled(!currentHUKeyReadonly);
 		bJoin.setEnabled(!currentHUKeyReadonly);
-		
+
 		updateMarkAsQualityInspectionButton();
-		
+
 		updateActionButtonsStatus();
 	}
 
@@ -576,7 +584,12 @@ public class HUEditorPanel
 				final HUAssignTULUPanel assignTULUPanel = new HUAssignTULUPanel(assignTULUModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
-				final ITerminalDialog assignTULUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_AssignTULU, assignTULUPanel);
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final boolean maintainOwnContextReferences = false;
+				final ITerminalDialog assignTULUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_AssignTULU, assignTULUPanel, maintainOwnContextReferences);
 
 				//
 				// Activate TU->LU Assignment Dialog and wait for user answer
@@ -602,7 +615,12 @@ public class HUEditorPanel
 				final HUDistributeCUTUPanel distributeCUTUPanel = new HUDistributeCUTUPanel(distributeCUTUModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
-				final ITerminalDialog distributeCUTUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_DistributeCUTU, distributeCUTUPanel);
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final boolean maintainOwnContextReferences = false;
+				final ITerminalDialog distributeCUTUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_DistributeCUTU, distributeCUTUPanel, maintainOwnContextReferences);
 
 				//
 				// Activate CU->TU Distribution Dialog and wait for user answer
@@ -620,7 +638,7 @@ public class HUEditorPanel
 
 	private void doSplit()
 	{
-		model.doSplit(new Predicate<HUSplitModel>()
+		final Predicate<HUSplitModel> huSplitModel = new Predicate<HUSplitModel>()
 		{
 			@Override
 			public boolean evaluate(final HUSplitModel splitModel)
@@ -628,7 +646,12 @@ public class HUEditorPanel
 				final HUSplitPanel splitPanel = new HUSplitPanel(splitModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
-				final ITerminalDialog splitDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Split, splitPanel);
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final boolean maintainOwnContextReferences = false;
+				final ITerminalDialog splitDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Split, splitPanel, maintainOwnContextReferences);
 
 				//
 				// Activate Split Dialog and wait for user answer
@@ -639,8 +662,9 @@ public class HUEditorPanel
 				final boolean edited = !splitDialog.isCanceled();
 				return edited;
 			}
-		});
+		};
 
+		model.doSplit(huSplitModel);
 		load(); // refresh window (i.e toggle select) after operation
 	}
 
@@ -654,7 +678,12 @@ public class HUEditorPanel
 				final HUJoinPanel joinPanel = new HUJoinPanel(joinModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
-				final ITerminalDialog joinDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Join, joinPanel);
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final boolean maintainOwnContextReferences = false;
+				final ITerminalDialog joinDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Join, joinPanel, maintainOwnContextReferences);
 
 				//
 				// Activate Join Dialog and wait for user answer
@@ -719,7 +748,7 @@ public class HUEditorPanel
 		for (final IHUKey child : children)
 		{
 			if (!model.isSelected(child) && selectAll // SelectAll
-					|| model.isSelected(child) && !selectAll) // DeselectAll
+					|| model.isSelected(child) && !selectAll)  // DeselectAll
 			{
 				model.toggleSelected(child);
 			}
@@ -976,27 +1005,25 @@ public class HUEditorPanel
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
+		if (isDisposed())
+		{
+			return; // nothing to do
+		}
 		modelListener = null; // because it's the last reference, we expect this listener to expire in model
 
 		if (model != null)
 		{
-			// NOTE: we are not disposing it because we did not created it
+			// NOTE: we are not disposing it because we did not create it
 			model = null;
 		}
 
-		DisposableHelper.disposeAll(panel,
-				breadcrumbKeyLayoutPanel,
-				handlingUnitsKeyLayoutPanel,
-				propertiesPanel,
-				barcodeField, barcodeLabel,
-				bAssignTULU,
-				bDistributeCUTU,
-				bSplit,
-				bJoin,
-				bPrintLabel,
-				bToggleSelect,
-				bToggleSelectAll
-				);
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	public final void setAskUserWhenCancelingChanges(final boolean askUserWhenCancelingChanges)
@@ -1026,7 +1053,7 @@ public class HUEditorPanel
 	{
 		// Make sure we are allowed to enable it
 		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_QualityInspectionButtonDisabled, false);
-		if(disabled)
+		if (disabled)
 		{
 			setMarkAsQualityInspectionButtonDisplayed(false);
 			return;
@@ -1035,10 +1062,10 @@ public class HUEditorPanel
 		// Enable it
 		setMarkAsQualityInspectionButtonDisplayed(true);
 	}
-	
+
 	/**
 	 * Sets if {@link #bMarkAsQualityInspection} button shall be displayed.
-	 * 
+	 *
 	 * @param markAsQualityInspectionButtonDisplayed
 	 * @task 08639
 	 */
@@ -1054,6 +1081,7 @@ public class HUEditorPanel
 
 	/**
 	 * Updates {@link #bMarkAsQualityInspection} button status, text and action based on current selected HUs.
+	 *
 	 * @task 08639
 	 */
 	private final void updateMarkAsQualityInspectionButton()
@@ -1067,7 +1095,7 @@ public class HUEditorPanel
 			bMarkAsQualityInspection.setAction(null);
 			return;
 		}
-		
+
 		boolean haveHUsWithoutSupport = false;
 		boolean haveHUsMarked = false;
 		boolean haveHUsNotMarked = false;
@@ -1087,11 +1115,11 @@ public class HUEditorPanel
 				haveHUsNotMarked = true;
 			}
 		}
-		
+
 		// Case:
 		// * we have no HUs with quality inspection support
 		// * or we have some HUs which are marked and some HUs which are not marked
-		// * or we have some HUs WITHOUT quality inspection support 
+		// * or we have some HUs WITHOUT quality inspection support
 		if (haveHUsMarked == haveHUsNotMarked || haveHUsWithoutSupport)
 		{
 			bMarkAsQualityInspection.setVisible(false);
@@ -1119,10 +1147,10 @@ public class HUEditorPanel
 			// shall no happen
 		}
 	}
-	
+
 	/**
 	 * Mark/UnMark selected HUs as scheduled for Quality Inspection.
-	 * 
+	 *
 	 * @task 08639
 	 */
 	private final void doMarkOrUnMarkAsQualityInspection()
@@ -1140,7 +1168,7 @@ public class HUEditorPanel
 		{
 			// no action => nothing to do
 		}
-		
+
 		updateMarkAsQualityInspectionButton();
 	}
 }
