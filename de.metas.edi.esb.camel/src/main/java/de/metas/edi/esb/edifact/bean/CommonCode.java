@@ -30,17 +30,25 @@ import de.metas.edi.esb.commons.Util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class CommonCode
 {
+	/**
+	 * Creates an empty Edifact interchange, which can control several messages.
+	 *
+	 * @param senderId
+	 * @param receiverId
+	 * @param interchangeReference
+	 * @return
+	 */
 	public UNEdifactInterchange41 createEmptyInterchange(final String senderId,
 			final String receiverId,
 			final String interchangeReference)
@@ -51,27 +59,27 @@ public class CommonCode
 
 		final SyntaxIdentifier syntaxIdentifier = new SyntaxIdentifier();
 		syntaxIdentifier.setId("UNOC"); // UNB010-010 0001 Syntax identifier; UNOC = UN/ECE level C; Description: As defined in ISO 8859-1 : Information processing - Part 1: Latin alphabet No. 1.
-		syntaxIdentifier.setVersionNum("2"); // 2 = Version 2; Description: ISO 9735:1990.
-		unb41.setSyntaxIdentifier(syntaxIdentifier);
+		syntaxIdentifier.setVersionNum("2"); // UNB010-020 0002 Syntax version number; 2 = Version 2; Description: ISO 9735:1990.
+		unb41.setSyntaxIdentifier(syntaxIdentifier); // UNB010 S001
 
 		final Party interchangeSender = new Party();
-		interchangeSender.setId(senderId);
-		interchangeSender.setCodeQualifier("14"); // 14 = EAN (European Article Numbering Association); Description: Partner identification code assigned by the European Article Numbering Association
-		unb41.setSender(interchangeSender);
+		interchangeSender.setId(senderId); // UNB020-010 0004 Sender identification
+		interchangeSender.setCodeQualifier("14"); // UNB020-020 0007 Partner identification code qualifier; 14 = EAN (European Article Numbering Association); Description: Partner identification code assigned by the European Article Numbering Association
+		unb41.setSender(interchangeSender); // UNB020 S002 INTERCHANGE SENDER
 
 		final Party interchangeRecipient = new Party();
-		interchangeRecipient.setId(receiverId);
-		interchangeRecipient.setCodeQualifier("14"); // 14 = EAN
-		unb41.setRecipient(interchangeRecipient);
+		interchangeRecipient.setId(receiverId); // UNB030-010 0010 Recipient identification
+		interchangeRecipient.setCodeQualifier("14"); // // UNB020-020 0007 Partner identification code qualifier; 14 = EAN
+		unb41.setRecipient(interchangeRecipient); // UNB030 S003 INTERCHANGE RECIPIENT
 
 		final Date now = SystemTime.asDate();
 		DateTime dateTimeOfPreparation = new DateTime();
-		dateTimeOfPreparation.setDate(Util.formatDate(now, "yyMMdd"));
-		dateTimeOfPreparation.setTime(Util.formatDate(now, "hhmm"));
-		unb41.setDate(dateTimeOfPreparation);
+		dateTimeOfPreparation.setDate(Util.formatDate(now, "yyMMdd")); // UNB040-010 0017 Date of preparation
+		dateTimeOfPreparation.setTime(Util.formatDate(now, "hhmm")); // UNB040-020 0019 Time of preparation
+		unb41.setDate(dateTimeOfPreparation); // UNB040 S004 DATE/TIME OF PREPARATION
 
-		unb41.setControlRef(interchangeReference);
-		unb41.setAgreementId("EANCOM");
+		unb41.setControlRef(interchangeReference); // UNB050 0020 Interchange control reference; Description: Unique reference assigned by the sender to an interchange.
+		unb41.setAgreementId("EANCOM"); // UNB100 0032 Cummunications agreement ID; Description: Identification by name or code of the type of agreement under which the interchange takes place.
 		// unb41.setTestIndicator(testIndicator); // not mentioned in the spec
 		unEdifactInterchange41.setInterchangeHeader(unb41);
 
@@ -83,7 +91,15 @@ public class CommonCode
 		return unEdifactInterchange41;
 	}
 
-	public UNEdifactMessage41 createEmptyMessage(final String messageTypeIdentifier, final MutableInt segmentCounter)
+	/**
+	 * Create an "empty" Edifact message, with an "UNH MESSAGE HEADER" and "UNT MESSAGE TRAILER".
+	 *
+	 * @param messageTypeIdentifier identifier like <code>"ORDRSP"</code> or <code>"DESADV"</code> that goes into the "UNH020-010 006" segment.
+	 * @param segmentCounter
+	 * @return
+	 */
+	public UNEdifactMessage41 createEmptyMessage(final String messageTypeIdentifier,
+			final MutableInt segmentCounter)
 	{
 		final UNEdifactMessage41 message = new UNEdifactMessage41();
 

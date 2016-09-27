@@ -5,7 +5,7 @@ import java.util.Iterator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.api.LogTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
@@ -75,7 +75,7 @@ public class EDI_Ordrsp_CreateFromSalesOrders
 				.setContext(getCtx(), getTrxName())
 				.setItemsPerBatch(1) // this is probably not needed because we don't have a chunk processor
 				.setUseTrxSavepoints(false) // optimization: don't use trx savepoints because they are expensive and do not help us here
-				.setExceptionHandler(LogTrxItemExceptionHandler.instance)
+				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)
 				.setProcessor(new TrxItemProcessorAdapter<I_C_Order, Integer>()
 				{
 					private int counter = 0;
