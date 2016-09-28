@@ -19,6 +19,7 @@ import org.milyn.edi.unedifact.d96a.DESADV.SegmentGroup14;
 import org.milyn.edi.unedifact.d96a.DESADV.SegmentGroup15;
 import org.milyn.edi.unedifact.d96a.DESADV.SegmentGroup16;
 import org.milyn.edi.unedifact.d96a.DESADV.SegmentGroup2;
+import org.milyn.edi.unedifact.d96a.DESADV.SegmentGroup20;
 import org.milyn.edi.unedifact.d96a.common.BGMBeginningOfMessage;
 import org.milyn.edi.unedifact.d96a.common.CPSConsignmentPackingSequence;
 import org.milyn.edi.unedifact.d96a.common.DTMDateTimePeriod;
@@ -190,7 +191,7 @@ public class EdifactDesadvExportBean
 												.setE2005DateTimePeriodQualifier("11") // DTM010-010 2005 Date/time/period qualifier; 11 = Despatch date and or time; Description: Code giving specific meaning to a date, time or period.
 												.setE2380DateTimePeriod(Util.formatDate(xmlDesadv.getMovementDate().toGregorianCalendar().getTime(), "yyyyMMdd")) // DTM010-020 2380 Date/time/period
 												.setE2379DateTimePeriodFormatQualifier("102") // DTM010-030 2379 Date/time/period format qualifier; 102=CCYYMMDD; Description: Specification of the representation of a date, a date and time or of a period.
-		),                                                                        // end of DTM+11
+		),                                                                         // end of DTM+11
 						new DTMDateTimePeriod()  // DTM+17; Date on which the shipment is expected to reach the recipient
 								.setC507DateTimePeriod(
 										new C507DateTimePeriod() // DTM010 C507 DATE/TIME/PERIOD
@@ -199,7 +200,7 @@ public class EdifactDesadvExportBean
 												.setE2005DateTimePeriodQualifier("17") // DTM010-010 2005 Date/time/period qualifier; 17=Delivery date/time, estimated, 132=Arrival date/time, estimated;
 												.setE2380DateTimePeriod(Util.formatDate(xmlDesadv.getMovementDate().toGregorianCalendar().getTime(), "yyyyMMdd")) // DTM010-020 2380 Date/time/period
 												.setE2379DateTimePeriodFormatQualifier("102") // DTM010-030 2379 Date/time/period format qualifier; 102=CCYYMMDD; Description: Specification of the representation of a date, a date and time or of a period.
-		),                                                                       // end of DTM+17
+		),                                                                        // end of DTM+17
 						new DTMDateTimePeriod()  // DTM+137;
 								.setC507DateTimePeriod(
 										new C507DateTimePeriod() // DTM010 C507 DATE/TIME/PERIOD
@@ -223,7 +224,7 @@ public class EdifactDesadvExportBean
 												new C506Reference() // RFF010 C506 REFERENCE; Description: Identification of a reference.
 														.setE1153ReferenceQualifier("BM") // RFF010-010 1153 Reference qualifier; BM=Bill of lading number, DQ=Delivery note number; Description: Code giving specific meaning to a reference segment or a reference number.
 														.setE1154ReferenceNumber(xmlDesadv.getDocumentNo()) // RFF010-020 1154 Reference number
-		)),                                                                                        // end of RFF+BM
+		)),                                                                                         // end of RFF+BM
 				new SegmentGroup1() // RFF+ON; Order number (purchase)
 						.setRFFReference(
 								new RFFReference() // RFF REFERENCE
@@ -251,7 +252,7 @@ public class EdifactDesadvExportBean
 												new C082PartyIdentificationDetails() // NAD020 C082 PARTY IDENTIFICATION DETAILS
 														// TODO: we are asked to provide the SCAC here. maybe we need to add M_Shipper to EDI_Desadv and then store the SCAC there? Btw, SCAC = Standard Carrier Alpha Code
 														.setE3039PartyIdIdentification("") // NAD020-010 3039 Party id. identification
-		)),                                                                                                    // end of NAD+CA
+		)),                                                                                                     // end of NAD+CA
 				new SegmentGroup2() // NAD+DP; Delivery party
 						.setNADNameAndAddress(
 								new NADNameAndAddress() // NAD NAME AND ADDRESS
@@ -263,7 +264,7 @@ public class EdifactDesadvExportBean
 														.setE3055CodeListResponsibleAgencyCoded("9")) // NAD020-030 3055 Code list responsible agency, coded; 9=EAN
 										// TODO: we are missing the DP's country code. note that this is only "recommended"
 										.setE3207CountryCoded("") // NAD090 3207 Country, coded;
-		),                                                                                                  // end of NAD+DP
+		),                                                                                                   // end of NAD+DP
 				new SegmentGroup2() // NAD+SU; Supplier
 						.setNADNameAndAddress(
 								new NADNameAndAddress() // NAD NAME AND ADDRESS
@@ -273,7 +274,7 @@ public class EdifactDesadvExportBean
 														// TODO: add DeliveryGLN to EDI_Desadv
 														// .setE3039PartyIdIdentification(xmlDesadv.getSupplierGLN()) // NAD020-010 3039 Party id. identification
 														.setE3055CodeListResponsibleAgencyCoded("9") // NAD020-030 3055 Code list responsible agency, coded; 9=EAN
-		)),                                                                                               // end of NAD+SU
+		)),                                                                                                // end of NAD+SU
 				new SegmentGroup2() // NAD+SF; Ship From (warehouse)
 						.setNADNameAndAddress(
 								new NADNameAndAddress() // NAD NAME AND ADDRESS
@@ -317,7 +318,7 @@ public class EdifactDesadvExportBean
 														.setC202PackageType(
 																new C202PackageType() // PAC030 C202 PACKAGE TYPE; Description: Type of package by name or by code from a specified source.
 																		.setE7065TypeOfPackagesIdentification("201") // PAC030-010 7065 Type of packages identification; 201=ISO EURO pallet, 202=UK industrial size pallets (might only be applicable for UK);
-		)),                                                       // end of PAC+[# of pallets]
+		)),                                                        // end of PAC+[# of pallets]
 								new SegmentGroup11() // PAC+[# of cartons]; Number of pallets present in the shipment.
 										// Number of cartons present in the shipment. Units that are stacked on the pallet without outer carton are counted as 1 unit = 1 carton.
 										.setPACPackage(
@@ -359,12 +360,12 @@ public class EdifactDesadvExportBean
 																			.setE7065TypeOfPackagesIdentification(e7065TypeOfPackagesIdentification)) // PAC030-010 7065 Type of package identification
 
 			) // end of PACPackage
- // Note that we skip the following physical dimensions:
- // MEA+PD+LN length
- // MEA+PD+WD width
- // MEA+PD+HT height
- // MEA+PD+AAB unit gross weight
- // For now we also skip Segment Group 12 "HAN - HANDLING INSTRUCTIONS" (e.g. "EAT"=food or "HWC"=handle with care)
+											// Note that we skip the following physical dimensions:
+											// MEA+PD+LN length
+											// MEA+PD+WD width
+											// MEA+PD+HT height
+											// MEA+PD+AAB unit gross weight
+											// For now we also skip Segment Group 12 "HAN - HANDLING INSTRUCTIONS" (e.g. "EAT"=food or "HWC"=handle with care)
 											.setSegmentGroup13(ImmutableList.<SegmentGroup13> of(
 													new SegmentGroup13()
 															.setPCIPackageIdentification(
@@ -379,7 +380,7 @@ public class EdifactDesadvExportBean
 																									.setE74022IdentityNumber(xmlDesadvLine.getIPASSCC18()) // GIN020-010 7402 Identity number
 			)))) // end of Segment group 14
 			)))) // end of segment group 11
-							.setSegmentGroup15(ImmutableList.<SegmentGroup15> of(
+							.setSegmentGroup15(ImmutableList.of(
 									new SegmentGroup15()
 											.setLINLineItem(
 													new LINLineItem() // 1310 LIN LINE ITEM
@@ -389,8 +390,8 @@ public class EdifactDesadvExportBean
 																			.setE7140ItemNumber(xmlDesadvLine.getUPC()) // LIN030-010 7140 Item number
 																			.setE7143ItemNumberTypeCoded("EN") // LIN030-020 7143 Item number type, coded; EN=EAN, UP=UPC, SRV=GTIN
 			)) // end of LIN - LINE ITEM
- // Note that we skip the "PIA - ADDITIONAL PRODUCT ID" segment. I think it's OK since we provided the EAN
-											.setQTYQuantity(ImmutableList.<QTYQuantity> of(
+											// Note that we skip the "PIA - ADDITIONAL PRODUCT ID" segment. I think it's OK since we provided the EAN
+											.setQTYQuantity(ImmutableList.of(
 													new QTYQuantity() // QTY QUANTITY
 															.setC186QuantityDetails(
 																	new C186QuantityDetails() // QTY010 C186 QUANTITY DETAILS; Description: Quantity information in a transaction, qualified when relevant.
@@ -407,9 +408,11 @@ public class EdifactDesadvExportBean
 																							.setE1153ReferenceQualifier("ON") // RFF010-010 1153 Reference qualifier; ON=Order number (purchase)
 																							.setE1154ReferenceNumber(xmlDesadv.getPOReference())) // RFF010-020 1154 Reference number
 			))) // end of segment group 16
- // TODO i think we need Segment Group 20. It's optional, but it's about expiry date which is sth we need.
-			)) // end of segment group 15
-			); // end of segment group 10
+											// TODO i think we need Segment Group 20. It's optional, but it's about expiry date which is sth we need.
+											.setSegmentGroup20(
+													true /*xmlDesadv.hasExpiryDate() */? ImmutableList.of(new SegmentGroup20()) : null
+													)))) // end of segment group 15
+			; // end of segment group 10
 
 		}
 
