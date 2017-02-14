@@ -4,20 +4,18 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.pricing.api.ProductPriceQuery.IProductPriceQueryMatcher;
 import org.adempiere.pricing.api.ProductPriceQuery.ProductPriceQueryMatcher;
+import org.adempiere.pricing.spi.impl.rules.AttributePricing;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.model.I_M_ProductPrice;
-import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
-import de.metas.pricing.attributebased.impl.AttributePricing;
 
 public class HUPricing extends AttributePricing
 {
@@ -187,32 +185,32 @@ public class HUPricing extends AttributePricing
 		}
 	}
 
-	private int getM_HU_PI_Item_Product_ID(final IPricingContext pricingCtx)
-	{
-		final Object referencedObj = pricingCtx.getReferencedObject();
-
-		if (null == referencedObj)
-		{
-			return -1;
-		}
-
-		//
-		// check if we have an piip-aware
-		if (referencedObj instanceof I_M_HU_PI_Item_Product_Aware)
-		{
-			return ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
-		}
-
-		//
-		// check if there is a M_HU_PI_Item_Product_ID(_Override) column.
-		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
-		{
-			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
-			return valueOverrideOrValue == null ? 0 : valueOverrideOrValue.intValue();
-		}
-
-		return -1;
-	}
+//	private int getM_HU_PI_Item_Product_ID(final IPricingContext pricingCtx)
+//	{
+//		final Object referencedObj = pricingCtx.getReferencedObject();
+//
+//		if (null == referencedObj)
+//		{
+//			return -1;
+//		}
+//
+//		//
+//		// check if we have an piip-aware
+//		if (referencedObj instanceof I_M_HU_PI_Item_Product_Aware)
+//		{
+//			return ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
+//		}
+//
+//		//
+//		// check if there is a M_HU_PI_Item_Product_ID(_Override) column.
+//		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
+//		{
+//			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
+//			return valueOverrideOrValue == null ? 0 : valueOverrideOrValue.intValue();
+//		}
+//
+//		return -1;
+//	}
 
 	private static IProductPriceQueryMatcher createHUPIItemProductMatcher(final int huPIItemProductId)
 	{

@@ -39,7 +39,7 @@ import org.compiere.util.DB;
  * @author tsa
  * 
  */
-public class PriceListVersionVB extends AbstractPriceListBasedRule
+public class PriceListVersionVB_OLD extends AbstractPriceListBasedRule
 {
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)

@@ -1,5 +1,8 @@
 package org.adempiere.pricing.api;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,8 +27,10 @@ package org.adempiere.pricing.api;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
@@ -86,4 +91,15 @@ public interface IPriceListDAO extends ISingletonService
 	
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
+
+	List<I_M_ProductPrice> retrieveProductPrices(I_M_PriceList_Version plv, int productId);
+	
+	Collection<I_M_ProductScalePrice> retrieveScalePrices(int productPriceId, String trxName);
+
+	/**
+	 * Returns an existing scale price or (if <code>createNew</code> is true) creates a new one.
+	 */
+	I_M_ProductScalePrice retrieveOrCreateScalePrices(int productPriceId, BigDecimal qty, boolean createNew, String trxName);
+
+	I_M_ProductScalePrice createScalePrice(String trxName);
 }

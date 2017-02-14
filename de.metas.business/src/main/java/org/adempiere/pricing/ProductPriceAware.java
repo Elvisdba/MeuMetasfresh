@@ -1,4 +1,4 @@
-package de.metas.pricing.attributebased;
+package org.adempiere.pricing;
 
 import java.util.Optional;
 

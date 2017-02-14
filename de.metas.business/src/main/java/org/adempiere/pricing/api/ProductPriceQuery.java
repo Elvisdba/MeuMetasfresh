@@ -502,7 +502,7 @@ public class ProductPriceQuery
 
 	}
 
-	private static final class ASIProductPriceAttributesFilter implements IQueryFilter<I_M_ProductPrice>
+	public static final class ASIProductPriceAttributesFilter implements IQueryFilter<I_M_ProductPrice>
 	{
 		public static final ASIProductPriceAttributesFilter of(final I_M_AttributeSetInstance asi)
 		{

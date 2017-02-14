@@ -1,4 +1,5 @@
-package de.metas.adempiere.pricing.spi.impl.rules;
+package org.adempiere.pricing.spi.impl.rules;
+
 
 /*
  * #%L
@@ -32,15 +33,12 @@ import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.api.ProductPriceQuery;
-import org.adempiere.pricing.spi.impl.rules.AbstractPriceListBasedRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
-
-import de.metas.product.IProductPA;
 
 /**
  * Calculate price using {@link I_M_ProductScalePrice}
@@ -95,7 +93,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final I_M_ProductScalePrice scalePrice = Services.get(IProductPA.class)
+		final I_M_ProductScalePrice scalePrice = Services.get(IPriceListDAO.class)
 				.retrieveOrCreateScalePrices(productPrice.getM_ProductPrice_ID()
 						, pricingCtx.getQty()
 						, false // createNew

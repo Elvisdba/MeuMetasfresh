@@ -1,4 +1,4 @@
-package de.metas.pricing.attributebased.impl;
+package org.adempiere.pricing.spi.impl.rules;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,9 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IAttributePricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.api.ProductPriceQuery;
@@ -24,9 +23,6 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
-import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAware;
-import de.metas.pricing.attributebased.ProductPriceAware;
 
 public class AttributePricing extends PricingRuleAdapter
 {
@@ -142,46 +138,46 @@ public class AttributePricing extends PricingRuleAdapter
 	 * 
 	 * @param pricingCtx
 	 */
-	private final Optional<? extends I_M_ProductPrice> getProductPrice(final IPricingContext pricingCtx)
-	{
-		//
-		// Use the explicit Product Price Attribute, if set and if it's valid.
-		// In case we deal with explicit product price attribute, even if it's not valid we will not search forward but we will return "null".
-		final IProductPriceAware explicitProductPriceAttributeAware = getProductPriceAttributeAware(pricingCtx).orElse(null);
-		if (explicitProductPriceAttributeAware != null && explicitProductPriceAttributeAware.isExplicitProductPriceAttribute())
-		{
-			final Optional<I_M_ProductPrice> explicitProductPrice = retrieveProductPriceAttributeIfValid(pricingCtx, explicitProductPriceAttributeAware.getM_ProductPrice_ID());
-			return explicitProductPrice;
-		}
+//	private final Optional<? extends I_M_ProductPrice> getProductPrice(final IPricingContext pricingCtx)
+//	{
+//		//
+//		// Use the explicit Product Price Attribute, if set and if it's valid.
+//		// In case we deal with explicit product price attribute, even if it's not valid we will not search forward but we will return "null".
+//		final IProductPriceAware explicitProductPriceAttributeAware = getProductPriceAttributeAware(pricingCtx).orElse(null);
+//		if (explicitProductPriceAttributeAware != null && explicitProductPriceAttributeAware.isExplicitProductPriceAttribute())
+//		{
+//			final Optional<I_M_ProductPrice> explicitProductPrice = retrieveProductPriceAttributeIfValid(pricingCtx, explicitProductPriceAttributeAware.getM_ProductPrice_ID());
+//			return explicitProductPrice;
+//		}
+//
+//		//
+//		// Find best matching product price attribute
+//		final Optional<? extends I_M_ProductPrice> productPriceAttribute = findMatchingProductPrice(pricingCtx);
+//		return productPriceAttribute;
+//	}
 
-		//
-		// Find best matching product price attribute
-		final Optional<? extends I_M_ProductPrice> productPriceAttribute = findMatchingProductPrice(pricingCtx);
-		return productPriceAttribute;
-	}
-
-	private final Optional<IProductPriceAware> getProductPriceAttributeAware(final IPricingContext pricingCtx)
-	{
-		final Object referencedObject = pricingCtx.getReferencedObject();
-
-		// 1st try the direct way, using the referenced object itself as IProductPriceAttributeAware
-		final Optional<IProductPriceAware> directProductPriceAware = ProductPriceAware.ofModel(referencedObject);
-		if (directProductPriceAware.isPresent())
-		{
-			return directProductPriceAware;
-		}
-
-		// 2nd fall back to viewing the referenced object as ASI and then check if someone attached a IProductPriceAware to it as dynamic attribute
-		final Optional<IAttributeSetInstanceAware> attributeSetInstanceAware = getAttributeSetInstanceAware(pricingCtx);
-		if (attributeSetInstanceAware.isPresent())
-		{
-			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
-
-			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware.get());
-			return explicitProductPriceAware;
-		}
-		return Optional.empty();
-	}
+//	private final Optional<IProductPriceAware> getProductPriceAttributeAware(final IPricingContext pricingCtx)
+//	{
+//		final Object referencedObject = pricingCtx.getReferencedObject();
+//
+//		// 1st try the direct way, using the referenced object itself as IProductPriceAttributeAware
+//		final Optional<IProductPriceAware> directProductPriceAware = ProductPriceAware.ofModel(referencedObject);
+//		if (directProductPriceAware.isPresent())
+//		{
+//			return directProductPriceAware;
+//		}
+//
+//		// 2nd fall back to viewing the referenced object as ASI and then check if someone attached a IProductPriceAware to it as dynamic attribute
+//		final Optional<IAttributeSetInstanceAware> attributeSetInstanceAware = getAttributeSetInstanceAware(pricingCtx);
+//		if (attributeSetInstanceAware.isPresent())
+//		{
+//			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+//
+//			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware.get());
+//			return explicitProductPriceAware;
+//		}
+//		return Optional.empty();
+//	}
 
 	/**
 	 * Retrieves the {@link I_M_ProductPrice} by given ID and validates if is compatible with our pricing context.
@@ -261,46 +257,46 @@ public class AttributePricing extends PricingRuleAdapter
 		return Optional.of(productPrice);
 	}
 
-	/**
-	 * 
-	 * @param pricingCtx
-	 * @return
-	 *         <ul>
-	 *         <li>ASI
-	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code> or if the referenced object can't be converted in an {@link IAttributeSetInstanceAware}.
-	 *         </ul>
-	 */
-	protected final static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
-	{
-		final IAttributeSetInstanceAware asiAware = getAttributeSetInstanceAware(pricingCtx).orElse(null);
-		if (asiAware == null)
-		{
-			return null;
-		}
+//	/**
+//	 * 
+//	 * @param pricingCtx
+//	 * @return
+//	 *         <ul>
+//	 *         <li>ASI
+//	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code> or if the referenced object can't be converted in an {@link IAttributeSetInstanceAware}.
+//	 *         </ul>
+//	 */
+//	protected final static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
+//	{
+//		final IAttributeSetInstanceAware asiAware = getAttributeSetInstanceAware(pricingCtx).orElse(null);
+//		if (asiAware == null)
+//		{
+//			return null;
+//		}
+//
+//		//
+//		// Get M_AttributeSetInstance_ID and return it.
+//		// NOTE: to respect the method contract, ALWAYS return ZERO if it's not set, no matter if the getter returned -1.
+//		final int attributeSetInstanceId = asiAware.getM_AttributeSetInstance_ID();
+//		if(attributeSetInstanceId <= 0)
+//		{
+//			return null;
+//		}
+//		
+//		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
+//		return attributeSetInstance;
+//	}
 
-		//
-		// Get M_AttributeSetInstance_ID and return it.
-		// NOTE: to respect the method contract, ALWAYS return ZERO if it's not set, no matter if the getter returned -1.
-		final int attributeSetInstanceId = asiAware.getM_AttributeSetInstance_ID();
-		if(attributeSetInstanceId <= 0)
-		{
-			return null;
-		}
-		
-		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
-		return attributeSetInstance;
-	}
-
-	private static final Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware(final IPricingContext pricingCtx)
-	{
-		final Object referencedObj = pricingCtx.getReferencedObject();
-		if (null == referencedObj)
-		{
-			return Optional.empty();
-		}
-
-		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
-		return Optional.ofNullable(asiAware);
-	}
+//	private static final Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware(final IPricingContext pricingCtx)
+//	{
+//		final Object referencedObj = pricingCtx.getReferencedObject();
+//		if (null == referencedObj)
+//		{
+//			return Optional.empty();
+//		}
+//
+//		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+//		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
+//		return Optional.ofNullable(asiAware);
+//	}
 }

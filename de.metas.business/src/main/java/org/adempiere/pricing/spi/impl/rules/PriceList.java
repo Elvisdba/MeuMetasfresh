@@ -1,10 +1,32 @@
 package org.adempiere.pricing.spi.impl.rules;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MPriceList;
+import org.compiere.util.Trace;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,43 +35,92 @@ package org.adempiere.pricing.spi.impl.rules;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-
-import org.adempiere.exceptions.DBException;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.DB;
-
-public class PriceList extends AbstractPriceListBasedRule
+public class PriceList extends PricingRuleAdapter
 {
+	private static final Logger logger = LogManager.getLogger(PriceList.class);
 
-	/**
-	 * Returns <code>false</code> if the given <code>pricingContext</code> has a a <code>M_PriceList_Version_ID</code> set.<br>
-	 * In this case we don't want apply this rule, because it would return a product price from <b>any</b> pricelist (and not the most recent one!) with a fitting price date.
-	 */
-	@Override
-	public boolean applies(IPricingContext pricingCtx, IPricingResult result)
+	public static interface IProductPriceRule
 	{
-		if (pricingCtx.getM_PriceList_Version_ID() > 0)
+		boolean matches(IPricingContext pricingCtx, IPricingResult result, I_M_ProductPrice productPrice);
+
+		void updateResult(IPricingContext pricingCtx, IPricingResult result, I_M_ProductPrice productPrice);
+	}
+
+	private static final CopyOnWriteArrayList<IProductPriceRule> priceListRules = new CopyOnWriteArrayList<>();
+
+	public static final void registerRule(final IProductPriceRule rule)
+	{
+		Check.assumeNotNull(rule, "Parameter rule is not null");
+		priceListRules.addIfAbsent(rule);
+	}
+
+	private List<IProductPriceRule> getPriceListRules()
+	{
+		return priceListRules;
+	}
+
+	private List<IProductPriceRule> getPriceListRulesThatMatches(final IPricingContext pricingCtx, final IPricingResult result, final I_M_ProductPrice productPrice)
+	{
+		final ImmutableList.Builder<IProductPriceRule> matchingRules = ImmutableList.builder();
+		for (final IProductPriceRule rule : getPriceListRules())
 		{
+			if (!rule.matches(pricingCtx, result, productPrice))
+			{
+				continue;
+			}
+
+			matchingRules.add(rule);
+		}
+
+		return matchingRules.build();
+	}
+
+	@Override
+	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
+	{
+		if (result.isCalculated())
+		{
+			logger.debug("Not applying because already calculated");
 			return false;
 		}
-		return super.applies(pricingCtx, result);
+
+		if (pricingCtx.getM_Product_ID() <= 0)
+		{
+			logger.debug("Not applying because there is no M_Product_ID specified in context");
+			return false;
+		}
+
+		if (pricingCtx.getM_PriceList_ID() <= 0)
+		{
+			final String msg = "pricingCtx {} contains no priceList";
+			Loggables.get().addLog(msg, pricingCtx);
+			logger.error(msg, pricingCtx);
+			Trace.printStack();
+			return false; // false;
+		}
+
+		if (pricingCtx.getM_PriceList_ID() == MPriceList.M_PriceList_ID_None)
+		{
+			logger.info("Not applying because PriceList is NoPriceList ({})", pricingCtx);
+			return false;
+		}
+
+		if (pricingCtx.getM_PriceList_Version_ID() <= 0)
+		{
+			logger.info("Not applying because M_PriceList_Version_ID is not set ({})", pricingCtx);
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
@@ -60,124 +131,78 @@ public class PriceList extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final int m_M_Product_ID = pricingCtx.getM_Product_ID();
-		final int m_M_PriceList_ID = pricingCtx.getM_PriceList_ID();
-		Timestamp m_PriceDate = pricingCtx.getPriceDate();
-		if (m_PriceDate == null)
-			m_PriceDate = SystemTime.asTimestamp();
-		//
-		int m_M_PriceList_Version_ID = -1;
-		int m_C_TaxCategory_ID = -1; // metas;
-		boolean m_calculated = false;
-		BigDecimal m_PriceStd = null;
-		BigDecimal m_PriceList = null;
-		BigDecimal m_PriceLimit = null;
-		int m_C_UOM_ID = -1;
-		int m_C_Currency_ID = -1;
-		int m_M_Product_Category_ID = -1;
-		boolean m_enforcePriceLimit = false;
-		boolean m_isTaxIncluded = false;
-		int ppUOMId = -1;
+		final int productId = pricingCtx.getM_Product_ID();
 
-		// Get Prices for Price List
-		final String sql = "SELECT bomPriceStd(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceStd,"	// 1
-				+ " bomPriceList(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceList,"		// 2
-				+ " bomPriceLimit(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceLimit,"	// 3
-				+ " p.C_UOM_ID,pv.ValidFrom,pl.C_Currency_ID,p.M_Product_Category_ID,pl.EnforcePriceLimit "	// 4..8
-				+ " , pv.M_PriceList_Version_ID " // metas: also retrieving the PLV-ID
-				+ " , pp.C_TaxCategory_ID " // metas
-				+ " , pp.C_UOM_ID " // 11
-				+ " FROM M_Product p"
-				+ "  INNER JOIN M_ProductPrice pp ON (p.M_Product_ID=pp.M_Product_ID) "
-				+ "  INNER JOIN  M_PriceList_Version pv ON (pp.M_PriceList_Version_ID=pv.M_PriceList_Version_ID)"
-				+ "  INNER JOIN M_Pricelist pl ON (pv.M_PriceList_ID=pl.M_PriceList_ID) "
-				+ "WHERE pv.IsActive='Y'"
-				+ " AND pp.IsActive='Y'"
-				+ " AND p.M_Product_ID=?"				// #1
-				+ " AND pv.M_PriceList_ID=?"			// #2
-				+ " AND pp." + I_M_ProductPrice.COLUMNNAME_IsAttributeDependant + "='N'"
-				+ " ORDER BY pv.ValidFrom DESC";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
+		if (plv == null || !plv.isActive())
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_M_Product_ID);
-			pstmt.setInt(2, m_M_PriceList_ID);
-			rs = pstmt.executeQuery();
-			while (!m_calculated && rs.next())
-			{
-				Timestamp plDate = rs.getTimestamp(5);
-				// we have the price list
-				// if order date is after or equal PriceList validFrom
-				if (plDate == null || !m_PriceDate.before(plDate))
-				{
-					// Prices
-					m_PriceStd = rs.getBigDecimal(1);
-					if (rs.wasNull())
-						m_PriceStd = BigDecimal.ZERO;
-					m_PriceList = rs.getBigDecimal(2);
-					if (rs.wasNull())
-						m_PriceList = BigDecimal.ZERO;
-					m_PriceLimit = rs.getBigDecimal(3);
-					if (rs.wasNull())
-						m_PriceLimit = BigDecimal.ZERO;
-					//
-					m_C_UOM_ID = rs.getInt(4);
-					m_C_Currency_ID = rs.getInt(6);
-					m_M_Product_Category_ID = rs.getInt(7);
-					m_enforcePriceLimit = "Y".equals(rs.getString(8));
-					m_M_PriceList_Version_ID = rs.getInt(9); // metas: also retrieving the PLV-ID
-					m_C_TaxCategory_ID = rs.getInt("C_TaxCategory_ID"); // metas
-					ppUOMId = rs.getInt(11);
-
-					//
-					log.debug("M_PriceList_ID=" + m_M_PriceList_ID + "(" + plDate + ")" + " - " + m_PriceStd);
-					m_calculated = true;
-					break;
-				}
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		//
-		//
-
-		if (!m_calculated)
-		{
-			log.trace("Not found (PL)");
 			return;
 		}
 
-		result.setPriceStd(m_PriceStd);
-		result.setPriceList(m_PriceList);
-		result.setPriceLimit(m_PriceLimit);
-		result.setC_Currency_ID(m_C_Currency_ID);
-		result.setM_Product_Category_ID(m_M_Product_Category_ID);
-		result.setEnforcePriceLimit(m_enforcePriceLimit);
-		result.setTaxIncluded(m_isTaxIncluded);
-		result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID);
-		result.setC_TaxCategory_ID(m_C_TaxCategory_ID);
-		result.setCalculated(true);
-
-		// 06942 : use product price uom all the time
-		if (ppUOMId <= 0)
+		final List<I_M_ProductPrice> productPrices = Services.get(IPriceListDAO.class).retrieveProductPrices(plv, productId);
+		if (productPrices.isEmpty())
 		{
-			result.setPrice_UOM_ID(m_C_UOM_ID);
+			logger.trace("No product prices found for M_Product_ID={} in {}", productId, plv);
+			return;
 		}
-		else
+
+		//
+		// TODO: check the explicit product price
+
+		//
+		// Check the price list rules
+		for (final I_M_ProductPrice productPrice : productPrices)
 		{
-			result.setPrice_UOM_ID(ppUOMId);
+			final List<IProductPriceRule> rules = getPriceListRulesThatMatches(pricingCtx, result, productPrice);
+
+			// If no matching rules found then skip this product price
+			if (rules.isEmpty())
+			{
+				continue;
+			}
+
+			//
+			// Some rules are matching.
+			// => Update the pricing result
+			result.setCalculated(true);
+			updateResult(pricingCtx, result, productPrice);
+			for (final IProductPriceRule rule : rules)
+			{
+				rule.updateResult(pricingCtx, result, productPrice);
+			}
+			// Stop here, we have a result
+			return;
 		}
 	}
 
+	public static void updateResult(final IPricingContext pricingCtx, final IPricingResult result, final I_M_ProductPrice productPrice)
+	{
+		Check.assumeNotNull(productPrice, "Parameter productPrice is not null");
+		
+		final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
+		final I_M_PriceList priceList = priceListVersion.getM_PriceList();
+		final I_M_Product product = productPrice.getM_Product();
+
+		result.setPriceStd(productPrice.getPriceStd());
+		result.setPriceList(productPrice.getPriceList());
+		result.setPriceLimit(productPrice.getPriceLimit());
+		result.setC_Currency_ID(priceList.getC_Currency_ID());
+		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
+		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
+		result.setTaxIncluded(priceList.isTaxIncluded());
+		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
+		result.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID()); // make sure that the result doesn't lack this important info, even if it was already known from the context!
+
+		// 06942 : use product price uom all the time
+		if (productPrice.getC_UOM_ID() <= 0)
+		{
+			result.setPrice_UOM_ID(product.getC_UOM_ID());
+		}
+		else
+		{
+			result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
+		}
+
+		result.setCalculated(true);
+	}
 }

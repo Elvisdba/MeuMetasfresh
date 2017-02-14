@@ -1,6 +1,6 @@
 package de.metas.edi.model;
 
-import de.metas.pricing.attributebased.IProductPriceAware;
+import org.adempiere.pricing.IProductPriceAware;
 
 public interface I_C_OLCand extends de.metas.handlingunits.model.I_C_OLCand, IProductPriceAware
 {

@@ -29,6 +29,8 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.IProductPriceAware;
+import org.adempiere.pricing.api.IAttributePricingBL;
 import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -41,8 +43,6 @@ import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
-import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAware;
 
 /**
  * Note: currently this implementation is used to update a given record's ASI when its {@link I_M_HU_PI_Item_Product} changes.

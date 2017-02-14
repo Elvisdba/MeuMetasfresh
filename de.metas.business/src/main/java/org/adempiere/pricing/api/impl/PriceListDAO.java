@@ -1,8 +1,11 @@
 package org.adempiere.pricing.api.impl;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -14,7 +17,9 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -25,15 +30,16 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 import de.metas.logging.LogManager;
 
 public class PriceListDAO implements IPriceListDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
-
 
 	@Override
 	@Cached(cacheName = I_M_PriceList.Table_Name + "#By#M_PriceList_ID")
@@ -59,7 +65,6 @@ public class PriceListDAO implements IPriceListDAO
 				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_SeqNo)
 				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID)
 				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_MatchSeqNo);
-				
 
 		return queryBuilder.create()
 				.iterate(I_M_ProductPrice.class);
@@ -187,7 +192,7 @@ public class PriceListDAO implements IPriceListDAO
 				.create()
 				.first();
 	}
-	
+
 	@Override
 	public int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice)
 	{
@@ -204,8 +209,87 @@ public class PriceListDAO implements IPriceListDAO
 			lastMatchSeqNo = 0;
 		}
 
-		final int nextMatchSeqNo = (lastMatchSeqNo / 10) * 10 + 10;
+		final int nextMatchSeqNo = lastMatchSeqNo / 10 * 10 + 10;
 		return nextMatchSeqNo;
 	}
 
+	@Override
+	public List<I_M_ProductPrice> retrieveProductPrices(final I_M_PriceList_Version plv, final int productId)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(plv);
+		final int priceListVersionId = plv.getM_PriceList_Version_ID();
+		final String trxName = InterfaceWrapperHelper.getTrxName(plv);
+		return retrieveProductPrices(ctx, priceListVersionId, productId, trxName);
+	}
+
+	@Cached(cacheName = I_M_ProductPrice.Table_Name + "#by#M_PriceList_Version_ID#M_Product_ID")
+	public List<I_M_ProductPrice> retrieveProductPrices(@CacheCtx final Properties ctx, final int priceListVersionId, final int productId, @CacheTrx final String trxName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class, ctx, trxName)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				//
+				.orderBy()
+				.addColumn(I_M_ProductPrice.COLUMN_MatchSeqNo, Direction.Ascending, Nulls.Last)
+				.addColumn(I_M_ProductPrice.COLUMN_M_ProductPrice_ID) // just to have a predictable order
+				.endOrderBy()
+				//
+				.create()
+				.listImmutable(I_M_ProductPrice.class);
+	}
+
+	@Override
+	public Collection<I_M_ProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductScalePrice.class, Env.getCtx(), trxName)
+				.addEqualsFilter(I_M_ProductScalePrice.COLUMN_M_ProductPrice_ID, productPriceId)
+				// .addCompareFilter(I_M_ProductScalePrice.COLUMN_Qty, Operator.LESS_OR_EQUAL, value)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listImmutable(I_M_ProductScalePrice.class);
+	}
+
+	@Override
+	public I_M_ProductScalePrice createScalePrice(final String trxName)
+	{
+		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(), trxName));
+	}
+
+	@Override
+	public I_M_ProductScalePrice retrieveOrCreateScalePrices(final int productPriceId, final BigDecimal qty, final boolean createNew, final String trxName)
+	{
+		final I_M_ProductScalePrice productScalePrice = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductScalePrice.class, Env.getCtx(), trxName)
+				.addEqualsFilter(I_M_ProductScalePrice.COLUMN_M_ProductPrice_ID, productPriceId)
+				.addCompareFilter(I_M_ProductScalePrice.COLUMN_Qty, Operator.LESS_OR_EQUAL, qty)
+				.addOnlyActiveRecordsFilter()
+				//
+				.orderBy()
+				.addColumn(I_M_ProductScalePrice.COLUMN_Qty, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				//
+				.create()
+				.first(I_M_ProductScalePrice.class);
+		if (productScalePrice != null)
+		{
+			return productScalePrice;
+		}
+
+		if (createNew)
+		{
+
+			logger.debug("Returning new instance for M_ProductPrice {} and quantity {}", productPriceId, qty);
+			final I_M_ProductScalePrice newInstance = createScalePrice(trxName);
+			newInstance.setM_ProductPrice_ID(productPriceId);
+			newInstance.setQty(qty);
+			return newInstance;
+		}
+		else
+		{
+			return null;
+		}
+	}
 }

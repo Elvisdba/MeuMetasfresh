@@ -55,7 +55,6 @@ import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.I_M_DiscountSchema;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductPA;
 
 public final class CommissionTools
 {
@@ -243,7 +242,7 @@ public final class CommissionTools
 		}
 		
 		final boolean createNew = false;
-		final org.adempiere.model.I_M_ProductScalePrice productScalePrice = Services.get(IProductPA.class).retrieveOrCreateScalePrices(productPrice.getM_ProductPrice_ID(), qty, createNew, trxName);
+		final org.adempiere.model.I_M_ProductScalePrice productScalePrice = Services.get(IPriceListDAO.class).retrieveOrCreateScalePrices(productPrice.getM_ProductPrice_ID(), qty, createNew, trxName);
 		return InterfaceWrapperHelper.create(productScalePrice, I_M_ProductScalePrice.class);
 	}
 }

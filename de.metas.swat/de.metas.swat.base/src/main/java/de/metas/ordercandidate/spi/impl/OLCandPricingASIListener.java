@@ -30,13 +30,13 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IAttributePricingBL;
 import org.adempiere.pricing.api.IPricingAttribute;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.pricing.attributebased.IAttributePricingBL;
 
 /**
  * Keeps the olCand's ASI up to date after changes in the product or the pricing.

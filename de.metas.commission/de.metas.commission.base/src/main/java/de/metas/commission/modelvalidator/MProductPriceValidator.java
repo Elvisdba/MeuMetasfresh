@@ -26,6 +26,7 @@ package de.metas.commission.modelvalidator;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -34,7 +35,6 @@ import org.compiere.model.PO;
 
 import de.metas.commission.interfaces.I_M_ProductPrice;
 import de.metas.commission.interfaces.I_M_ProductScalePrice;
-import de.metas.product.IProductPA;
 
 public class MProductPriceValidator implements ModelValidator
 {
@@ -86,11 +86,11 @@ public class MProductPriceValidator implements ModelValidator
 		{
 			return null;
 		}
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		// if the scalePrice doesn't exist yet, create a new one
 		final I_M_ProductScalePrice productScalePrice =
-				InterfaceWrapperHelper.create(productPA.retrieveOrCreateScalePrices(po.get_ID(), BigDecimal.ONE, true, po.get_TrxName()),
+				InterfaceWrapperHelper.create(priceListDAO.retrieveOrCreateScalePrices(po.get_ID(), BigDecimal.ONE, true, po.get_TrxName()),
 						I_M_ProductScalePrice.class);
 
 		// copy the price from the productPrice

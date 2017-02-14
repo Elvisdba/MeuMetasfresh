@@ -27,14 +27,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-
-import de.metas.product.IProductPA;
 
 public class MProductPriceValidator implements ModelValidator
 {
@@ -91,12 +90,12 @@ public class MProductPriceValidator implements ModelValidator
 		}
 		else
 		{
-			final IProductPA productPA = Services.get(IProductPA.class);
+			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 			if (productPrice.isUseScalePrice())
 			{
 				final String trxName = InterfaceWrapperHelper.getTrxName(productPrice);
-				final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(
+				final I_M_ProductScalePrice productScalePrice = priceListDAO.retrieveOrCreateScalePrices(
 						productPrice.getM_ProductPrice_ID(),
 						BigDecimal.ONE, // Qty
 						true, // createNew=true => if the scalePrice doesn't exist yet, create a new one
@@ -117,7 +116,7 @@ public class MProductPriceValidator implements ModelValidator
 
 	private void productPriceDelete(final I_M_ProductPrice productPrice)
 	{
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		if (productPrice.getM_ProductPrice_ID() <= 0)
 		{
@@ -125,7 +124,7 @@ public class MProductPriceValidator implements ModelValidator
 		}
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(productPrice);
-		for (final I_M_ProductScalePrice psp : productPA.retrieveScalePrices(productPrice.getM_ProductPrice_ID(), trxName))
+		for (final I_M_ProductScalePrice psp : priceListDAO.retrieveScalePrices(productPrice.getM_ProductPrice_ID(), trxName))
 		{
 
 			if (psp.getM_ProductPrice_ID() != productPrice.getM_ProductPrice_ID())

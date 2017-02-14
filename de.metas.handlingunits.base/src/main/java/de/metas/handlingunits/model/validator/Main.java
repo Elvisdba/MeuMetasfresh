@@ -34,6 +34,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
 import org.adempiere.pricing.api.ProductPriceQuery;
+import org.adempiere.pricing.spi.impl.rules.AttributePricing;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
@@ -102,7 +103,6 @@ import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
-import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 

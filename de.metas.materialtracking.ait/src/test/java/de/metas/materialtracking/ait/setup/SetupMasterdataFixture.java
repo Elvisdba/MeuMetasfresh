@@ -14,7 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.impl.rules.MockedPricingRule;
-import org.adempiere.pricing.spi.impl.rules.PriceListVersion;
+import org.adempiere.pricing.spi.impl.rules.PriceListVersion_OLD;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -122,7 +122,7 @@ public class SetupMasterdataFixture
 		final I_C_PricingRule plvPricingRule = InterfaceWrapperHelper.newInstance(I_C_PricingRule.class, Helper.context);
 		plvPricingRule.setName("plvPricingRule");
 		plvPricingRule.setSeqNo(10);
-		plvPricingRule.setClassname(PriceListVersion.class.getName());
+		plvPricingRule.setClassname(PriceListVersion_OLD.class.getName());
 		plvPricingRule.setIsActive(true);
 		InterfaceWrapperHelper.save(plvPricingRule);
 	}

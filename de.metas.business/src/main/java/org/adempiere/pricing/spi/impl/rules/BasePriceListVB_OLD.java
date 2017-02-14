@@ -34,7 +34,7 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.util.DB;
 
-public class BasePriceListVB extends AbstractVendorBreakRule
+public class BasePriceListVB_OLD extends AbstractVendorBreakRule
 {
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)

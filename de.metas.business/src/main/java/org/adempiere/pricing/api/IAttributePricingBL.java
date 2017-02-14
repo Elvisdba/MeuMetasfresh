@@ -1,10 +1,10 @@
-package de.metas.pricing.attributebased;
+package org.adempiere.pricing.api;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.pricing.api.IPricingAttribute;
+import org.adempiere.pricing.IProductPriceAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;

@@ -14,7 +14,7 @@ import org.compiere.model.I_M_ProductPrice;
  * @author tsa
  *
  */
-public class PriceListVersion extends AbstractPriceListBasedRule
+public class PriceListVersion_OLD extends AbstractPriceListBasedRule
 {
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
