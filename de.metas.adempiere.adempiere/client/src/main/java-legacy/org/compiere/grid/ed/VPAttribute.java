@@ -47,6 +47,8 @@ import org.compiere.model.GridTab;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
+import org.compiere.util.Env.Scope;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
@@ -455,6 +457,7 @@ public class VPAttribute extends JComponent
 				, getM_AttributeSetInstance_ID() // ASI
 				, getTableName(), getAD_Column_ID() // caller TableName/AD_Column_ID
 				, attributeContext.isSOTrx() //
+				, Evaluatees.ofCtx(Env.getCtx(), attributeContext.getWindowNo(), attributeContext.getTabNo(), Scope.Window) //
 		);
 		if (asiInfo.isExcludedAttributeSet())
 		{

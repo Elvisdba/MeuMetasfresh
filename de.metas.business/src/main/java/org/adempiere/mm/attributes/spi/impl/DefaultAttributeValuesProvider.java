@@ -76,16 +76,16 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 	}
 
-	private final AttributeValuesMap getAttributeValuesMap()
+	private final AttributeValuesMap getAttributeValuesMap(final Evaluatee evalCtx)
 	{
 		if (_attributeValuesMap == null)
 		{
-			_attributeValuesMap = attributeId2values.getOrLoad(attribute.getM_Attribute_ID(), () -> retrieveAttributeValuesList(attribute));
+			_attributeValuesMap = attributeId2values.getOrLoad(attribute.getM_Attribute_ID(), () -> retrieveAttributeValuesList(evalCtx, attribute));
 		}
 		return _attributeValuesMap;
 	}
 
-	private static final AttributeValuesMap retrieveAttributeValuesList(final I_M_Attribute attribute)
+	private static final AttributeValuesMap retrieveAttributeValuesList(final Evaluatee evalCtx, final I_M_Attribute attribute)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final List<I_M_AttributeValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);

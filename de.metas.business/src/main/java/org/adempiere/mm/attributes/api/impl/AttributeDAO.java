@@ -51,6 +51,8 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -89,7 +91,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(Evaluatees.empty(), attribute);
 		return new ArrayList<>(map.values());
 	}
 
@@ -109,7 +111,7 @@ public class AttributeDAO implements IAttributeDAO
 					.firstOnly(I_M_AttributeValue.class);
 		}
 
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(Evaluatees.empty(), attribute);
 
 		//
 		// search by Value
@@ -216,11 +218,11 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	/**
-	 *
+	 * @param context effective context (required in case the attribute has validation rules which depends on parameters)
 	 * @param attribute
 	 * @return value to {@link I_M_AttributeValue} map
 	 */
-	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(final I_M_Attribute attribute)
+	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(final Evaluatee context, final I_M_Attribute attribute)
 	{
 		Check.assumeNotNull(attribute, "attribute not null");
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
@@ -233,7 +235,7 @@ public class AttributeDAO implements IAttributeDAO
 		final int adValRuleId = attribute.getAD_Val_Rule_ID();
 		if (adValRuleId > 0)
 		{
-			validationRuleQueryFilter = new ValidationRuleQueryFilter<>(attribute, adValRuleId);
+			validationRuleQueryFilter = new ValidationRuleQueryFilter<>(context, I_M_Attribute.Table_Name, adValRuleId);
 		}
 		else
 		{
