@@ -81,6 +81,21 @@ public final class Evaluatees
 	{
 		return new MapEvaluateeBuilder();
 	}
+	
+	public static final Evaluatee copyToImmutablePartition(final Evaluatee from, final Set<String> variableNames)
+	{
+		final MapEvaluateeBuilder mapBuilder = mapBuilder();
+		variableNames.forEach(variableName -> {
+			Object value = from.get_ValueAsObject(variableName);
+			if (value == null)
+			{
+				return;
+			}
+			mapBuilder.put(variableName, value);
+		});
+
+		return mapBuilder.build();
+	}
 
 	public static final Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
 	{
