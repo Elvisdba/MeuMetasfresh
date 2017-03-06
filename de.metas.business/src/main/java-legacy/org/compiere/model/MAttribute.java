@@ -34,9 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -140,16 +138,6 @@ public class MAttribute extends X_M_Attribute
 
 	/** Values */
 	private I_M_AttributeValue[] m_values = null;
-
-	/**
-	 * Get Values if List
-	 *
-	 * @return Values or null if not list
-	 */
-	public I_M_AttributeValue[] getMAttributeValues()
-	{
-		return getMAttributeValues(null);
-	}
 
 	/**
 	 * Get Values if List
