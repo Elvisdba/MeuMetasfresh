@@ -333,7 +333,9 @@ public class VAttributeGrid extends CPanel
 		int cols = 2;
 		I_M_AttributeValue[] xValues = null;
 		if (indexAttr1 > 0)
+		{
 			xValues = m_attributes[indexAttr1-1].getMAttributeValues(null);
+		}
 		if (xValues != null)
 		{
 			cols = xValues.length;
