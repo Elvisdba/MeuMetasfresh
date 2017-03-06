@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -27,8 +29,11 @@ import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MProduct;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.product.IProductBL;
 
@@ -66,9 +71,15 @@ public final class ASIEditingInfo
 			final int productId, final int attributeSetInstanceId //
 			, final String callerTableName, final int callerColumnId //
 			, final boolean isSOTrx //
+			, final Evaluatee context
 	)
 	{
-		return new ASIEditingInfo(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
+		return new ASIEditingInfo(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx, context);
+	}
+
+	public static enum WindowType
+	{
+		Regular, ProductWindow, ProcessParameter, Pricing,
 	}
 
 	// Parameters
@@ -78,10 +89,12 @@ public final class ASIEditingInfo
 	private final String _callerTableName;
 	private final int _calledColumnId;
 	private final boolean _isSOTrx;
+	private final Evaluatee _context;
 
 	// Deducted values
 	private final I_M_AttributeSet _attributeSet;
 	private ImmutableList<MAttribute> _availableAttributes;
+	private Set<String> _requiredContextNames;
 	private MAttributeSetInstance _attributeSetInstance;
 	private final boolean _allowSelectExistingASI;
 	private final boolean isLotEnabled;
@@ -92,6 +105,7 @@ public final class ASIEditingInfo
 			final int productId, final int attributeSetInstanceId //
 			, final String callerTableName, final int callerColumnId //
 			, final boolean isSOTrx //
+			, Evaluatee context //
 	)
 	{
 		// Parameters, must be set first
@@ -101,6 +115,7 @@ public final class ASIEditingInfo
 		_callerTableName = callerTableName;
 		_calledColumnId = callerColumnId;
 		_isSOTrx = isSOTrx;
+		_context = context;
 
 		// Deducted values, we assume params are set
 		_attributeSet = retrieveM_AttributeSet();
@@ -450,8 +465,33 @@ public final class ASIEditingInfo
 		return ImmutableList.copyOf(attributes.values());
 	}
 
-	public static enum WindowType
+	public Set<String> getRequiredContextNames()
 	{
-		Regular, ProductWindow, ProcessParameter, Pricing,
+		if(_requiredContextNames == null)
+		{
+			final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
+	
+			_requiredContextNames = getAvailableAttributes()
+					.stream()
+					.flatMap(attribute -> {
+						final int adValRuleId = attribute.getAD_Val_Rule_ID();
+						if (adValRuleId > 0)
+						{
+							final IValidationRule valRule = validationRuleFactory.create(I_M_Attribute.Table_Name, adValRuleId);
+							return valRule.getAllParameters().stream();
+						}
+						else
+						{
+							return Stream.empty();
+						}
+					})
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		return _requiredContextNames;
+	}
+	
+	public Evaluatee getEffectiveContext()
+	{
+		return Evaluatees.copyToImmutablePartition(_context, getRequiredContextNames());
 	}
 }
