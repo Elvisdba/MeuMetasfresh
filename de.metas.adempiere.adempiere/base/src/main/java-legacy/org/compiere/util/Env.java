@@ -2250,6 +2250,12 @@ public final class Env
 		final String s = getContext(ctx, WindowNo, TabNo, context, onlyTab);
 		return toInteger(s, context);
 	}
+	
+	public static int getContextAsInt(final Properties ctx, final int windowNo, final int tabNo, final String context, final Scope scope)
+	{
+		final String valueStr = getContext(ctx, windowNo, tabNo, context, scope);
+		return toInteger(valueStr, context);
+	}
 
 	public static void setContextAsInt(final Properties ctx, final int WindowNo, final int TabNo, final String context, final int value)
 	{
@@ -2279,14 +2285,20 @@ public final class Env
 	public static Timestamp getContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, boolean onlyTab)
 	{
 		String s = getContext(ctx, WindowNo, TabNo, context, onlyTab);
-		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.error("No value for: {}", context);
+			// FIXME: check callers, we shall never return current time but let the caller decide.
+			s_log.error("No value for '{}'. Returning current time.", context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
 	}	// getContextAsDate
+
+	public static Timestamp getContextAsDate(Properties ctx, int windowNo, int tabNo, String context, final Scope scope)
+	{
+		final String timestampStr = getContext(ctx, windowNo, tabNo, context, scope);
+		return parseTimestamp(timestampStr);
+	}
 
 	public static void setContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, Date value)
 	{
@@ -2299,22 +2311,22 @@ public final class Env
 	/**
 	 * Convert the string value to integer
 	 *
-	 * @param s string value
-	 * @param context context name that was required (used only for logging)
+	 * @param valueStr string value
+	 * @param contextName context name that was required (used only for logging)
 	 * @return int value
 	 */
-	private static final int toInteger(String s, String context)
+	private static final int toInteger(String valueStr, String contextName)
 	{
-		if (CTXVALUE_NullString.equals(s))
+		if (CTXVALUE_NullString.equals(valueStr))
 			return CTXVALUE_NoValueInt;
 
 		try
 		{
-			return Integer.parseInt(s);
+			return Integer.parseInt(valueStr);
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
+			s_log.error("Failed converting {}'s value {} to integer", contextName, valueStr, e);
 		}
 		return CTXVALUE_NoValueInt;
 	}

@@ -8,12 +8,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.Env.Scope;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -84,6 +86,12 @@ public final class Evaluatees
 	{
 		return new EvaluateeCtx(ctx, windowNo, onlyWindow);
 	}
+	
+	public static final Evaluatee ofCtx(final Properties ctx, final int windowNo, final int tabNo, final Scope scope)
+	{
+		return new EvaluateeTabCtx(ctx, windowNo, tabNo, scope);
+	}
+
 
 	public static final Evaluatee ofCtx(final Properties ctx)
 	{
@@ -326,6 +334,60 @@ public final class Evaluatees
 			return Env.getContextAsDate(ctx, windowNo, variableName, onlyWindow);
 		}
 	}
+	
+	/**
+	 * Wraps a given {@link Properties} context to {@link Evaluatee}
+	 *
+	 * @author tsa
+	 *
+	 */
+	private static final class EvaluateeTabCtx implements Evaluatee
+	{
+		private final Properties ctx;
+		private final int windowNo;
+		private final int tabNo;
+		private final Scope scope;
+
+		/* package */ EvaluateeTabCtx(final Properties ctx, final int windowNo, final int tabNo, final Scope scope)
+		{
+			Check.assumeNotNull(ctx, "ctx not null");
+			Check.assumeNotNull(scope, "Parameter scope is not null");
+			this.ctx = ctx;
+			this.windowNo = windowNo;
+			this.tabNo = tabNo;
+			this.scope = scope;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("windowNo", windowNo)
+					.add("tabNo", tabNo)
+					.add("scope", scope)
+					.add("ctx", ctx)
+					.toString();
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			return Env.getContext(ctx, windowNo, tabNo, variableName, scope);
+		}
+
+		@Override
+		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+		{
+			return Env.getContextAsInt(ctx, windowNo, tabNo, variableName, scope);
+		}
+
+		@Override
+		public Date get_ValueAsDate(final String variableName, final Date defaultValue)
+		{
+			return Env.getContextAsDate(ctx, windowNo, tabNo, variableName, scope);
+		}
+	}
+
 
 	/**
 	 * Composite
