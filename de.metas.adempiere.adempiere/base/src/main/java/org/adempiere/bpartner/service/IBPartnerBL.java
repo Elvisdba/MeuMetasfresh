@@ -74,23 +74,6 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	I_AD_User retrieveUserForLoc(org.compiere.model.I_C_BPartner_Location loc);
 
-	//
-	// Commenting out this de.metas.terminable related code, because it assumes that the following columns exist
-	//
-	// /**
-	// * Set the default flag of a terminable location to the location that is marked as nextID.
-	// * This way, the next location will inherit the attributions of the old one.
-	// *
-	// * @param bpLocation
-	// */
-	// void updateNextLocation(I_C_BPartner_Location bpLocation);
-
-	// /**
-	// * @param bpLocation
-	// * @return true if the address is terminated in the past or in the current day
-	// */
-	// boolean isTerminatedInThePast(I_C_BPartner_Location bpLocation);
-
 	/**
 	 * Compute and set {@link I_C_BPartner_Location#COLUMNNAME_Address} field.
 	 *

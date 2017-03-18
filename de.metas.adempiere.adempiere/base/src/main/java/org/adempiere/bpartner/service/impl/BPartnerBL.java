@@ -144,26 +144,6 @@ public class BPartnerBL implements IBPartnerBL
 		return users.get(0);
 	}
 
-	//
-	// Commenting out this de.metas.terminable related code, because it assumes that the following columns exist
-	//
-	/*
-	 * @Override public void updateNextLocation(I_C_BPartner_Location bpLocation) { final int nextId = bpLocation.getNext_ID(); if (nextId <= 0) { return; }
-	 * 
-	 * final Properties ctx = InterfaceWrapperHelper.getCtx(bpLocation); final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
-	 * 
-	 * final I_C_BPartner_Location nextLocation = InterfaceWrapperHelper.create(ctx, nextId, I_C_BPartner_Location.class, trxName);
-	 * 
-	 * // inherit the flags from the previous
-	 * 
-	 * // Don't update the defaults if the current location is still valid. if (isTerminatedInThePast(bpLocation)) { nextLocation.setIsBillToDefault(bpLocation.isBillToDefault());
-	 * nextLocation.setIsShipToDefault(bpLocation.isShipToDefault()); }
-	 * 
-	 * nextLocation.setIsBillTo(bpLocation.isBillTo()); nextLocation.setIsShipTo(bpLocation.isShipTo());
-	 * 
-	 * InterfaceWrapperHelper.save(nextLocation); }
-	 */
-
 	@Override
 	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{

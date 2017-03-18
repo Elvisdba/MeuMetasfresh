@@ -28,9 +28,6 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Greeting;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
 
@@ -39,14 +36,6 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 
 public interface IBPartnerDAO extends ISingletonService
 {
-	/**
-	 *
-	 * @param value
-	 * @return may return <code>null</code> if there is no matching bpartner
-	 *
-	 */
-	<T extends I_C_BPartner> T retrieveBPartner(Properties ctx, String value, Class<T> clazz, String trxName);
-
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
@@ -57,50 +46,12 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return {@link I_C_BPartner}; never return null
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
+	// TODO: move it to de.metas.adempiere.service.IBPartnerOrgBL
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
-
-	<T extends I_C_Location> List<T> retrieveLocation(Properties ctx, String address1, String city, String postal, String countryCode, Class<T> clazz, String trxName);
-
-	/**
-	 *
-	 * @param countryCode
-	 * @param trxName
-	 * @return
-	 */
-	I_C_Country retrieveCountry(String countryCode, String trxName);
-
-	/**
-	 *
-	 * @param name the name of a business partner location.
-	 * @param trxName
-	 * @return may return <code>null</code> if there is no matching bPartnerLocation
-	 */
-	I_C_BPartner_Location retrieveBPartnerLocation(String name, String trxName);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 
-	/**
-	 *
-	 * @param bPartnerId
-	 * @param reload
-	 * @param trxName
-	 * @return
-	 * @deprecated please use {@link #retrieveBPartnerLocations(I_C_BPartner)} or {@link #retrieveBPartnerLocations(Properties, int, String)}.
-	 */
-	@Deprecated
-	List<I_C_BPartner_Location> retrieveBPartnerLocations(int bPartnerId, boolean reload, String trxName);
-
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
-
-	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param bPartnerId
-	 * @param reload
-	 * @param trxName
-	 * @return
-	 */
-	List<org.compiere.model.I_AD_User> retrieveContacts(int bPartnerId, boolean reload, String trxName);
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending
@@ -119,22 +70,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
-
-	I_C_BPartner retrieveDefaultVendor(int productId, String trxName) throws ProductHasNoVendorException;
-
-	I_C_Greeting retrieveGreeting(String name, String trxName);
-
-	/**
-	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param soTrx
-	 * @param trxName
-	 * @return
-	 * @deprecated this method accesses the legacy pricelist-columns of the given <code>C_BPartner</code>.
-	 */
-	@Deprecated
-	int retrievePriceListId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
 
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
@@ -191,33 +126,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_C_BPartner retrieveBPartnerByValue(Properties ctx, String value);
 
-	/**
-	 * Retrieve partner by exact value or by the ending string.
-	 *
-	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
-	 *
-	 * @param ctx
-	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
-	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
-	 *
-	 * @return a single bPartner or <code>null</code>
-	 *
-	 * @throws org.adempiere.exceptions.DBMoreThenOneRecordsFoundException if there is more than one matching partner.
-	 */
-	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
-
-	<T extends I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
-
-	/**
-	 * Checks if there more BP Locations for given BP, excluding the given one.
-	 *
-	 * @param ctx
-	 * @param bpartnerId
-	 * @param excludeBPLocationId
-	 * @param trxName
-	 * @return true if there more BP locations for given BP, excluding the given one
-	 */
-	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, String trxName);
+	<T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 
 	/**
 	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)
