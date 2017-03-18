@@ -37,6 +37,7 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -50,7 +51,7 @@ import de.metas.adempiere.model.I_AD_User;
  * 
  */
 @Validator(I_AD_User.class)
-@Callout(value = I_AD_User.class)
+@Callout(I_AD_User.class)
 public class AD_User
 {
 
@@ -86,7 +87,7 @@ public class AD_User
 		Check.assume(!password.contains(" "), errorMessage, minPasswordLength);
 		Check.assume(password.length() >= minPasswordLength, errorMessage, minPasswordLength);
 	}
-
+	
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname })
@@ -96,9 +97,35 @@ public class AD_User
 		final String contactName = Services.get(IUserBL.class).buildContactName(user.getFirstname(), user.getLastname());
 		user.setName(contactName);
 	}
-
+	
 	private int getMinPasswordLength()
 	{
 		return Services.get(ISysConfigBL.class).getIntValue(SYS_MIN_PASSWORD_LENGTH, 8);
+	}
+
+
+	/**
+	 * If user's Name or IsDefaultContact flag changes, update BPartner, if the BPartner is not company.
+	 * 
+	 * TODO: decide if we still shall apply this rule
+	 */
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_AD_User.COLUMNNAME_Name, I_AD_User.COLUMNNAME_IsDefaultContact })
+	public void updateBPartnerName(final I_AD_User user)
+	{
+		if(!user.isDefaultContact())
+		{
+			return;
+		}
+		
+		final I_C_BPartner bpartner = user.getC_BPartner();
+		if(bpartner.isCompany())
+		{
+			return;
+		}
+		
+		bpartner.setName(user.getName());
+		InterfaceWrapperHelper.save(bpartner);
 	}
 }
