@@ -84,8 +84,7 @@ public class NotificationBL implements INotificationBL
 
 		if (userBL.isNotifyUserIncharge(recipient))
 		{
-			final I_AD_User userIncharge = InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class)
-					.getAD_User_InCharge();
+			final I_AD_User userIncharge = recipient.getAD_User_InCharge();
 			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "Detected a cycle in the AD_User.AD_User_InCharge_IDs. The AD_User_IDs in question are {}", userIds);
 			notifyUser0(userIncharge, adMessage, messageText, referencedRecord, userIds);
 		}

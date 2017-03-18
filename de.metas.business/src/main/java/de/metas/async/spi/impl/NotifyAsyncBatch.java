@@ -31,13 +31,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MUser;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;

@@ -47,6 +47,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
@@ -59,7 +60,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_Session;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;

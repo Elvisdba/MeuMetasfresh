@@ -26,8 +26,6 @@ package org.adempiere.user.api.impl;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,10 +35,13 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.Query;
-import de.metas.adempiere.model.I_AD_User;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.logging.LogManager;
 
 public class UserDAO implements IUserDAO
 {

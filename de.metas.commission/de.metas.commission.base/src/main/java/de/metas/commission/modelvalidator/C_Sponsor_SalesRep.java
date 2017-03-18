@@ -32,12 +32,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.X_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorDAO;

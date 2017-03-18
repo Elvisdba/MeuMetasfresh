@@ -63,11 +63,10 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		}
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(location.getC_BPartner_Location(), I_C_BPartner_Location.class);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (location.getAD_User_ID() > 0)
 		{
-			final I_AD_User userPO = location.getAD_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			user = location.getAD_User();
 		}
 		else
 		{
@@ -94,11 +93,10 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		}
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(billLocation.getBill_Location(), I_C_BPartner_Location.class);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (billLocation.getBill_User_ID() > 0)
 		{
-			final I_AD_User userPO = billLocation.getBill_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			user = billLocation.getBill_User();
 		}
 		else
 		{
@@ -139,11 +137,10 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		}
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(docDeliveryLocation.getDropShip_Location(), I_C_BPartner_Location.class);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (docDeliveryLocation.getDropShip_User_ID() > 0)
 		{
-			final I_AD_User userPO = docDeliveryLocation.getDropShip_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			user = docDeliveryLocation.getDropShip_User();
 		}
 		else
 		{
@@ -172,7 +169,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(bpLocation.getC_BPartner(), I_C_BPartner.class);
 
 		// There is no contact available for warehouse
-		final de.metas.adempiere.model.I_AD_User bpContact = null;
+		final I_AD_User bpContact = null;
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(bpartner, bpLocation, bpContact, ITrx.TRXNAME_None);

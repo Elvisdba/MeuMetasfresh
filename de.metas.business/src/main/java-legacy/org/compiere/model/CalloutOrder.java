@@ -34,7 +34,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;

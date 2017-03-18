@@ -40,6 +40,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
@@ -56,7 +57,6 @@ import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.contracts.subscription.ISubscriptionBL;

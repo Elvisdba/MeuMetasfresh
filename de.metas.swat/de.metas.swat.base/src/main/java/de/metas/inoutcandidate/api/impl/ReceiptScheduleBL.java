@@ -39,6 +39,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -46,7 +47,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;

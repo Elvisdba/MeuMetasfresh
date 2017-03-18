@@ -49,6 +49,7 @@ import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_SchedulerLog;
 import org.compiere.model.I_AD_Scheduler_Para;
 import org.compiere.model.I_AD_Task;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MNote;
 import org.compiere.model.MScheduler;
@@ -66,7 +67,6 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.process.ProcessExecutionResult;

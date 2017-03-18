@@ -28,9 +28,9 @@ package de.metas.interfaces;
 
 import java.math.BigDecimal;
 
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_PricingSystem;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BP_Group;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 

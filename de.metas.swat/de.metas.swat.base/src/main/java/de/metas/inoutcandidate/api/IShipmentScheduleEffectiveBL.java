@@ -26,11 +26,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 

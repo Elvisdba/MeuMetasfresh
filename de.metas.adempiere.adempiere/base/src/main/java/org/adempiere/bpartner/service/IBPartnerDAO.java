@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 
 public interface IBPartnerDAO extends ISingletonService
@@ -115,7 +115,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param trxName
 	 * @return true if a contact with the flag defaultContact on true already exists in the table, false otherwise.
 	 */
-	boolean existsDefaultContactInTable(de.metas.adempiere.model.I_AD_User user, String trxName);
+	boolean existsDefaultContactInTable(I_AD_User user, String trxName);
 
 	/**
 	 * Search after the BPartner when the value is given
@@ -126,7 +126,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_C_BPartner retrieveBPartnerByValue(Properties ctx, String value);
 
-	<T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
+	<T extends I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 
 	/**
 	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)

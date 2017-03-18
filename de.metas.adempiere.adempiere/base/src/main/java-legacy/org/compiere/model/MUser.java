@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -45,7 +46,6 @@ import org.slf4j.Logger;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
 
 /**
@@ -660,7 +660,7 @@ public class MUser extends X_AD_User
 			return true;
 		for (final I_AD_UserBPAccess bpAccess : getBPAccess())
 		{
-			if (Check.equals(bpAccess.getBPAccessType(), BPAccessType))
+			if (Objects.equals(bpAccess.getBPAccessType(), BPAccessType))
 			{
 				return true;
 			}

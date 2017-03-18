@@ -37,10 +37,9 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
-
-import de.metas.adempiere.model.I_AD_User;
 
 /**
  * This model validator

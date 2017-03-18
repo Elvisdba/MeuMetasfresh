@@ -23,7 +23,7 @@ package de.metas.commission.interfaces;
  */
 
 
-public interface I_AD_User extends de.metas.adempiere.model.I_AD_User
+public interface I_AD_User extends org.compiere.model.I_AD_User
 {
 	public static final String COLUMNNAME_IS_COMMISSION = "IsCommission";
 

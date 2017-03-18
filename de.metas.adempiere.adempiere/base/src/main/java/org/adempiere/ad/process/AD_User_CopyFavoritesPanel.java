@@ -32,11 +32,11 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_TreeBar;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MUser;
 
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * @author cg

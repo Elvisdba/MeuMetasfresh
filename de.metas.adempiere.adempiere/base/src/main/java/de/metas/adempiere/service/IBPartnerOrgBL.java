@@ -27,11 +27,10 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-
-import de.metas.adempiere.model.I_AD_User;
 
 public interface IBPartnerOrgBL extends ISingletonService
 {

@@ -195,8 +195,7 @@ public class UserBL implements IUserBL
 
 		//
 		// Update user
-		final de.metas.adempiere.model.I_AD_User userExt = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
-		userExt.setPasswordResetCode(passwordResetCode);
+		user.setPasswordResetCode(passwordResetCode);
 		InterfaceWrapperHelper.save(user);
 
 		return passwordResetCode;
@@ -209,9 +208,7 @@ public class UserBL implements IUserBL
 
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-		final de.metas.adempiere.model.I_AD_User user = InterfaceWrapperHelper.create(
-				userDAO.retrieveUserByPasswordResetCode(ctx, passwordResetCode),
-				de.metas.adempiere.model.I_AD_User.class);
+		final I_AD_User user = userDAO.retrieveUserByPasswordResetCode(ctx, passwordResetCode);
 
 		if (user == null)
 		{
@@ -292,6 +289,6 @@ public class UserBL implements IUserBL
 	@Override
 	public boolean isNotifyUserIncharge(I_AD_User user)
 	{
-		return de.metas.adempiere.model.I_AD_User.NOTIFICATIONTYPE_NotifyUserInCharge.equals(user.getNotificationType());
+		return X_AD_User.NOTIFICATIONTYPE_NotifyUserInCharge.equals(user.getNotificationType());
 	}
 }

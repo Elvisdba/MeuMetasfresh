@@ -42,6 +42,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -52,7 +53,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -377,11 +377,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public boolean existsDefaultContactInTable(final de.metas.adempiere.model.I_AD_User user, final String trxName)
+	public boolean existsDefaultContactInTable(final I_AD_User user, final String trxName)
 	{
-		final String whereClause = de.metas.adempiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + " = ? AND "
-				+ org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + " = ?";
-		final int rows = new Query(Env.getCtx(), org.compiere.model.I_AD_User.Table_Name, whereClause, trxName)
+		final String whereClause = I_AD_User.COLUMNNAME_IsDefaultContact + " = ? AND "
+				+ I_AD_User.COLUMNNAME_C_BPartner_ID + " = ?";
+		final int rows = new Query(Env.getCtx(), I_AD_User.Table_Name, whereClause, trxName)
 				.setOnlyActiveRecords(true)
 				.setParameters(true, user.getC_BPartner_ID())
 				.setClient_ID()

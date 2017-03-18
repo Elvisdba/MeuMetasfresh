@@ -63,6 +63,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
@@ -80,7 +81,6 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;

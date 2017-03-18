@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
-
-import de.metas.adempiere.model.I_AD_User;
 
 public interface IUserDAO extends ISingletonService
 {

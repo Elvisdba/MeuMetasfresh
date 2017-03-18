@@ -31,10 +31,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.spi.impl.PasswordResetWorkpackageProcessor;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.Query;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;

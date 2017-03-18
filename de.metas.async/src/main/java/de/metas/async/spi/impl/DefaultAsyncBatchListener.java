@@ -11,9 +11,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MNote;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;

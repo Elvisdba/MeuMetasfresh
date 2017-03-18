@@ -34,7 +34,6 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
