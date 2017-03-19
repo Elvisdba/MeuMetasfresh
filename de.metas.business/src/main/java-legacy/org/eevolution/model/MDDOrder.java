@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,6 +52,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.product.IProductBL;
 
@@ -638,11 +638,13 @@ public class MDDOrder extends X_DD_Order implements DocAction
 			}
 		}
 
-		// No Partner Info - set Template
+		// No Partner Info - user org linked partner
 		if (getC_BPartner_ID() <= 0)
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
+		{
+			setBPartner(Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(getAD_Org()));
+		}
 		if (getC_BPartner_Location_ID() <= 0)
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), ITrx.TRXNAME_None));
+			setBPartner(getC_BPartner());
 
 		// Default Sales Rep
 		if (getSalesRep_ID() == 0)
