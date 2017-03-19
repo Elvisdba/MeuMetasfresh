@@ -47,6 +47,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.service.IOrderDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
 import de.metas.bpartner.IBPartnerStatsDAO;
@@ -1156,7 +1157,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					return DocAction.STATUS_Invalid;
 				}
 
-				BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
+				final BigDecimal notInvoicedAmt = Services.get(IOrderDAO.class).retrieveSalesNotInvoicedAmtForBPartner(getC_BPartner_ID());
 				final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 				{

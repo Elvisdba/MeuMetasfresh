@@ -1,5 +1,7 @@
 package de.metas.adempiere.service;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -100,4 +102,14 @@ public interface IOrderDAO extends ISingletonService
 	 * @return purchase orders matching the given parameters
 	 */
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
+
+	/**
+	 * Get Not Invoiced Shipment Value
+	 * 
+	 * @param C_BPartner_ID
+	 *            partner
+	 * @return value in accounting currency
+	 */
+	BigDecimal retrieveSalesNotInvoicedAmtForBPartner(int C_BPartner_ID);
+	
 }

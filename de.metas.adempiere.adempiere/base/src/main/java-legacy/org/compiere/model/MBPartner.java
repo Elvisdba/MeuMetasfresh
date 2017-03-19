@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -188,50 +187,6 @@ public class MBPartner extends X_C_BPartner
 						.firstOnly();
 		return retValue;
 	} // get
-
-	/**
-	 * Get Not Invoiced Shipment Value
-	 * 
-	 * @param C_BPartner_ID
-	 *            partner
-	 * @return value in accounting currency
-	 */
-	public static BigDecimal getNotInvoicedAmt(int C_BPartner_ID)
-	{
-		BigDecimal retValue = null;
-		String sql = "SELECT COALESCE(SUM(COALESCE("
-				+ "currencyBase((ol.QtyDelivered-ol.QtyInvoiced)*ol.PriceActual,o.C_Currency_ID,o.DateOrdered, o.AD_Client_ID,o.AD_Org_ID) ,0)),0) "
-				+ "FROM C_OrderLine ol"
-				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
-				+ "WHERE o.IsSOTrx='Y' AND Bill_BPartner_ID=?";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_BPartner_ID);
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-				retValue = rs.getBigDecimal(1);
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
-		return retValue;
-	} // getNotInvoicedAmt
 
 	/** Static Logger */
 	private static Logger s_log = LogManager.getLogger(MBPartner.class);
