@@ -29,16 +29,18 @@ package de.metas.adempiere.process;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MUser;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.Query;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * @author teo_sarca
@@ -74,15 +76,15 @@ public class UserPasswordGenerate extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		if (p_AD_Org_ID <= 0)
-			throw new FillMandatoryException(MUser.COLUMNNAME_AD_Org_ID);
+			throw new FillMandatoryException(I_AD_User.COLUMNNAME_AD_Org_ID);
 		
 		int cnt_ok = 0;
 		int cnt_error = 0;
 		
-		Iterator<MUser> it = getUsers();
+		Iterator<I_AD_User> it = getUsers();
 		while(it.hasNext())
 		{
-			MUser user = it.next();
+			I_AD_User user = it.next();
 			try
 			{
 				resetPassword(user);
@@ -97,36 +99,36 @@ public class UserPasswordGenerate extends JavaProcess
 		return "@Updated@ (OK="+cnt_ok+", @Error@="+cnt_error+")";
 	}
 	
-	private Iterator<MUser> getUsers()
+	private Iterator<I_AD_User> getUsers()
 	{
 		StringBuffer whereClause = new StringBuffer("1=1");
 		List<Object> params = new ArrayList<Object>();
 		
 		if (p_AD_User_ID > 0)
 		{
-			whereClause.append(" AND "+MUser.COLUMNNAME_AD_User_ID+"=?");
+			whereClause.append(" AND "+I_AD_User.COLUMNNAME_AD_User_ID+"=?");
 			params.add(p_AD_User_ID);
 		}
 		else
 		{
-			whereClause.append(" AND "+MUser.COLUMNNAME_AD_Org_ID+"=?");
+			whereClause.append(" AND "+I_AD_User.COLUMNNAME_AD_Org_ID+"=?");
 			params.add(p_AD_Org_ID);
 		}
 		
 		if (!p_IsOverridePassword)
 		{
-			whereClause.append(" AND "+MUser.COLUMNNAME_Password+" IS NULL");
+			whereClause.append(" AND "+I_AD_User.COLUMNNAME_Password+" IS NULL");
 		}
 		
-		Iterator<MUser> it = new Query(getCtx(), MUser.Table_Name, whereClause.toString(), get_TrxName())
+		Iterator<I_AD_User> it = new Query(getCtx(), I_AD_User.Table_Name, whereClause.toString(), get_TrxName())
 		.setParameters(params)
 		.setClient_ID()
-		.setOrderBy(MUser.COLUMNNAME_AD_User_ID)
-		.iterate();
+		.setOrderBy(I_AD_User.COLUMNNAME_AD_User_ID)
+		.iterate(I_AD_User.class);
 		return it;
 	}
 	
-	private void resetPassword(MUser user)
+	private void resetPassword(I_AD_User user)
 	{
 		if (!p_IsOverridePassword && !Check.isEmpty(user.getPassword(),true))
 		{
@@ -134,7 +136,7 @@ public class UserPasswordGenerate extends JavaProcess
 		}
 		final String newPassword = Services.get(IUserBL.class).generatePassword();
 		user.setPassword(newPassword);
-		user.saveEx();
+		InterfaceWrapperHelper.save(user);
 		
 		// Log
 		addLog(getUserDesc(user)+" : "+newPassword);
@@ -142,7 +144,7 @@ public class UserPasswordGenerate extends JavaProcess
 		//rollback();
 	}
 
-	private String getUserDesc(MUser user)
+	private String getUserDesc(I_AD_User user)
 	{
 		String name = user.getEMail();
 		if (Check.isEmpty(name, true))

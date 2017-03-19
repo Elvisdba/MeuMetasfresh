@@ -468,7 +468,7 @@ public class MRMA extends X_M_RMA implements DocAction
 		if (counterC_BPartner_ID == 0)
 			return null;
 		//	Business Partner needs to be linked to Org
-		I_C_BPartner bp = new MBPartner (getCtx(), getC_BPartner_ID(), get_TrxName());
+		I_C_BPartner bp = getC_BPartner();
 		int counterAD_Org_ID = bp.getAD_OrgBP_ID();
 		if (counterAD_Org_ID == 0)
 			return null;

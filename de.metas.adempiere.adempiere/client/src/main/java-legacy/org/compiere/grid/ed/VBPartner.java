@@ -36,13 +36,12 @@ import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartner;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
-import org.compiere.model.MUser;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
@@ -107,9 +106,9 @@ public final class VBPartner extends CDialog implements ActionListener
 	/** The Partner				*/
 	private MBPartner		m_partner = null;
 	/** The Location			*/
-	private MBPartnerLocation	m_pLocation = null;
+	private I_C_BPartner_Location m_pLocation = null;
 	/** The User				*/
-	private MUser			m_user = null;
+	private I_AD_User m_user = null;
 	/** Read Only				*/
 	private boolean			m_readOnly = false;
 
@@ -335,7 +334,6 @@ public final class VBPartner extends CDialog implements ActionListener
 				.stream()
 				.filter(bpl -> bpl.getC_BPartner_Location_ID() == bpLocationId)
 				.findFirst()
-				.map(bpl -> (MBPartnerLocation)LegacyAdapters.convertToPO(bpl))
 				.orElse(null);
 		if (m_pLocation != null)
 		{
@@ -353,7 +351,6 @@ public final class VBPartner extends CDialog implements ActionListener
 				.stream()
 				.filter(contact -> contact.getAD_User_ID() == userId)
 				.findFirst()
-				.map(contact -> (MUser)LegacyAdapters.convertToPO(contact))
 				.orElse(null);
 		if (m_user != null)
 		{
@@ -472,10 +469,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		m_pLocation.setPhone(fPhone.getText());
 		m_pLocation.setPhone2(fPhone2.getText());
 		m_pLocation.setFax(fFax.getText());
-		if (m_pLocation.save())
-			log.debug("C_BPartner_Location_ID=" + m_pLocation.getC_BPartner_Location_ID());
-		else
-			ADialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "C_BPartner_Location_ID"));
+		InterfaceWrapperHelper.save(m_pLocation);
 			
 		//	***** Business Partner - User *****
 		String contact = fContact.getText();
@@ -500,10 +494,7 @@ public final class VBPartner extends CDialog implements ActionListener
 			m_user.setPhone(fPhone.getText());
 			m_user.setPhone2(fPhone2.getText());
 			m_user.setFax(fFax.getText());
-			if (m_user.save())
-				log.debug("AD_User_ID=" + m_user.getAD_User_ID());
-			else
-				ADialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "AD_User_ID"));
+			InterfaceWrapperHelper.save(m_user);
 		}
 		return true;
 	}	//	actionSave

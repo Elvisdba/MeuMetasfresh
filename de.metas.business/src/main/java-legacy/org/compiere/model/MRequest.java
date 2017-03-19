@@ -169,8 +169,6 @@ public class MRequest extends X_R_Request
 	private MRequestType	m_requestType = null;
 	/**	Changed						*/
 	private boolean			m_changed = false;
-	/** User/Contact				*/
-	private MUser			m_user = null;
 	/** List of EMail Notices		*/
 	private StringBuffer	m_emailTo = new StringBuffer();
 
@@ -539,21 +537,6 @@ public class MRequest extends X_R_Request
 		return Services.get(IUserDAO.class).retrieveUserName(getCreatedBy());
 	}	//	getCreatedByName
 
-	/**
-	 * 	Get Contact (may be not defined)
-	 *	@return Sales Rep User
-	 */
-	public MUser getUser()
-	{
-		if (getAD_User_ID() == 0)
-			return null;
-		if (m_user != null && m_user.getAD_User_ID() != getAD_User_ID())
-			m_user = null;
-		if (m_user == null)
-			m_user = new MUser (getCtx(), getAD_User_ID(), get_TrxName());
-		return m_user;
-	}	//	getUser
-	
 	/**
 	 * 	Web Can Update Request
 	 *	@return true if Web can update

@@ -32,7 +32,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MSysConfig;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable;
 
@@ -77,7 +76,7 @@ public class UserAccountExpireLocks extends JavaProcess
 
 			while (rs.next())
 			{
-				final int AD_User_IDToUnlock = rs.getInt(MUser.COLUMNNAME_AD_User_ID);
+				final int AD_User_IDToUnlock = rs.getInt(I_AD_User.COLUMNNAME_AD_User_ID);
 				no = no + unlockUser(accountLockExpire, AD_User_IDToUnlock);
 			}
 			rs.close();

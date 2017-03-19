@@ -539,8 +539,6 @@ public class MInOut extends X_M_InOut implements DocAction
 	private MInOutLine[] m_lines = null;
 	/** Confirmations */
 	private MInOutConfirm[] m_confirms = null;
-	/** BPartner */
-	private MBPartner m_partner = null;
 
 	/**
 	 * Get Document Status
@@ -803,18 +801,6 @@ public class MInOut extends X_M_InOut implements DocAction
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
-
-	/**
-	 * Get BPartner
-	 *
-	 * @return partner
-	 */
-	public MBPartner getBPartner()
-	{
-		if (m_partner == null)
-			m_partner = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		return m_partner;
-	} // getPartner
 
 	/**
 	 * Set Document Type
@@ -2056,7 +2042,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		if (counterC_BPartner_ID == 0)
 			return null;
 		// Business Partner needs to be linked to Org
-		I_C_BPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
+		I_C_BPartner bp = getC_BPartner();
 		int counterAD_Org_ID = bp.getAD_OrgBP_ID();
 		if (counterAD_Org_ID == 0)
 			return null;

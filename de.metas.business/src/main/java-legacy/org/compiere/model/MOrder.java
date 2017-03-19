@@ -1070,7 +1070,7 @@ public class MOrder extends X_C_Order implements DocAction
 		
 		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+			setBPartner(getC_BPartner());
 		}
 		
 		// No Bill - get from Ship

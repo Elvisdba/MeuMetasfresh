@@ -185,7 +185,7 @@ public class MAsset extends X_A_Asset
 		int deliveryCount)
 	{
 		MProduct product = line.getProduct(); 
-		MBPartner partner = shipment.getBPartner();
+		I_C_BPartner partner = shipment.getC_BPartner();
 		setValueNameDescription(shipment, deliveryCount, product, partner);
 	}	//	setValueNameDescription
 	
@@ -196,8 +196,8 @@ public class MAsset extends X_A_Asset
 	 *	@param product product
 	 *	@param partner partner
 	 */
-	public void setValueNameDescription (MInOut shipment,  
-		int deliveryCount, MProduct product, I_C_BPartner partner)
+	public void setValueNameDescription (I_M_InOut shipment,  
+		int deliveryCount, I_M_Product product, I_C_BPartner partner)
 	{
 		String documentNo = "_" + shipment.getDocumentNo();
 		if (deliveryCount > 1)

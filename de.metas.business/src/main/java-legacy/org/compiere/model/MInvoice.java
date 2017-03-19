@@ -470,7 +470,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		setIsSOTrx(ship.isSOTrx());
 		//
-		I_C_BPartner bp = new MBPartner(getCtx(), ship.getC_BPartner_ID(), null);
+		I_C_BPartner bp = ship.getC_BPartner();
 		setBPartner(bp);
 		//
 		setAD_User_ID(ship.getAD_User_ID());
@@ -841,7 +841,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		
 		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+			setBPartner(getC_BPartner());
 		}
 
 		// Price List
@@ -1900,7 +1900,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (counterC_BPartner_ID == 0)
 			return null;
 		// Business Partner needs to be linked to Org
-		I_C_BPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName()); // metas: load BP in transaction
+		I_C_BPartner bp = getC_BPartner(); // metas: load BP in transaction
 		int counterAD_Org_ID = bp.getAD_OrgBP_ID();
 		if (counterAD_Org_ID == 0)
 			return null;
