@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -841,11 +842,16 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	protected boolean beforeSave(boolean newRecord)
 	{
 		log.debug("");
-		// No Partner Info - set Template
-		if (getC_BPartner_ID() == 0)
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
-		if (getC_BPartner_Location_ID() == 0)
+		
+		if (getC_BPartner_ID() <= 0)
+		{
+			throw new FillMandatoryException(COLUMNNAME_C_BPartner_ID);
+		}
+		
+		if (getC_BPartner_Location_ID() <= 0)
+		{
 			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+		}
 
 		// Price List
 		if (getM_PriceList_ID() == 0)
