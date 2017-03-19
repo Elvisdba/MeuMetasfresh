@@ -35,7 +35,7 @@ import java.util.SimpleTimeZone;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.db.CConnection;
-import org.compiere.model.MBPBankAccount;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrg;
@@ -173,8 +173,8 @@ public class CCPaymentReserveProcess extends JavaProcess {
 					//we have a credit card payment - set tendertype, isonline and creditcard data
 					paymentPO.setTenderType(MPayment.TENDERTYPE_CreditCard);
 					paymentPO.setIsOnline(true);
-					MBPBankAccount cc = new MBPBankAccount(ctx, bankaccountId, get_TrxName());
-					if(cc.get_ID()!= bankaccountId) {
+					final I_C_BP_BankAccount cc =InterfaceWrapperHelper.create(ctx, bankaccountId, I_C_BP_BankAccount.class, get_TrxName()); 
+					if(cc.getC_BP_BankAccount_ID()!= bankaccountId) {
 						//creditcard not found
 						if (MSysConfig.getValue(Constants.LOCATION_NAME, Constants.SAG, Env.getAD_Client_ID(ctx)).equals(Constants.SAG)) {
 							/*errorMessages = errorMessages.append("Fehler in Auftrag ").append(documentNo)
@@ -213,7 +213,7 @@ public class CCPaymentReserveProcess extends JavaProcess {
 								.append("\tMissing data (number or type) in creditcard, ID: ").append(bankaccountId).append("\n");
 
 							}
-							log.error("missing data for creditcard: " + cc.get_ID());
+							log.error("missing data for creditcard: " + cc.getC_BP_BankAccount_ID());
 							continue;
 						} else {
 							if(!paymentPO.setCreditCard(MPayment.TRXTYPE_Authorization, cc.getCreditCardType(),
@@ -240,7 +240,7 @@ public class CCPaymentReserveProcess extends JavaProcess {
 									.append("\tMissing or wrong creditcard data, ID: ").append(bankaccountId).append("\n");
 
 								}
-								log.error("unable to set creditcard: " + cc.get_ID() + " for order: " + orderId);
+								log.error("unable to set creditcard: " + cc.getC_BP_BankAccount_ID() + " for order: " + orderId);
 								continue;
 
 							}
@@ -252,7 +252,7 @@ public class CCPaymentReserveProcess extends JavaProcess {
 								errorMessages = errorMessages.append(paymentPO.getDocumentNo()).append(" <-> ").append(documentNo)
 								.append("\tKein Payment Prozessor gefunden f�r Kreditkarten-ID: ").append(bankaccountId).append("\n");
 
-								log.error("no payment processor found for creditcard: " + cc.get_ID());
+								log.error("no payment processor found for creditcard: " + cc.getC_BP_BankAccount_ID());
 								continue;
 
 							}

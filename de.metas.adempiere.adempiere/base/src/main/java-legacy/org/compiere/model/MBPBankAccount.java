@@ -33,26 +33,6 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	 */
 	private static final long serialVersionUID = 2580706419593695062L;
 
-	/**
-	 * 	Get Accounst Of BPartner
-	 *	@param ctx context
-	 *	@param C_BPartner_ID bpartner
-	 *	@return
-	 */
-//	public static MBPBankAccount[] getOfBPartner(final Properties ctx, final int C_BPartner_ID)
-//	{
-//		final List<I_C_BP_BankAccount> bpBankAccounts = Services.get(IQueryBL.class)
-//				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
-//				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, C_BPartner_ID)
-//				.addOnlyActiveRecordsFilter()
-//				.orderBy()
-//				.addColumn(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID)
-//				.endOrderBy()
-//				.create()
-//				.list();
-//		
-//		return LegacyAdapters.convertToPOArray(bpBankAccounts, MBPBankAccount.class);
-//	}	//	getOfBPartner
 	
 	/**************************************************************************
 	 * 	Constructor
@@ -180,7 +160,7 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	@Override
 	public String toString ()
 	{
-		StringBuffer sb = new StringBuffer ("MBP_BankAccount[")
+		StringBuilder sb = new StringBuilder ("MBP_BankAccount[")
 			.append (get_ID ())
 			.append(", Name=").append(getA_Name())
 			.append ("]");

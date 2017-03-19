@@ -8,7 +8,6 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -1013,43 +1012,6 @@ public class WebUser
 	{
 		return m_bp.isCreditStopHold();
 	}	//	isCreditStopHold
-
-	/**************************************************************************
-	 * Get BP Bank Account (or create it)
-	 * 
-	 * @return Bank Account
-	 */
-	public MBPBankAccount getBankAccount()
-	{
-		return getBankAccount(false);
-	}
-	
-	/**************************************************************************
-	 * 	Get BP Bank Account (or create it)
-	 *  @param requery Requery data
-	 *	@return Bank Account
-	 */
-	public MBPBankAccount getBankAccount(boolean requery)
-	{
-		MBPBankAccount retValue = null;
-		//	Find Bank Account for exact User
-		MBPBankAccount[] bas = m_bp.getBankAccounts(requery);
-		for (int i = 0; i < bas.length; i++)
-		{
-			if (bas[i].getAD_User_ID() == getAD_User_ID() && bas[i].isActive())
-				retValue = bas[i];
-		}
-
-		//	create new
-		if (retValue == null)
-		{
-			retValue = new MBPBankAccount (m_ctx, m_bp, m_bpc, m_loc);
-			retValue.setAD_User_ID(getAD_User_ID());
-			retValue.save();
-		}
-		
-		return retValue;
-	}	//	getBankAccount
 
 	/**
 	 * 	Get EMail Verification Code

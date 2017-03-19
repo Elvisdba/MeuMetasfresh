@@ -65,7 +65,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	}
 
 	@Override
-	public de.metas.interfaces.I_C_BP_BankAccount createNewC_BP_BankAccount(final IContextAware contextProvider, final int bpartnerId)
+	public org.compiere.model.I_C_BP_BankAccount createNewC_BP_BankAccount(final IContextAware contextProvider, final int bpartnerId)
 	{
 		final IPaymentString paymentString = getPaymentString();
 

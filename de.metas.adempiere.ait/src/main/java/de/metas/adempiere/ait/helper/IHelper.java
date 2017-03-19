@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.test.TestClientUI;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Tax;
@@ -49,7 +50,6 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 

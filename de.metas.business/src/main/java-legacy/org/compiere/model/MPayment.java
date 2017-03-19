@@ -39,7 +39,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.IBPartnerStatisticsUpdater;
@@ -50,7 +49,6 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -264,8 +262,7 @@ public final class MPayment extends X_C_Payment
 		// Our Bank
 		setC_BP_BankAccount_ID(preparedPayment.getParent().getC_BP_BankAccount_ID());
 		// Target Bank
-		int C_BP_BankAccount_ID = preparedPayment.getC_BP_BankAccount_ID();
-		MBPBankAccount ba = new MBPBankAccount(preparedPayment.getCtx(), C_BP_BankAccount_ID, null);
+		I_C_BP_BankAccount ba = preparedPayment.getC_BP_BankAccount();
 		setRoutingNo(ba.getRoutingNo());
 		setAccountNo(ba.getAccountNo());
 		setIsReceipt(X_C_Order.PAYMENTRULE_DirectDebit.equals	// AR only
@@ -1159,7 +1156,7 @@ public final class MPayment extends X_C_Payment
 	 *
 	 * @param ba BP bank account
 	 */
-	public void setBP_BankAccount(MBPBankAccount ba)
+	private void setBP_BankAccount(I_C_BP_BankAccount ba)
 	{
 		log.debug("" + ba);
 		if (ba == null)
@@ -1186,45 +1183,6 @@ public final class MPayment extends X_C_Payment
 			setAccountNo(ba.getAccountNo());
 		if (ba.getRoutingNo() != null)
 			setRoutingNo(ba.getRoutingNo());
-	}	// setBP_BankAccount
-
-	/**
-	 * Save Info from BP Bank Account
-	 *
-	 * @param ba BP bank account
-	 * @return true if saved
-	 */
-	public boolean saveToBP_BankAccount(MBPBankAccount ba)
-	{
-		if (ba == null)
-			return false;
-		ba.setA_Name(getA_Name());
-		ba.setA_Street(getA_Street());
-		ba.setA_City(getA_City());
-		ba.setA_State(getA_State());
-		ba.setA_Zip(getA_Zip());
-		ba.setA_Country(getA_Country());
-		ba.setA_EMail(getA_EMail());
-		ba.setA_Ident_DL(getA_Ident_DL());
-		ba.setA_Ident_SSN(getA_Ident_SSN());
-		// CC
-		ba.setCreditCardType(getCreditCardType());
-		ba.setCreditCardNumber(getCreditCardNumber());
-		ba.setCreditCardExpMM(getCreditCardExpMM());
-		ba.setCreditCardExpYY(getCreditCardExpYY());
-		ba.setCreditCardVV(getCreditCardVV());
-		// Bank
-		if (getAccountNo() != null)
-			ba.setAccountNo(getAccountNo());
-		if (getRoutingNo() != null)
-			ba.setRoutingNo(getRoutingNo());
-		// Trx
-		ba.setR_AvsAddr(getR_AvsAddr());
-		ba.setR_AvsZip(getR_AvsZip());
-		//
-		boolean ok = ba.save(get_TrxName());
-		log.debug("saveToBP_BankAccount - " + ba);
-		return ok;
 	}	// setBP_BankAccount
 
 	/**

@@ -57,6 +57,7 @@ import org.compiere.apps.search.Info;
 import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.Lookup;
@@ -74,7 +75,6 @@ import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;
 

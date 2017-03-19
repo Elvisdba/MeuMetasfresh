@@ -26,10 +26,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.banking.model.I_C_Bank;
-import de.metas.interfaces.I_C_BP_BankAccount;
 
 /**
  * Provides data retrieval methods for partner bank accounts

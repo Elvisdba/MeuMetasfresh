@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -355,8 +354,6 @@ public class MBPartner extends X_C_BPartner
 
 	/** Addressed */
 	private MBPartnerLocation[] m_locations = null;
-	/** BP Bank Accounts */
-	private MBPBankAccount[] m_accounts = null;
 	/** Prim Address */
 	private Integer m_primaryC_BPartner_Location_ID = null;
 	/** Prim User */
@@ -508,54 +505,6 @@ public class MBPartner extends X_C_BPartner
 			return locations[0];
 		return retValue;
 	} // getLocation
-
-	/**
-	 * Get Bank Accounts
-	 * 
-	 * @param requery
-	 *            requery
-	 * @return Bank Accounts
-	 */
-	public MBPBankAccount[] getBankAccounts(boolean requery)
-	{
-		if (m_accounts != null && m_accounts.length >= 0 && !requery)   // re-load
-			return m_accounts;
-		//
-		ArrayList<MBPBankAccount> list = new ArrayList<MBPBankAccount>();
-		String sql = "SELECT * FROM C_BP_BankAccount WHERE C_BPartner_ID=? AND IsActive='Y'";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getC_BPartner_ID());
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MBPBankAccount(getCtx(), rs, get_TrxName()));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			try
-			{
-				if (pstmt != null)
-					pstmt.close();
-			}
-			catch (Exception e)
-			{
-			}
-			pstmt = null;
-		}
-
-		m_accounts = new MBPBankAccount[list.size()];
-		list.toArray(m_accounts);
-		return m_accounts;
-	} // getBankAccounts
 
 	/**************************************************************************
 	 * String Representation
