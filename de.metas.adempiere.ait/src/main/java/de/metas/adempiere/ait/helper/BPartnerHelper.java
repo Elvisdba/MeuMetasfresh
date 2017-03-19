@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -37,7 +38,6 @@ import org.compiere.model.Query;
 import org.junit.Assert;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BP_Group;
 import de.metas.logging.LogManager;
 
 public class BPartnerHelper
@@ -130,21 +130,7 @@ public class BPartnerHelper
 				.setParameters(queryParam)
 				.setClient_ID()
 				.firstOnly();
-
-		if (bpPO == null)
-		{
-			bpPO = new MBPartner(ctx);
-			if (bpValueFinal != null)
-			{
-				bpPO.setValue(bpValueFinal);
-			}
-			bpPO.setName(bpNameFinal);
-			bpPO.setC_BP_Group_ID(getC_BP_Group(IHelper.DEFAULT_BPGroupValue).getC_BP_Group_ID());
-			bpPO.setDescription(parent.getGeneratedBy());
-
-			InterfaceWrapperHelper.save(bpPO);
-			logger.info("Create BP: " + bpPO);
-		}
+		Check.assumeNotNull(bpPO, "Parameter bpPO is not null");
 
 		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpPO, I_C_BPartner.class);
 

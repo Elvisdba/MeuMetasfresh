@@ -32,6 +32,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
@@ -311,5 +312,18 @@ public class BPartnerBL implements IBPartnerBL
 					.skipNulls()
 					.join(firstname, lastname);
 		}
+	}
+	
+	@Override
+	public int getM_PriceList_ID(final I_C_BPartner bpartner, final boolean isSOTrx)
+	{
+		final int priceListId = isSOTrx ? bpartner.getM_PriceList_ID() : bpartner.getPO_PriceList_ID();
+		if(priceListId > 0)
+		{
+			return priceListId;
+		}
+		
+		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
+		return isSOTrx ? bpGroup.getM_PriceList_ID() : bpGroup.getPO_PriceList_ID();
 	}
 }

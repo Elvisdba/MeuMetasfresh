@@ -23,21 +23,19 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -663,8 +661,8 @@ public class MMatchPO extends X_M_MatchPO
 				difference = difference.multiply(getQty());
 				setPriceMatchDifference(difference);
 				//	Approval
-				MBPGroup group = MBPGroup.getOfBPartner(getCtx(), getC_OrderLine().getC_BPartner_ID());
-				BigDecimal mt = group.getPriceMatchTolerance();
+				I_C_BP_Group bpGroup = getC_OrderLine().getC_BPartner().getC_BP_Group();
+				BigDecimal mt = bpGroup.getPriceMatchTolerance();
 				if (mt != null && mt.signum() != 0)
 				{
 					BigDecimal poAmt = poPrice.multiply(getQty());

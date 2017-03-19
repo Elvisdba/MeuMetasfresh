@@ -44,6 +44,7 @@ import org.compiere.util.Msg;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
@@ -497,22 +498,25 @@ public class MOrder extends X_C_Order implements DocAction
 		if (bp == null)
 			return;
 
-		setC_BPartner_ID(bp.getC_BPartner_ID());
+		setC_BPartner(bp);
 		// Defaults Payment Term
-		int ii = 0;
-		if (isSOTrx())
-			ii = bp.getC_PaymentTerm_ID();
-		else
-			ii = bp.getPO_PaymentTerm_ID();
-		if (ii != 0)
-			setC_PaymentTerm_ID(ii);
+		{
+			final int paymentTermId;
+			if (isSOTrx())
+				paymentTermId = bp.getC_PaymentTerm_ID();
+			else
+				paymentTermId = bp.getPO_PaymentTerm_ID();
+			if (paymentTermId != 0)
+				setC_PaymentTerm_ID(paymentTermId);
+		}
 		// Default Price List
-		if (isSOTrx())
-			ii = bp.getM_PriceList_ID();
-		else
-			ii = bp.getPO_PriceList_ID();
-		if (ii != 0)
-			setM_PriceList_ID(ii);
+		{
+			final int priceListId = Services.get(IBPartnerBL.class).getM_PriceList_ID(bp, isSOTrx());
+			if (priceListId > 0)
+			{
+				setM_PriceList_ID(priceListId);
+			}
+		}
 		// Default Delivery/Via Rule
 		String ss = bp.getDeliveryRule();
 		if (ss != null)

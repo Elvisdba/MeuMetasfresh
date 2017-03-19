@@ -497,7 +497,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setBPartner(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
+	public void setBPartner(final org.compiere.model.I_C_Order order, final I_C_BPartner bp)
 	{
 		// FIXME: keep in sync / merge with org.compiere.model.MOrder.setBPartner(MBPartner)
 		if (bp == null)
@@ -505,39 +505,35 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		order.setC_BPartner_ID(bp.getC_BPartner_ID());
+		order.setC_BPartner(bp);
 
 		final boolean isSOTrx = order.isSOTrx();
 		//
 		// Defaults Payment Term
-		final int paymentTermId;
-		if (isSOTrx)
 		{
-			paymentTermId = bp.getC_PaymentTerm_ID();
-		}
-		else
-		{
-			paymentTermId = bp.getPO_PaymentTerm_ID();
-		}
-		if (paymentTermId > 0)
-		{
-			order.setC_PaymentTerm_ID(paymentTermId);
+			final int paymentTermId;
+			if (isSOTrx)
+			{
+				paymentTermId = bp.getC_PaymentTerm_ID();
+			}
+			else
+			{
+				paymentTermId = bp.getPO_PaymentTerm_ID();
+			}
+			if (paymentTermId > 0)
+			{
+				order.setC_PaymentTerm_ID(paymentTermId);
+			}
 		}
 
 		//
 		// Default Price List
-		final int priceListId;
-		if (isSOTrx)
 		{
-			priceListId = bp.getM_PriceList_ID();
-		}
-		else
-		{
-			priceListId = bp.getPO_PriceList_ID();
-		}
-		if (priceListId > 0)
-		{
-			order.setM_PriceList_ID(priceListId);
+			final int priceListId = Services.get(IBPartnerBL.class).getM_PriceList_ID(bp, isSOTrx);
+			if (priceListId > 0)
+			{
+				order.setM_PriceList_ID(priceListId);
+			}
 		}
 
 		//

@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -204,4 +205,5 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
+	I_C_BP_Group retrieveDefaultBPGroup(final Properties ctx);
 }

@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
@@ -392,33 +393,31 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			return;
 		}
 
-		setC_BPartner_ID(bp.getC_BPartner_ID());
+		setC_BPartner(bp);
+		
 		// Set Defaults
-		int ii = 0;
-		if (isSOTrx())
 		{
-			ii = bp.getC_PaymentTerm_ID();
-		}
-		else
-		{
-			ii = bp.getPO_PaymentTerm_ID();
-		}
-		if (ii != 0)
-		{
-			setC_PaymentTerm_ID(ii);
+			final int paymentTermId;
+			if (isSOTrx())
+			{
+				paymentTermId = bp.getC_PaymentTerm_ID();
+			}
+			else
+			{
+				paymentTermId = bp.getPO_PaymentTerm_ID();
+			}
+			if (paymentTermId != 0)
+			{
+				setC_PaymentTerm_ID(paymentTermId);
+			}
 		}
 		//
-		if (isSOTrx())
 		{
-			ii = bp.getM_PriceList_ID();
-		}
-		else
-		{
-			ii = bp.getPO_PriceList_ID();
-		}
-		if (ii != 0)
-		{
-			setM_PriceList_ID(ii);
+			final int priceListId = Services.get(IBPartnerBL.class).getM_PriceList_ID(bp, isSOTrx());
+			if (priceListId > 0)
+			{
+				setM_PriceList_ID(priceListId);
+			}
 		}
 		//
 		String ss = bp.getPaymentRule();

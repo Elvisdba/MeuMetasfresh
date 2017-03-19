@@ -122,4 +122,6 @@ public interface IBPartnerBL extends ISingletonService
 	 * @task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
+	
+	int getM_PriceList_ID(final I_C_BPartner bpartner, final boolean isSOTrx);
 }

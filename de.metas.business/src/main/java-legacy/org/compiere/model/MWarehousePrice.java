@@ -21,14 +21,16 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.bpartner.IBPartnerBL;
+import de.metas.logging.LogManager;
 
 /**
  *	Product Warehouse Availability and Price Model.
@@ -154,16 +156,19 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 	 *	@param trxName transaction
 	 *	@return array of product prices and warehouse availability or null
 	 */
-	public static MWarehousePrice[] find (MBPartner bPartner,
-		boolean IsSOTrx, Timestamp valid, int M_Warehouse_ID,
+	public static MWarehousePrice[] find (I_C_BPartner bPartner,
+		final boolean IsSOTrx, Timestamp valid, int M_Warehouse_ID,
 		String Value, String Name, String UPC, String SKU, String trxName)
 	{
-		int M_PriceList_ID = IsSOTrx ? bPartner.getM_PriceList_ID() : bPartner.getPO_PriceList_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+		
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final int M_PriceList_ID = bpartnerBL.getM_PriceList_ID(bPartner, IsSOTrx);
 		MPriceList pl = null;
 		if (M_PriceList_ID == 0)
-			pl = MPriceList.getDefault(bPartner.getCtx(), IsSOTrx);
+			pl = MPriceList.getDefault(ctx, IsSOTrx);
 		else
-			pl = MPriceList.get(bPartner.getCtx(), M_PriceList_ID, trxName);
+			pl = MPriceList.get(ctx, M_PriceList_ID, trxName);
 		if (pl == null)
 		{
 			s_log.error("No PriceList found");
@@ -176,7 +181,7 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 			return null;
 		}
 		//
-		return find (bPartner.getCtx(), plv.getM_PriceList_Version_ID(), M_Warehouse_ID,
+		return find (ctx, plv.getM_PriceList_Version_ID(), M_Warehouse_ID,
 			Value, Name, UPC, SKU, trxName);
 	}	//	find
 

@@ -21,20 +21,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.AdempiereUserError;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -940,14 +939,12 @@ public final class MSetup
 		 *  Business Partner
 		 */
 		//  Create BP Group
-		MBPGroup bpg = new MBPGroup (m_ctx, 0, m_trx.getTrxName());
+		I_C_BP_Group bpg = InterfaceWrapperHelper.create(m_ctx, I_C_BP_Group.class, m_trx.getTrxName());
 		bpg.setValue(defaultName);
 		bpg.setName(defaultName);
 		bpg.setIsDefault(true);
-		if (bpg.save())
-			m_info.append(Msg.translate(m_lang, "C_BP_Group_ID")).append("=").append(defaultName).append("\n");
-		else
-			log.error("BP Group NOT inserted");
+		InterfaceWrapperHelper.save(bpg);
+		m_info.append(Msg.translate(m_lang, "C_BP_Group_ID")).append("=").append(defaultName).append("\n");
 
 		//	Create BPartner
 		MBPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());

@@ -612,7 +612,7 @@ public class MRequest extends X_R_Request
 		//
 		if (getBPartner() != null)
 		{
-			MBPGroup bpg = MBPGroup.get(getCtx(), getBPartner().getC_BP_Group_ID());
+			I_C_BP_Group bpg = getBPartner().getC_BP_Group();
 			String prioBase = bpg.getPriorityBase();
 			if (prioBase != null && !prioBase.equals(X_C_BP_Group.PRIORITYBASE_Same))
 			{

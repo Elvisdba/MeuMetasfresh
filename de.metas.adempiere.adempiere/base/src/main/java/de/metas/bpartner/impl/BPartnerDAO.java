@@ -270,10 +270,9 @@ public class BPartnerDAO implements IBPartnerDAO
 			return bpPricingSysId;
 		}
 
-		final int bpGroupId = bPartner.getC_BP_Group_ID();
-		if (bpGroupId > 0)
+		final I_C_BP_Group bpGroup = bPartner.getC_BP_Group();
+		if (bpGroup != null)
 		{
-			final de.metas.adempiere.model.I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, de.metas.adempiere.model.I_C_BP_Group.class, trxName);
 			final Integer bpGroupPricingSysId;
 
 			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in
@@ -561,4 +560,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder.create()
 				.first();
 	}
+	
+	@Override
+	@Cached
+	public I_C_BP_Group retrieveDefaultBPGroup(@CacheCtx final Properties ctx)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BP_Group.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_BP_Group.COLUMN_IsDefault, true)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_C_BP_Group.class);
+	}	// get
 }

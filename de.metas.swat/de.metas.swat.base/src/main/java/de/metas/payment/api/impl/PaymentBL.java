@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -47,6 +45,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -55,12 +54,13 @@ import org.compiere.model.X_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
-import de.metas.interfaces.I_C_BP_Group;
+import de.metas.logging.LogManager;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -382,8 +382,7 @@ public class PaymentBL implements IPaymentBL
 		}
 		//
 		// No payment rule in BP. Fallback to group.
-		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(bPartner.getC_BP_Group(), I_C_BP_Group.class);
-
+		final I_C_BP_Group bpGroup = bPartner.getC_BP_Group();
 		if (null != bpGroup)
 		{
 			return bpGroup.getPaymentRule();

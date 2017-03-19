@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -26,12 +25,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.IBPartnerDAO;
-import de.metas.bpartner.IBPartnerStats;
-import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.logging.LogManager;
 
 /**
@@ -59,51 +55,14 @@ public class MBPartner extends X_C_BPartner
 	 */
 	private static final long serialVersionUID = -3669895599574182217L;
 
-	/**************************************************************************
-	 * Constructor for new BPartner from Template
-	 * 
-	 * @param ctx
-	 *            context
-	 */
-	public MBPartner(Properties ctx)
-	{
-		this(ctx, -1, null);
-	} // MBPartner
-
-	/**
-	 * Default Constructor
-	 * 
-	 * @param ctx
-	 *            context
-	 * @param rs
-	 *            ResultSet to load from
-	 * @param trxName
-	 *            transaction
-	 */
 	public MBPartner(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	} // MBPartner
 
-	/**
-	 * Default Constructor
-	 * 
-	 * @param ctx
-	 *            context
-	 * @param C_BPartner_ID
-	 *            partner or 0 or -1 (load from template)
-	 * @param trxName
-	 *            transaction
-	 */
 	public MBPartner(Properties ctx, int C_BPartner_ID, String trxName)
 	{
 		super(ctx, C_BPartner_ID, trxName);
-		//
-		if (C_BPartner_ID == -1)
-		{
-			initTemplate(Env.getContextAsInt(ctx, "AD_Client_ID"));
-			C_BPartner_ID = 0;
-		}
 		if (C_BPartner_ID == 0)
 		{
 			// setValue ("");
@@ -182,69 +141,6 @@ public class MBPartner extends X_C_BPartner
 	private Integer m_primaryAD_User_ID = null;
 	/** Credit Limit recently calcualted */
 
-	/** BP Group */
-	private MBPGroup m_group = null;
-
-	/**
-	 * Load Default BPartner
-	 * 
-	 * @param AD_Client_ID
-	 *            client
-	 * @return true if loaded
-	 */
-	private boolean initTemplate(int AD_Client_ID)
-	{
-		if (AD_Client_ID == 0)
-			throw new IllegalArgumentException("Client_ID=0");
-
-		boolean success = true;
-		String sql = "SELECT * FROM C_BPartner "
-				+ "WHERE C_BPartner_ID IN (SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo WHERE AD_Client_ID=?)";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-				success = load(rs);
-			else
-			{
-				load(0, null);
-				success = false;
-				log.error("None found");
-			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			try
-			{
-				if (pstmt != null)
-					pstmt.close();
-			}
-			catch (Exception e)
-			{
-			}
-			pstmt = null;
-		}
-		setStandardDefaults();
-		// Reset
-		set_ValueNoCheck("C_BPartner_ID", I_ZERO);
-		setValue("");
-		setName("");
-		setName2(null);
-
-		set_ValueNoCheck(COLUMNNAME_AD_OrgBP_ID, null); // metas-ts: avoid DBUniqueConstraintException as we have a unique-constraint on that column (for good reasons :-) )
-
-		return success;
-	} // getTemplate
 
 	/**
 	 * Get All Contacts
@@ -508,117 +404,30 @@ public class MBPartner extends X_C_BPartner
 	} // setPrimaryAD_User_ID
 
 	/**
-	 * Credit Status is Stop or Hold.
-	 * 
-	 * @return true if Stop/Hold
-	 */
-	public boolean isCreditStopHold()
-	{
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
-
-		final String status = stats.getSOCreditStatus();
-
-		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(status)
-				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(status);
-	} // isCreditStopHold
-
-	/**
-	 * Get BP Group
-	 * 
-	 * @return group
-	 */
-	public MBPGroup getBPGroup()
-	{
-		if (m_group == null)
-		{
-			if (getC_BP_Group_ID() == 0)
-				m_group = MBPGroup.getDefault(getCtx());
-			else
-				m_group = MBPGroup.get(getCtx(), getC_BP_Group_ID());
-		}
-		return m_group;
-	} // getBPGroup
-
-	/**
 	 * Get BP Group
 	 * 
 	 * @param group
 	 *            group
 	 */
-	public void setBPGroup(MBPGroup group)
+	public void setBPGroup(final I_C_BP_Group group)
 	{
-		m_group = group;
-		if (m_group == null)
+		if (group == null)
+		{
 			return;
-		setC_BP_Group_ID(m_group.getC_BP_Group_ID());
-		if (m_group.getC_Dunning_ID() != 0)
-			setC_Dunning_ID(m_group.getC_Dunning_ID());
-		if (m_group.getM_PriceList_ID() != 0)
-			setM_PriceList_ID(m_group.getM_PriceList_ID());
-		if (m_group.getPO_PriceList_ID() != 0)
-			setPO_PriceList_ID(m_group.getPO_PriceList_ID());
-		if (m_group.getM_DiscountSchema_ID() != 0)
-			setM_DiscountSchema_ID(m_group.getM_DiscountSchema_ID());
-		if (m_group.getPO_DiscountSchema_ID() != 0)
-			setPO_DiscountSchema_ID(m_group.getPO_DiscountSchema_ID());
+		}
+		super.setC_BP_Group(group);
+		
+		if (group.getC_Dunning_ID() != 0)
+			setC_Dunning_ID(group.getC_Dunning_ID());
+		if (group.getM_PriceList_ID() != 0)
+			setM_PriceList_ID(group.getM_PriceList_ID());
+		if (group.getPO_PriceList_ID() != 0)
+			setPO_PriceList_ID(group.getPO_PriceList_ID());
+		if (group.getM_DiscountSchema_ID() != 0)
+			setM_DiscountSchema_ID(group.getM_DiscountSchema_ID());
+		if (group.getPO_DiscountSchema_ID() != 0)
+			setPO_DiscountSchema_ID(group.getPO_DiscountSchema_ID());
 	} // setBPGroup
-
-	/**
-	 * Get PriceList
-	 * 
-	 * @return price List
-	 */
-	@Override
-	public int getM_PriceList_ID()
-	{
-		int ii = super.getM_PriceList_ID();
-		if (ii == 0)
-			ii = getBPGroup().getM_PriceList_ID();
-		return ii;
-	} // getM_PriceList_ID
-
-	/**
-	 * Get PO PriceList
-	 * 
-	 * @return price list
-	 */
-	@Override
-	public int getPO_PriceList_ID()
-	{
-		int ii = super.getPO_PriceList_ID();
-		if (ii == 0)
-			ii = getBPGroup().getPO_PriceList_ID();
-		return ii;
-	} //
-
-	/**
-	 * Get DiscountSchema
-	 * 
-	 * @return Discount Schema
-	 */
-	@Override
-	public int getM_DiscountSchema_ID()
-	{
-		int ii = super.getM_DiscountSchema_ID();
-		if (ii == 0)
-			ii = getBPGroup().getM_DiscountSchema_ID();
-		return ii;
-	} // getM_DiscountSchema_ID
-
-	/**
-	 * Get PO DiscountSchema
-	 * 
-	 * @return po discount
-	 */
-	@Override
-	public int getPO_DiscountSchema_ID()
-	{
-		int ii = super.getPO_DiscountSchema_ID();
-		if (ii == 0)
-			ii = getBPGroup().getPO_DiscountSchema_ID();
-		return ii;
-	} // getPO_DiscountSchema_ID
 
 	// metas
 	public static int getDefaultContactId(final int cBPartnerId)
@@ -636,19 +445,16 @@ public class MBPartner extends X_C_BPartner
 
 	// end metas
 
-	/**
-	 * Before Save
-	 * 
-	 * @param newRecord
-	 *            new
-	 * @return true
-	 */
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (newRecord || is_ValueChanged("C_BP_Group_ID"))
+		if (newRecord || is_ValueChanged(COLUMNNAME_C_BP_Group_ID))
 		{
-			MBPGroup grp = getBPGroup();
+			I_C_BP_Group grp = getC_BP_Group();
+			if(grp == null)
+			{
+				grp = Services.get(IBPartnerDAO.class).retrieveDefaultBPGroup(getCtx());
+			}
 			if (grp == null)
 			{
 				throw new AdempiereException("@NotFound@:  @C_BP_Group_ID@");
@@ -658,34 +464,23 @@ public class MBPartner extends X_C_BPartner
 		return true;
 	} // beforeSave
 
-	/**************************************************************************
-	 * After Save
-	 * 
-	 * @param newRecord
-	 *            new
-	 * @param success
-	 *            success
-	 * @return success
-	 */
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (newRecord && success)
 		{
-			// Trees
-			insert_Tree(MTree_Base.TREETYPE_BPartner);
 			// Accounting
-			insert_Accounting("C_BP_Customer_Acct", "C_BP_Group_Acct",
+			insert_Accounting(I_C_BP_Customer_Acct.Table_Name, I_C_BP_Group_Acct.Table_Name,
 					"p.C_BP_Group_ID=" + getC_BP_Group_ID());
-			insert_Accounting("C_BP_Vendor_Acct", "C_BP_Group_Acct",
+			insert_Accounting(I_C_BP_Vendor_Acct.Table_Name, I_C_BP_Group_Acct.Table_Name,
 					"p.C_BP_Group_ID=" + getC_BP_Group_ID());
-			insert_Accounting("C_BP_Employee_Acct", "C_AcctSchema_Default",
+			insert_Accounting(I_C_BP_Employee_Acct.Table_Name, I_C_AcctSchema_Default.Table_Name,
 					null);
 		}
 
 		// Value/Name change
 		if (success && !newRecord
-				&& (is_ValueChanged("Value") || is_ValueChanged("Name")))
+				&& (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
 			MAccount.updateValueDescription(getCtx(), "C_BPartner_ID="
 					+ getC_BPartner_ID(), get_TrxName());
 
@@ -700,23 +495,8 @@ public class MBPartner extends X_C_BPartner
 	@Override
 	protected boolean beforeDelete()
 	{
-		return delete_Accounting("C_BP_Customer_Acct")
-				&& delete_Accounting("C_BP_Vendor_Acct")
-				&& delete_Accounting("C_BP_Employee_Acct");
+		return delete_Accounting(I_C_BP_Customer_Acct.Table_Name)
+				&& delete_Accounting(I_C_BP_Vendor_Acct.Table_Name)
+				&& delete_Accounting(I_C_BP_Employee_Acct.Table_Name);
 	} // beforeDelete
-
-	/**
-	 * After Delete
-	 * 
-	 * @param success
-	 * @return deleted
-	 */
-	@Override
-	protected boolean afterDelete(boolean success)
-	{
-		if (success)
-			delete_Tree(MTree_Base.TREETYPE_BPartner);
-		return success;
-	} // afterDelete
-
 } // MBPartner

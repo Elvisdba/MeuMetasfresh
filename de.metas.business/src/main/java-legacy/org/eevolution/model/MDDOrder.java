@@ -272,34 +272,25 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		if (bp == null)
 			return;
 
-		setC_BPartner_ID(bp.getC_BPartner_ID());
-		// Defaults Payment Term
-		int ii = 0;
-		if (isSOTrx())
-			ii = bp.getC_PaymentTerm_ID();
-		else
-			ii = bp.getPO_PaymentTerm_ID();
-
-		// Default Price List
-		if (isSOTrx())
-			ii = bp.getM_PriceList_ID();
-		else
-			ii = bp.getPO_PriceList_ID();
+		setC_BPartner(bp);
+		
 		// Default Delivery/Via Rule
-		String ss = bp.getDeliveryRule();
-		if (ss != null)
-			setDeliveryRule(ss);
-		ss = bp.getDeliveryViaRule();
-		if (ss != null)
-			setDeliveryViaRule(ss);
-		// Default Invoice/Payment Rule
-		ss = bp.getInvoiceRule();
+		{
+			String ss = bp.getDeliveryRule();
+			if (ss != null)
+				setDeliveryRule(ss);
+		}
+		{
+			final String ss = bp.getDeliveryViaRule();
+			if (ss != null)
+				setDeliveryViaRule(ss);
+		}
 
 		if (getSalesRep_ID() == 0)
 		{
-			ii = Env.getAD_User_ID(getCtx());
-			if (ii != 0)
-				setSalesRep_ID(ii);
+			final int salesRepId = Env.getAD_User_ID(getCtx());
+			if (salesRepId != 0)
+				setSalesRep_ID(salesRepId);
 		}
 
 		// Set Locations
