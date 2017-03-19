@@ -32,9 +32,9 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.model.I_C_BP_Relation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
-import de.metas.interfaces.I_C_BP_Relation;
 
 /*
  * #%L

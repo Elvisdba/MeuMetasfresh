@@ -34,7 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.handlingunits.model.I_C_BP_Relation;
 
 public class SubProducerAttributeDAO implements ISubProducerAttributeDAO
 {

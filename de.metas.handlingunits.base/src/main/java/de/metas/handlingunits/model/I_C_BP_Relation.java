@@ -1,10 +1,10 @@
-package de.metas.interfaces;
+package de.metas.handlingunits.model;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,23 +13,20 @@ package de.metas.interfaces;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 public interface I_C_BP_Relation extends org.compiere.model.I_C_BP_Relation
 {
-	public static String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
-	public boolean isHandOverLocation();
-	public void setIsHandOverLocation(boolean IsHandOverLocation);
-	
+	//@formatter:off
 	public static String COLUMNNAME_IsMainProducer = "IsMainProducer";
 	public boolean isMainProducer();
 	public void setIsMainProducer(boolean IsMainProducer);
+	//@formatter:on
 }
