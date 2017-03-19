@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.callout;
+package de.metas.bpartner.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 
@@ -31,6 +31,7 @@ import org.compiere.model.I_AD_User;
 
 import de.metas.bpartner.IBPartnerDAO;
 
+// FIXME: it seems this tab callout it's not used. Consider deleting it.
 public class AD_User_Tab_Callout extends TabCalloutAdapter
 {
 

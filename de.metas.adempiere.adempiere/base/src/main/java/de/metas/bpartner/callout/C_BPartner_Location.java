@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.callout;
+package de.metas.bpartner.callout;
 
 /*
  * #%L

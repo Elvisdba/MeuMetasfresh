@@ -39,7 +39,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.AbstractInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -90,7 +89,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
 import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.modelvalidator.AD_User;
 import de.metas.adempiere.modelvalidator.C_CountryArea_Assign;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
@@ -170,8 +168,7 @@ public class SwatValidator implements ModelValidator
 		//
 		// Services
 
-		// task FRESH-152: BPartner Stats Updater
-		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
+		Services.registerService(IBPartnerStatisticsUpdater.class, new de.metas.bpartner.impl.AsyncBPartnerStatisticsUpdater()); // task FRESH-152: BPartner Stats Updater
 
 		// task FRESH-636: Request Creator
 		Services.registerService(IRequestCreator.class, new AsyncRequestCreator());
@@ -194,7 +191,6 @@ public class SwatValidator implements ModelValidator
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
 		// engine.addModelValidator(new PurchaseModelValidator(), client);
 
-		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
 		engine.addModelValidator(new CLocationValidator(), client); // us786
 		engine.addModelValidator(new C_CountryArea_Assign(), client);
@@ -202,7 +198,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new InOutCandidateValidator(), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
-		engine.addModelValidator(new C_BPartner_Location(), client); // 02618
 
 		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Invoice(), client); // 04193
 		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Payment(), client); // 04193

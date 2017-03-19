@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.async.spi.impl;
+package de.metas.bpartner.async;
 
 /*
  * #%L

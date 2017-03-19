@@ -1,4 +1,4 @@
-package de.metas.adempiere.modelvalidator;
+package de.metas.bpartner.interceptor;
 
 /*
  * #%L

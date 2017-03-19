@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 /*
  * #%L
@@ -25,9 +25,8 @@ package org.adempiere.bpartner.service.impl;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateStatsFromBPartner;
-
 import de.metas.bpartner.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.async.C_BPartner_UpdateStatsFromBPartner;
 
 public class AsyncBPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 {

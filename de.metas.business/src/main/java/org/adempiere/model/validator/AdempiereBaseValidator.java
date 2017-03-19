@@ -164,6 +164,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		//
 		// BPartner
 		engine.addModelValidator(new de.metas.bpartner.interceptor.C_BPartner(), client);
+		engine.addModelValidator(new de.metas.bpartner.interceptor.C_BPartner_Location(), client); // 02618
+		engine.addModelValidator(new de.metas.bpartner.interceptor.AD_User(), client);
 	}
 
 	@Override

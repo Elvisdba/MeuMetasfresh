@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.callout;
+package de.metas.bpartner.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 
@@ -31,6 +31,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import de.metas.bpartner.IBPartnerDAO;
 
+// FIXME: i think we shall delete this callout because the only place where it's used is in Cockpit->Addressen which is actually no longer used.
 public class C_BPartner_Location_Tab_Callout extends TabCalloutAdapter
 {
 	@Override

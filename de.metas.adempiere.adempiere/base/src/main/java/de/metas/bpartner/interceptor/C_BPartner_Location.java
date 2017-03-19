@@ -1,4 +1,4 @@
-package de.metas.modelvalidator;
+package de.metas.bpartner.interceptor;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class C_BPartner_Location
 	public void setupCallouts()
 	{
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		calloutProvider.registerAnnotatedCallout(new org.adempiere.bpartner.callout.C_BPartner_Location());
+		calloutProvider.registerAnnotatedCallout(new de.metas.bpartner.callout.C_BPartner_Location());
 	}
 
 	/**
