@@ -59,51 +59,6 @@ public class MBPartner extends X_C_BPartner
 	 */
 	private static final long serialVersionUID = -3669895599574182217L;
 
-	/**
-	 * Get Empty Template Business Partner
-	 * 
-	 * @param ctx
-	 *            context
-	 * @param AD_Client_ID
-	 *            client
-	 * @return Template Business Partner or null
-	 */
-	public static I_C_BPartner getTemplate(Properties ctx, int AD_Client_ID)
-	{
-		final I_C_BPartner bpartnerForCashTrx = Services.get(IBPartnerDAO.class).retrieveBPartnerForCacheTrx(ctx, AD_Client_ID);
-		
-		final I_C_BPartner template;
-		if (bpartnerForCashTrx == null)
-		{
-			template = new MBPartner(ctx, 0, null);
-		}
-		else
-		{
-			template = InterfaceWrapperHelper.copy()
-					.setFrom(bpartnerForCashTrx)
-					.copyToNew(I_C_BPartner.class);
-		}
-		
-		// Reset
-		template.setValue("");
-		template.setName("");
-		template.setName2(null);
-		template.setDUNS("");
-		template.setFirstSale(null);
-		//
-		template.setSO_CreditLimit(BigDecimal.ZERO);
-
-		// s_template.setRating(null);
-		//
-
-		template.setPotentialLifeTimeValue(BigDecimal.ZERO);
-		template.setAcqusitionCost(BigDecimal.ZERO);
-		template.setShareOfCustomer(0);
-		template.setSalesVolume(0);
-			
-		return template;
-	} // getTemplate
-
 	/**************************************************************************
 	 * Constructor for new BPartner from Template
 	 * 

@@ -31,7 +31,6 @@ import javax.swing.JComponent;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -63,7 +62,10 @@ import de.metas.logging.LogManager;
  *
  *  @author 	Jorg Janke
  *  @version 	$Id: VBPartner.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
+ *  
+ *  @deprecated Scheduled to be removed
  */
+@Deprecated
 public final class VBPartner extends CDialog implements ActionListener
 {
 	/**
@@ -412,7 +414,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (m_partner == null)
 		{
 			int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-			m_partner = LegacyAdapters.convertToPO(Services.get(IBPartnerDAO.class).retrieveBPartnerForCacheTrx(Env.getCtx(), AD_Client_ID));
+			final I_C_BPartner template = Services.get(IBPartnerDAO.class).retrieveBPartnerForCacheTrx(Env.getCtx(), AD_Client_ID);
+			
+			m_partner = InterfaceWrapperHelper.copy().setFrom(template).copyToNew(MBPartner.class);
 			m_partner.setAD_Org_ID(Env.getAD_Org_ID(Env.getCtx())); // Elaine 2009/07/03
 			boolean isSOTrx = !"N".equals(Env.getContext(Env.getCtx(), m_WindowNo, "IsSOTrx"));
 			m_partner.setIsCustomer (isSOTrx);
