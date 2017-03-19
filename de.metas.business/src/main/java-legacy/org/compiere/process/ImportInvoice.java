@@ -21,11 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
@@ -35,6 +33,10 @@ import org.compiere.model.MUser;
 import org.compiere.model.X_I_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Import Invoice from I_Invoice
@@ -518,7 +520,7 @@ public class ImportInvoice extends JavaProcess
 						imp.setName (imp.getBPartnerValue ());
 				}
 				//	BPartner
-				MBPartner bp = MBPartner.get (getCtx(), imp.getBPartnerValue());
+				MBPartner bp = LegacyAdapters.convertToPO(Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue()));
 				if (bp == null)
 				{
 					bp = new MBPartner (getCtx (), -1, get_TrxName());

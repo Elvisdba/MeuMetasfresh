@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.compiere.model.MBPartner;
+import org.adempiere.util.Services;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
 import org.compiere.model.MDunningRunEntry;
@@ -30,10 +30,11 @@ import org.compiere.model.MPayment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -247,7 +248,7 @@ public class DunningRunCreate extends JavaProcess
 					continue;
 				if (DaysDue < DaysAfterDue.intValue() && !level.isShowAllDue())
 					continue;
-				if (Env.ZERO.compareTo(Open) == 0)
+				if (BigDecimal.ZERO.compareTo(Open) == 0)
 					continue;
 				//
 				int TimesDunned = 0;
@@ -324,7 +325,7 @@ public class DunningRunCreate extends JavaProcess
 		catch (BPartnerNoAddressException e)
 		{
 			final String msg = "@Skip@ @C_Invoice_ID@ " + MInvoice.get(getCtx(), C_Invoice_ID).getDocumentInfo()
-				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
+				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
 			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
@@ -404,7 +405,7 @@ public class DunningRunCreate extends JavaProcess
 				BigDecimal OpenAmt = rs.getBigDecimal(4).negate();
 				int C_BPartner_ID = rs.getInt(5);
 				//
-				if (Env.ZERO.compareTo(OpenAmt) == 0)
+				if (BigDecimal.ZERO.compareTo(OpenAmt) == 0)
 					continue;
 				//
 				if (createPaymentLine (C_Payment_ID, C_Currency_ID, PayAmt, OpenAmt,
@@ -446,7 +447,7 @@ public class DunningRunCreate extends JavaProcess
 		} catch (BPartnerNoAddressException e) {
 			MPayment payment = new MPayment(getCtx(), C_Payment_ID, null);
 			String msg = "@Skip@ @C_Payment_ID@ " + payment.getDocumentInfo()
-				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
+				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
 			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);

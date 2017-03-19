@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -63,6 +64,26 @@ public class BPartnerDAO implements IBPartnerDAO
 	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	
+	@Override
+	public I_C_BPartner retrieveBPartner(final Properties ctx, final int bpartnerId)
+	{
+		if(bpartnerId <= 0)
+		{
+			return null;
+		}
+		
+		// NOTE: use assume caching is enabled for C_BPartner table
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ctx, bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+		
+		// Make sure bpartner is from context's AD_Client_ID
+		if(bpartner.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
+		{
+			return null;
+		}
+		
+		return bpartner;
+	}
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bpartner, final Class<T> clazz)
@@ -416,6 +437,19 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(I_C_BPartner.class);
 
 		return result;
+	}
+	
+	@Override
+	public I_C_BPartner retrieveBPartnerForCacheTrx(final Properties ctx, final int adClientId)
+	{
+		final I_C_BPartner bpartnerForCashTrx = Services.get(IClientDAO.class)
+				.retrieveClientInfo(ctx, adClientId)
+				.getC_BPartnerCashTrx();
+		if(bpartnerForCashTrx == null)
+		{
+			logger.error("Not BPartner for CashTrx found for AD_Client_ID={}", adClientId);
+		}
+		return bpartnerForCashTrx;
 	}
 
 	@Override

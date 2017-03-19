@@ -51,7 +51,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
@@ -66,7 +65,6 @@ import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.invoice.IMatchInvBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.tax.api.ITaxBL;
@@ -386,7 +384,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(MBPartner bp)
+	public void setBPartner(I_C_BPartner bp)
 	{
 		if (bp == null)
 		{
@@ -429,7 +427,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 
 		// Set Locations
-		MBPartnerLocation[] locs = bp.getLocations(false);
+		final MBPartner bpartnerPO = LegacyAdapters.convertToPO(bp);
+		MBPartnerLocation[] locs = bpartnerPO.getLocations(false);
 		if (locs != null)
 		{
 			for (int i = 0; i < locs.length; i++)
@@ -450,7 +449,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
+		MUser[] contacts = bpartnerPO.getContacts(false);
 		if (contacts != null && contacts.length > 0) 	// get first User
 		{
 			setAD_User_ID(contacts[0].getAD_User_ID());

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -268,7 +269,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			}
 			if (level.isSetCreditStop() || level.isSetPaymentTerm())
 			{
-				MBPartner thisBPartner = MBPartner.get(getCtx(), getC_BPartner_ID());
+				I_C_BPartner thisBPartner = getC_BPartner();
 
 				final IBPartnerStats stats =bpartnerStatsDAO.retrieveBPartnerStats(thisBPartner);
 				
@@ -281,7 +282,8 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 				{
 					thisBPartner.setC_PaymentTerm_ID(level.getC_PaymentTerm_ID());
 				}
-				thisBPartner.save();
+				
+				InterfaceWrapperHelper.save(thisBPartner);
 			}
 		}
 		return true;

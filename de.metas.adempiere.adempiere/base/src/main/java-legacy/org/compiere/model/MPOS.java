@@ -21,7 +21,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.util.CCache;
+
+import de.metas.bpartner.IBPartnerDAO;
 
 
 /**
@@ -147,7 +150,7 @@ public class MPOS extends X_C_POS
 		if (m_template == null)
 		{
 			if (getC_BPartnerCashTrx_ID() <= 0)
-				m_template = MBPartner.getBPartnerCashTrx (getCtx(), getAD_Client_ID());
+				m_template = Services.get(IBPartnerDAO.class).retrieveBPartnerForCacheTrx(getCtx(), getAD_Client_ID());
 			else
 				m_template = getC_BPartnerCashTrx();
 			log.debug("getBPartner - " + m_template);

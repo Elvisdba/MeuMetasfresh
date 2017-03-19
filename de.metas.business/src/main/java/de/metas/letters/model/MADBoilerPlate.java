@@ -52,6 +52,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
@@ -86,6 +87,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
@@ -796,7 +798,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		if (C_BPartner_ID > 0)
 		{
 			attrs.put(VAR_C_BPartner_ID, C_BPartner_ID);
-			MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartner(ctx, C_BPartner_ID);
 			if (email == null)
 			{
 				final MUser contact = getDefaultContactOrFirstWithValidEMail(bp);
@@ -818,7 +820,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		String AD_Language = Env.getAD_Language(ctx);
 		if (C_BPartner_ID > 0)
 		{
-			MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartner(ctx, C_BPartner_ID);
 			if (bp != null)
 			{
 				AD_Language = bp.getAD_Language();
@@ -853,11 +855,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return attrs;
 	}
 	
-	private static MUser getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
+	private static MUser getDefaultContactOrFirstWithValidEMail(final I_C_BPartner bpartner)
 	{
 		MUser firstContact = null;
 		MUser firstValidContact = null;
-		for (final MUser contact : bpartner.getContacts(false))
+		final MBPartner bpartnerPO = LegacyAdapters.convertToPO(bpartner);
+		for (final MUser contact : bpartnerPO.getContacts(false))
 		{
 			if(contact.isDefaultContact())
 			{

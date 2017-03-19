@@ -57,10 +57,10 @@ import org.adempiere.model.engines.StorageEngine;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -83,6 +83,7 @@ import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.exceptions.ActivityProcessedException;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.product.IProductBL;
@@ -993,7 +994,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 			if (order == null)
 			{
 				order = new MOrder(getCtx(), 0, get_TrxName());
-				MBPartner vendor = MBPartner.get(getCtx(), C_BPartner_ID);
+				final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), C_BPartner_ID);
 				order.setAD_Org_ID(getAD_Org_ID());
 				order.setBPartner(vendor);
 				order.setIsSOTrx(false);

@@ -24,16 +24,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
@@ -267,7 +267,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 	 * 
 	 * @param bp business partner
 	 */
-	public void setBPartner(MBPartner bp)
+	public void setBPartner(I_C_BPartner bp)
 	{
 		if (bp == null)
 			return;
@@ -303,7 +303,8 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		}
 
 		// Set Locations
-		MBPartnerLocation[] locs = bp.getLocations(false);
+		final MBPartner bpartnerPO = LegacyAdapters.convertToPO(bp);
+		MBPartnerLocation[] locs = bpartnerPO.getLocations(false);
 		if (locs != null)
 		{
 			for (int i = 0; i < locs.length; i++)
@@ -325,7 +326,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		}
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
+		MUser[] contacts = bpartnerPO.getContacts(false);
 		if (contacts != null && contacts.length == 1)
 		{
 			setAD_User_ID(contacts[0].getAD_User_ID());

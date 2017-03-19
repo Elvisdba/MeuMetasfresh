@@ -35,6 +35,8 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -43,6 +45,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.logging.LogManager;
 
 /**
@@ -61,7 +64,7 @@ public class VolumeTest
 
 	private static MBPartner getCreateBPartner(String value)
 	{
-		MBPartner bp = MBPartner.get(Env.getCtx(), value);
+		MBPartner bp = LegacyAdapters.convertToPO(Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), value));
 		if (bp != null)
 			return bp;
 		bp = new MBPartner(Env.getCtx(), 0, null);

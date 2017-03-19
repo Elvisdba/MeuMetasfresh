@@ -38,6 +38,24 @@ import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 public interface IBPartnerDAO extends ISingletonService
 {
 	/**
+	 * Retrieves BPartner if it's AD_Client_ID is context's AD_Client_ID.
+	 * 
+	 * @param ctx
+	 * @param bpartnerId
+	 * @return bpartner or null
+	 */
+	I_C_BPartner retrieveBPartner(final Properties ctx, final int bpartnerId);
+	
+	/**
+	 * Retrieve default BPartner to be used on "anonymous" cash transactions
+	 * 
+	 * @param ctx
+	 * @param adClientId
+	 * @return bpartner or null
+	 */
+	I_C_BPartner retrieveBPartnerForCacheTrx(Properties ctx, int adClientId);
+	
+	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
 	 * @param ctx
@@ -123,7 +141,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 *
 	 * @param ctx
 	 * @param value
-	 * @return C_BPartner_Location object or null
+	 * @return C_BPartner object or null
 	 */
 	I_C_BPartner retrieveBPartnerByValue(Properties ctx, String value);
 

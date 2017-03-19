@@ -41,6 +41,7 @@ import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -311,7 +312,7 @@ public class CommissionValidator implements ModelValidator
 			final int bPartnerId = movement.getC_BPartner_ID();
 			final int currencyId = movement.getC_Currency_ID();
 
-			final MBPartner bPartner = MBPartner.get(process.getCtx(), bPartnerId);
+			final MBPartner bPartner = LegacyAdapters.convertToPO(movement.getC_BPartner());
 
 			Map<Integer, MInvoice> currencyId2Invoice = bPartnerId2Inv.get(bPartnerId);
 

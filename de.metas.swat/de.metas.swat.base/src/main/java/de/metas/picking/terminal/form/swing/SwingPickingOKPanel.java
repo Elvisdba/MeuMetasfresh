@@ -59,7 +59,6 @@ import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.I_M_PackagingTreeItem;
-import org.compiere.model.MBPartner;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.util.DisplayType;
@@ -91,6 +90,7 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalTable;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.terminal.IPackingStateProvider;
 import de.metas.picking.terminal.PickingOKPanel;
@@ -250,8 +250,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 			}
 
-			int bp_id = MBPartner.get(Env.getCtx(), value).getC_BPartner_ID();
-
+			int bp_id = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), value).getC_BPartner_ID();
 			final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bp_id, warehouseDestId, qtyToDeliver);
 
 			PackingStates state = PackingStates.unpacked;

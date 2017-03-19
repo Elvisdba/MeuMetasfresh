@@ -35,7 +35,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
@@ -187,7 +186,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		if (bpartnerId > 0)
 		{
-			final MBPartner bp = MBPartner.get(ctx, bpartnerId);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartner(ctx, bpartnerId);
 			if (null != bp)
 			{
 				final String lang = bp.getAD_Language();
