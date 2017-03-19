@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.adempiere.process;
+package de.metas.bpartner.process;
 
 /*
  * #%L
