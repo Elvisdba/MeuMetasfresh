@@ -57,6 +57,7 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
 import org.compiere.model.MAsset;
@@ -293,7 +294,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		if (parent_record_id <= 0)
 			return;
 		//
-		if (parent_table_id == MBPartner.Table_ID)
+		if (parent_table_id == I_C_BPartner.Table_ID)
 			rq.setC_BPartner_ID(parent_record_id);
 		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 			rq.setAD_User_ID(parent_record_id);

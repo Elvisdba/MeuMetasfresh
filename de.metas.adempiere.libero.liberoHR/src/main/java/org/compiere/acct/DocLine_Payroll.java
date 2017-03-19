@@ -17,7 +17,7 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHRMovement;
@@ -39,7 +39,7 @@ public class DocLine_Payroll extends DocLine
 	{
 		super (line, doc);
 		int C_BPartner_ID = line.getC_BPartner_ID();
-		MBPartner   bpartner = new MBPartner(Env.getCtx(),C_BPartner_ID,null);     
+		I_C_BPartner bpartner = line.getC_BPartner();
 		MHRConcept  concept  = MHRConcept.get(Env.getCtx(), line.getHR_Concept_ID()); 
 		//
 		m_HR_Concept_ID    = concept.getHR_Concept_ID();
@@ -74,10 +74,12 @@ public class DocLine_Payroll extends DocLine
 		return m_AccountSign;
 	}
 	
+	@Override
 	public int getC_BPartner_ID(){
 		return m_C_BPartner_ID;
 	}
 	
+	@Override
 	public int getC_Activity_ID(){
 		return m_C_Activity_ID;
 	}  

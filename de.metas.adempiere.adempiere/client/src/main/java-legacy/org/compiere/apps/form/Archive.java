@@ -20,15 +20,15 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.MBPartner;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 public class Archive {
 	
@@ -140,7 +140,7 @@ public class Archive {
 			if (m_Record_ID > 0)
 				sql.append(" AND Record_ID=").append(m_Record_ID);
 			sql.append(")");
-			if (m_AD_Table_ID == MBPartner.Table_ID && m_Record_ID > 0)
+			if (m_AD_Table_ID == I_C_BPartner.Table_ID && m_Record_ID > 0)
 				sql.append(" OR C_BPartner_ID=").append(m_Record_ID);
 			sql.append(")");
 			//	Reset for query

@@ -20,21 +20,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
 import org.compiere.apps.form.ArchiveViewer;
 import org.compiere.apps.form.FormFrame;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.swing.CMenuItem;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 
 /**
@@ -91,12 +90,12 @@ public class AArchive implements ActionListener
 			.append(" AND Record_ID=").append(m_Record_ID)
 			.append(")");
 		//	Get all for BP
-		if (m_AD_Table_ID == MBPartner.Table_ID)
+		if (m_AD_Table_ID == I_C_BPartner.Table_ID)
 			m_where.append(" OR C_BPartner_ID=").append(m_Record_ID);
 		//
 		StringBuffer sql = new StringBuffer("SELECT IsReport, COUNT(*) FROM AD_Archive ")
 			.append("WHERE (AD_Table_ID=? AND Record_ID=?) ");
-		if (m_AD_Table_ID == MBPartner.Table_ID)
+		if (m_AD_Table_ID == I_C_BPartner.Table_ID)
 			sql.append(" OR C_BPartner_ID=?");
 		sql.append(" GROUP BY IsReport"); 
 		PreparedStatement pstmt = null;
@@ -106,7 +105,7 @@ public class AArchive implements ActionListener
 			pstmt = DB.prepareStatement (sql.toString(), null);
 			pstmt.setInt(1, m_AD_Table_ID);
 			pstmt.setInt(2, m_Record_ID);
-			if (m_AD_Table_ID == MBPartner.Table_ID)
+			if (m_AD_Table_ID == I_C_BPartner.Table_ID)
 				pstmt.setInt(3, m_Record_ID);
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
@@ -161,6 +160,7 @@ public class AArchive implements ActionListener
 	 * 	Listner
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		int AD_Form_ID = 118;	//	ArchiveViewer

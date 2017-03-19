@@ -63,30 +63,6 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	}	//	MBP_BankAccount
 
 	/**
-	 * 	Constructor
-	 *	@param ctx context
-	 * 	@param bp BP
-	 *	@param bpc BP Contact
-	 * 	@param location Location
-	 */
-	public MBPBankAccount (Properties ctx, MBPartner bp, MUser bpc, MLocation location)
-	{
-		this(ctx, 0, bp.get_TrxName());
-		setIsACH (false);
-		//
-		setC_BPartner_ID(bp.getC_BPartner_ID());
-		//
-		setA_Name(bpc.getName());
-		setA_EMail(bpc.getEMail());
-		//
-		setA_Street(location.getAddress1());
-		setA_City(location.getCity());
-		setA_Zip(location.getPostal());
-		setA_State(location.getRegionName(true));
-		setA_Country(location.getCountryName());
-	}	//	MBP_BankAccount
-
-	/**
 	 * 	Is Direct Deposit
 	 *	@return true if dd
 	 */

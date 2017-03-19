@@ -16,9 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MLocator;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
@@ -26,8 +26,8 @@ import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.AdempiereUserError;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Link Business Partner to Organization.
@@ -96,8 +96,8 @@ public class BPartnerOrgLink extends JavaProcess
 			+ ", C_BPartner_Location_ID=" + p_C_BPartner_Location_ID);
 		if (p_C_BPartner_ID == 0)
 			throw new AdempiereUserError ("No Business Partner ID");
-		MBPartner bp = new MBPartner (getCtx(), p_C_BPartner_ID, get_TrxName());
-		if (bp.get_ID() == 0)
+		final I_C_BPartner bp = InterfaceWrapperHelper.create(getCtx(), p_C_BPartner_ID, I_C_BPartner.class, get_TrxName());
+		if (bp == null || bp.getC_BPartner_ID() <= 0)
 			throw new AdempiereUserError ("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
 				
 		//	Create Org
@@ -162,11 +162,10 @@ public class BPartnerOrgLink extends JavaProcess
 		//	Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID);
 		if (bp.getAD_Org_ID() != 0)
-			bp.setClientOrg(bp.getAD_Client_ID(), 0);	//	Shared BPartner
+			bp.setAD_Org_ID(0);
 		
 		//	Save BP
-		if (!bp.save())	
-			throw new Exception ("Business Partner not updated");
+		InterfaceWrapperHelper.save(bp);
 		
 		//	Limit to specific Role
 		if (p_AD_Role_ID != 0)	

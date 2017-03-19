@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrderTax;
@@ -52,7 +52,7 @@ public class PosOrderModel extends MOrder {
 	 * 
 	 * @return order or null
 	 */
-	public static PosOrderModel createOrder(MPOS pos, MBPartner partner) {
+	public static PosOrderModel createOrder(MPOS pos, I_C_BPartner partner) {
 		
 		PosOrderModel order = new PosOrderModel(Env.getCtx(), 0, null, pos);
 		order.setAD_Org_ID(pos.getAD_Org_ID());
@@ -62,9 +62,9 @@ public class PosOrderModel extends MOrder {
 			order.setC_DocTypeTarget_ID(pos.getC_DocType_ID());
 		else
 			order.setC_DocTypeTarget_ID(MOrder.DocSubType_POS);
-		if (partner == null || partner.get_ID() == 0)
+		if (partner == null || partner.getC_BPartner_ID() <= 0)
 			partner = pos.getBPartner();
-		if (partner == null || partner.get_ID() == 0) {
+		if (partner == null || partner.getC_BPartner_ID() <= 0) {
 			throw new AdempierePOSException("No BPartner for order");
 		}
 		order.setBPartner(partner);
@@ -88,11 +88,12 @@ public class PosOrderModel extends MOrder {
 	 *         *Basado en Codigo Original Modificado, Revisado y Optimizado de:
 	 *         *Copyright ConSerTi
 	 */
-	public void setBPartner(MBPartner partner)
+	@Override
+	public void setBPartner(final I_C_BPartner partner)
 	{
-		if (getDocStatus().equals("DR"))
+		if (getDocStatus().equals(DOCSTATUS_Drafted))
 		{
-			if (partner == null || partner.get_ID() == 0) {
+			if (partner == null || partner.getC_BPartner_ID() <= 0) {
 				throw new AdempierePOSException("no BPartner");
 			}
 			else

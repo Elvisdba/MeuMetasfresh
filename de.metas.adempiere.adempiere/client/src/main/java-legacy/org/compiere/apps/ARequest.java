@@ -29,9 +29,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MCampaign;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInvoice;
@@ -120,7 +120,7 @@ public class ARequest implements ActionListener
 		if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 			m_where.append(" OR AD_User_ID=").append(m_Record_ID)
 				.append(" OR SalesRep_ID=").append(m_Record_ID);
-		else if (m_AD_Table_ID == MBPartner.Table_ID)
+		else if (m_AD_Table_ID == I_C_BPartner.Table_ID)
 			m_where.append(" OR C_BPartner_ID=").append(m_Record_ID);
 		else if (m_AD_Table_ID == MOrder.Table_ID)
 			m_where.append(" OR C_Order_ID=").append(m_Record_ID);
@@ -219,7 +219,7 @@ public class ARequest implements ActionListener
 			if (m_C_BPartner_ID != 0)
 				tab.setValue("C_BPartner_ID", new Integer(m_C_BPartner_ID));
 			//
-			if (m_AD_Table_ID == MBPartner.Table_ID)
+			if (m_AD_Table_ID == I_C_BPartner.Table_ID)
 				tab.setValue("C_BPartner_ID", new Integer(m_Record_ID));
 			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 				tab.setValue("AD_User_ID", new Integer(m_Record_ID));

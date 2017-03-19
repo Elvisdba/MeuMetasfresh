@@ -33,9 +33,10 @@ import javax.swing.KeyStroke;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerInfo;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
@@ -97,7 +98,7 @@ public class SubOrder extends PosSubPanel
 	private CTextField f_RepName;
 	
 	/**	The Business Partner		*/
-	private MBPartner	m_bpartner;
+	private MBPartner m_bpartner;
 	/**	Price List Version to use	*/
 	private int			m_M_PriceList_Version_ID = 0;
 	private CTextField f_currency = new CTextField();
@@ -445,7 +446,7 @@ public class SubOrder extends PosSubPanel
 		else
 		{
 			m_bpartner = new MBPartner(p_ctx, C_BPartner_ID, null);
-			if (m_bpartner.get_ID() == 0)
+			if (m_bpartner == null || m_bpartner.getC_BPartner_ID() <= 0)
 				m_bpartner = null;
 		}
 		
@@ -474,9 +475,8 @@ public class SubOrder extends PosSubPanel
 		Vector<KeyNamePair> locationVector = new Vector<KeyNamePair>();
 		if (m_bpartner != null)
 		{
-			MBPartnerLocation[] locations = m_bpartner.getLocations(false);
-			for (int i = 0; i < locations.length; i++)
-				locationVector.add(new KeyNamePair(locations[i].getC_BPartner_Location_ID(), locations[i].getName()));
+			for (I_C_BPartner_Location location : m_bpartner.getLocations(false))
+				locationVector.add(new KeyNamePair(location.getC_BPartner_Location_ID(), location.getName()));
 		}
 		DefaultComboBoxModel locationModel = new DefaultComboBoxModel(locationVector); 
 		f_location.setModel(locationModel);
@@ -508,7 +508,7 @@ public class SubOrder extends PosSubPanel
 	 * 	Get BPartner
 	 *	@return BPartner
 	 */
-	public MBPartner getBPartner ()
+	public I_C_BPartner getBPartner ()
 	{
 		return m_bpartner;
 	}	//	getBPartner

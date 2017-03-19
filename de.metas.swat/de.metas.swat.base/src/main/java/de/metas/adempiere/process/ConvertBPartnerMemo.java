@@ -35,9 +35,9 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
@@ -50,15 +50,15 @@ public class ConvertBPartnerMemo extends JavaProcess {
 
 		final String whereClause = "";
 
-		final List<MBPartner> bPartners = new Query(getCtx(),
+		final List<I_C_BPartner> bPartners = new Query(getCtx(),
 				I_C_BPartner.Table_Name, whereClause, get_TrxName())
-				.setOnlyActiveRecords(true).setClient_ID().list();
+				.setOnlyActiveRecords(true).setClient_ID().list(I_C_BPartner.class);
 
 		final Timestamp startDate = SystemTime.asTimestamp();
 		int counter = 0;
-		for (final MBPartner bPartner : bPartners) {
+		for (final I_C_BPartner bPartner : bPartners) {
 
-			final String memoInput = (String) bPartner.get_Value(I_C_BPartner.COLUMNNAME_Memo);
+			final String memoInput = bPartner.getMemo();
 
 			if (memoInput == null) {
 				continue;
@@ -90,8 +90,8 @@ public class ConvertBPartnerMemo extends JavaProcess {
 			final String memoHtml = outpOutputStream.toString().replace(
 					"font-size: 8pt", "font-size: 16pt");
 
-			bPartner.set_ValueOfColumn(I_C_BPartner.COLUMNNAME_Memo, memoHtml);
-			bPartner.saveEx();
+			bPartner.setMemo(memoHtml);
+			InterfaceWrapperHelper.save(bPartner);
 			counter++;
 			
 			if (counter % 1000 == 0) {

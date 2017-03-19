@@ -46,7 +46,7 @@ public class MPOS extends X_C_POS
 	public static MPOS get (Properties ctx, int C_POS_ID)
 	{
 		Integer key = new Integer (C_POS_ID);
-		MPOS retValue = (MPOS) s_cache.get (key);
+		MPOS retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;
 		retValue = new MPOS (ctx, C_POS_ID, null);
@@ -107,7 +107,7 @@ public class MPOS extends X_C_POS
 	}	//	MPOS
 	
 	/**	Cash Business Partner			*/
-	private MBPartner	m_template = null;
+	private I_C_BPartner m_template = null;
 	
 	
 	
@@ -142,14 +142,14 @@ public class MPOS extends X_C_POS
 	 * 	Get default Cash BPartner
 	 *	@return BPartner
 	 */
-	public MBPartner getBPartner()
+	public I_C_BPartner getBPartner()
 	{
 		if (m_template == null)
 		{
-			if (getC_BPartnerCashTrx_ID() == 0)
+			if (getC_BPartnerCashTrx_ID() <= 0)
 				m_template = MBPartner.getBPartnerCashTrx (getCtx(), getAD_Client_ID());
 			else
-				m_template = new MBPartner(getCtx(), getC_BPartnerCashTrx_ID(), get_TrxName());
+				m_template = getC_BPartnerCashTrx();
 			log.debug("getBPartner - " + m_template);
 		}
 		return m_template;

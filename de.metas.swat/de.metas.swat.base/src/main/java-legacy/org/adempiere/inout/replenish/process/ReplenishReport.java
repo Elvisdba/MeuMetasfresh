@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
 import org.compiere.model.MMovement;
@@ -462,7 +462,7 @@ public class ReplenishReport extends JavaProcess
 				order.setIsSOTrx(false);
 				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
 
-				final MBPartner bp = new MBPartner(getCtx(), replenish.getC_BPartner_ID(), get_TrxName());
+				final I_C_BPartner bp = replenish.getC_BPartner();
 				Services.get(IOrderBL.class).setBPartner(order, bp);
 
 				order.setSalesRep_ID(getAD_User_ID());

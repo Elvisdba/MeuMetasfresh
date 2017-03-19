@@ -17,10 +17,12 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import org.compiere.model.MBPartner;
 
-import de.metas.process.ProcessInfoParameter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	UnLink Business Partner from Organization 
@@ -36,6 +38,7 @@ public class BPartnerOrgUnLink extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -56,22 +59,23 @@ public class BPartnerOrgUnLink extends JavaProcess
 	 *  @return Message (text with variables)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - C_BPartner_ID=" + p_C_BPartner_ID); 
 		if (p_C_BPartner_ID == 0)
 			throw new IllegalArgumentException ("No Business Partner ID");
-		MBPartner bp = new MBPartner (getCtx(), p_C_BPartner_ID, get_TrxName());
-		if (bp.get_ID() == 0)
+		I_C_BPartner bp = InterfaceWrapperHelper.create(getCtx(), p_C_BPartner_ID, I_C_BPartner.class, get_TrxName());
+		if (bp == null || bp.getC_BPartner_ID() <= 0)
 			throw new IllegalArgumentException ("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
 		//
-		if (bp.getAD_OrgBP_ID_Int() == 0)
+		if (bp.getAD_OrgBP_ID() <= 0)
 			throw new IllegalArgumentException ("Business Partner not linked to an Organization");
 		bp.setAD_OrgBP_ID(-1);
-		if (!bp.save())
-			throw new IllegalArgumentException ("Business Partner not changed");
 		
-		return "OK";
+		InterfaceWrapperHelper.save(bp);
+		
+		return MSG_OK;
 	}	//	doIt
 	
 }	//	BPartnerOrgUnLink

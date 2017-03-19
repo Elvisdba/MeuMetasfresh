@@ -44,6 +44,7 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node_Para;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -1829,7 +1830,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			Integer bp = (Integer)po.get_Value(index);
 			if (bp != null)
 			{
-				MBPartner partner = MBPartner.get(getCtx(), bp.intValue());
+				I_C_BPartner partner = MBPartner.get(getCtx(), bp.intValue());
 				if (partner != null)
 					sb.append(partner.getName()).append(" ");
 			}
