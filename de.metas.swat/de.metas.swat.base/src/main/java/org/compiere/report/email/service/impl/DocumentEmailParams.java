@@ -25,7 +25,7 @@ package org.compiere.report.email.service.impl;
 
 import java.util.ArrayList;
 
-import org.adempiere.util.CustomColNames;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -102,11 +102,11 @@ public final class DocumentEmailParams implements IEmailParameters {
 			}
 			final int billBPartnerId = order.getBill_BPartner_ID();
 			if (billBPartnerId != 0) {
-				for (MUser user : MUser.getOfBPartner(Env.getCtx(), billBPartnerId, null))
+				for (I_AD_User user : MUser.getOfBPartner(Env.getCtx(), billBPartnerId, null))
 				{
-					if (Boolean.TRUE.equals(user.get_Value(CustomColNames.AD_USER_ISDEFAULTCONTACT)))
+					if(user.isDefaultContact())
 					{
-						userIds.add(user.get_ID());
+						userIds.add(user.getAD_User_ID());
 					}
 				}
 			}
@@ -116,11 +116,11 @@ public final class DocumentEmailParams implements IEmailParameters {
 			}
 			final int bPartnerId = order.getC_BPartner_ID();
 			if (bPartnerId != 0) {
-				for (MUser user : MUser.getOfBPartner(Env.getCtx(), bPartnerId, null))
+				for (I_AD_User user : MUser.getOfBPartner(Env.getCtx(), bPartnerId, null))
 				{
-					if (Boolean.TRUE.equals(user.get_Value(CustomColNames.AD_USER_ISDEFAULTCONTACT)))
+					if(user.isDefaultContact())
 					{
-						userIds.add(user.get_ID());
+						userIds.add(user.getAD_User_ID());
 					}
 				}
 			}

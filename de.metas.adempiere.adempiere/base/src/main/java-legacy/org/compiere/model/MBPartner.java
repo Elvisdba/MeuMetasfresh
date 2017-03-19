@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.CustomColNames;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -801,14 +800,11 @@ public class MBPartner extends X_C_BPartner
 	// metas
 	public static int getDefaultContactId(final int cBPartnerId)
 	{
-
-		for (MUser user : MUser.getOfBPartner(Env.getCtx(), cBPartnerId))
+		for (I_AD_User user : MUser.getOfBPartner(Env.getCtx(), cBPartnerId))
 		{
-
-			if (Boolean.TRUE.equals(user
-					.get_Value(CustomColNames.AD_USER_ISDEFAULTCONTACT)))
+			if(user.isDefaultContact())
 			{
-				return user.get_ID();
+				return user.getAD_User_ID();
 			}
 		}
 		LogManager.getLogger(MBPartner.class).warn("Every BPartner with associated contacts is expected to have exactly one default contact, but C_BPartner_ID " + cBPartnerId + " doesn't have one.");
