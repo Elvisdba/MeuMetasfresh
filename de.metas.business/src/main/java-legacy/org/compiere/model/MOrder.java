@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -1058,10 +1059,16 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 
 		// No Partner Info - set Template
-		if (getC_BPartner_ID() == 0)
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_ID() <= 0)
+		{
+			throw new FillMandatoryException(COLUMNNAME_C_BPartner_ID);
+		}
+		
+		if (getC_BPartner_Location_ID() <= 0)
+		{
 			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+		}
+		
 		// No Bill - get from Ship
 		if (getBill_BPartner_ID() == 0)
 		{
