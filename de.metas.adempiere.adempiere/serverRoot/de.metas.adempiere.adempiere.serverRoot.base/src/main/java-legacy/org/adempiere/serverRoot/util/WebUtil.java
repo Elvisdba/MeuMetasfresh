@@ -32,7 +32,6 @@ import org.apache.ecs.xhtml.script;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.tr;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
@@ -218,10 +217,10 @@ public class WebUtil
 	public static BigDecimal getParameterAsBD (HttpServletRequest request, String parameter)
 	{
 		if (request == null || parameter == null)
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		String data = getParameter(request, parameter);
 		if (data == null || data.length() == 0)
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		try
 		{
 			return new BigDecimal (data);
@@ -243,7 +242,7 @@ public class WebUtil
 		{
 			log.debug(parameter + "=" + data + " - " + e);
 		}
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}   //  getParameterAsBD
 
 	/**
