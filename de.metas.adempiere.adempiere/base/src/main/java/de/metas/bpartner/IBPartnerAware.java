@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service;
+package de.metas.bpartner;
 
 import org.compiere.model.I_C_BPartner;
 

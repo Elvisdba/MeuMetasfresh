@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsDAO;
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.logging.LogManager;
 
 /**

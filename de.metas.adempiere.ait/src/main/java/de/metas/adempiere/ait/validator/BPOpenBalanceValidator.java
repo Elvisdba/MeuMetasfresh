@@ -29,8 +29,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -42,6 +40,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsDAO;
 import junit.framework.Assert;
 
 public class BPOpenBalanceValidator implements ModelValidator

@@ -34,7 +34,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.TaxNoExemptFoundException;
@@ -58,6 +57,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxDAO;

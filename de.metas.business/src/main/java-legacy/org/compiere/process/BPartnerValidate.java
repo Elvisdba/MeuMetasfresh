@@ -21,9 +21,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -35,6 +32,9 @@ import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.process.JavaProcess;
 
 /**

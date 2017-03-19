@@ -47,7 +47,6 @@ import javax.swing.JLabel;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -80,6 +79,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;

@@ -27,9 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.inout.service.IMTransactionDAO;
@@ -50,6 +47,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsBL;
+import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;

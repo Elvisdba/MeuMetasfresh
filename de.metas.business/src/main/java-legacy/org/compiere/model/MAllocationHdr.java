@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -43,6 +42,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 

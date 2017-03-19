@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.callout;
+package de.metas.bpartner.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;

@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;

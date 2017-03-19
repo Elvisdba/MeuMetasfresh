@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -51,6 +50,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;

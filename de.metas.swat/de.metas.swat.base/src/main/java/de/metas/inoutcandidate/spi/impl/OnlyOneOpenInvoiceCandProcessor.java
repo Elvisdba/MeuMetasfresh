@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
@@ -36,6 +34,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Msg;
 
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;

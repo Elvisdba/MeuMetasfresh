@@ -3,7 +3,6 @@ package org.eevolution.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
@@ -15,6 +14,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 

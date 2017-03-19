@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service;
+package de.metas.bpartner;
 
 /*
  * #%L
@@ -33,6 +33,7 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 
 public interface IBPartnerDAO extends ISingletonService
 {

@@ -6,8 +6,6 @@ import java.util.Properties;
 import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -18,6 +16,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 
 public class LanguageBL implements ILanguageBL
 {

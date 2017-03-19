@@ -28,10 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsBL;
+import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;

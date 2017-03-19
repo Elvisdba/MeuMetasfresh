@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -47,6 +46,7 @@ import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.HUAndItemsDAO;

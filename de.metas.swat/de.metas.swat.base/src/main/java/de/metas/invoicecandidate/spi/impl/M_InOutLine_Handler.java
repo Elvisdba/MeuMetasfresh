@@ -31,8 +31,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,6 +52,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 
+import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOut;

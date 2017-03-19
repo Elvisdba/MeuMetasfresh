@@ -26,9 +26,10 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+
+import de.metas.bpartner.IBPartnerDAO;
 
 public class AD_User_Tab_Callout extends TabCalloutAdapter
 {

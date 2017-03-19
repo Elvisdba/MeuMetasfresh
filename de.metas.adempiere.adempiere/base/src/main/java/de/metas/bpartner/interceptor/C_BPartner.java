@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.model.interceptor;
+package de.metas.bpartner.interceptor;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -7,13 +7,13 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.interfaces.I_C_BPartner;
 
 /*
@@ -46,7 +46,7 @@ public class C_BPartner
 	public void init()
 	{
 		Services.get(ITabCalloutFactory.class)
-				.registerTabCalloutForTable(I_C_BPartner.Table_Name, org.adempiere.bpartner.callout.C_BPartner_TabCallout.class);
+				.registerTabCalloutForTable(I_C_BPartner.Table_Name, de.metas.bpartner.callout.C_BPartner_TabCallout.class);
 
 		Services.get(IProgramaticCalloutProvider.class)
 				.registerAnnotatedCallout(this);

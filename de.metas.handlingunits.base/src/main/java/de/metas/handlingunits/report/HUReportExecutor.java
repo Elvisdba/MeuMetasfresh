@@ -10,7 +10,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
@@ -20,6 +19,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.ProcessInfo;
 

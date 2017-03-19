@@ -37,7 +37,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -54,6 +53,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.ait.helper.ProductPriceVO.LineType;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;

@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 /*
  * #%L
@@ -27,9 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerAware;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -46,6 +43,9 @@ import com.google.common.base.Strings;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
+import de.metas.bpartner.IBPartnerAware;
+import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.interfaces.I_C_BPartner;
 
 public class BPartnerBL implements IBPartnerBL

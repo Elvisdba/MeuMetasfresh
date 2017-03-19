@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -47,6 +46,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.inout.IEmptiesInOutProducer;

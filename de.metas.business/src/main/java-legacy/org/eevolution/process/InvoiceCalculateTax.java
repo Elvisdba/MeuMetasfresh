@@ -18,7 +18,6 @@ package org.eevolution.process;
 import java.util.Collections;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -26,6 +25,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPeriod;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.process.JavaProcess;
 
 /**

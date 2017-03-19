@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.inout.util.CachedObjects;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;

@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 /*
  * #%L
@@ -26,12 +26,13 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsDAO;
 
 /**
  * Synchronous implementation; note that there is also an async implementation which sets up a work package to to the job later and in background.

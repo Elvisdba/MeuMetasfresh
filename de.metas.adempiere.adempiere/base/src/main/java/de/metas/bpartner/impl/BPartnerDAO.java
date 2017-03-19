@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 /*
  * #%L
@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
@@ -56,6 +54,8 @@ import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 import de.metas.logging.LogManager;
 
 public class BPartnerDAO implements IBPartnerDAO

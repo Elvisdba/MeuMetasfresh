@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -22,6 +21,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMMPricingAware;

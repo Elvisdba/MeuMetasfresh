@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -79,6 +78,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.IDocumentPA;

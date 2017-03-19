@@ -45,7 +45,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -56,6 +55,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SepaMarshallerException;

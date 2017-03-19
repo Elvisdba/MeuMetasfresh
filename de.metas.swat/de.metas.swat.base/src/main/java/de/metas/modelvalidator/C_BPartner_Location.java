@@ -27,12 +27,12 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.IBPartnerBL;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location

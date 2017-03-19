@@ -28,8 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
@@ -44,6 +42,8 @@ import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {

@@ -1,15 +1,16 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Env;
+
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsBL;
+import de.metas.bpartner.IBPartnerStatsDAO;
 
 /*
  * #%L

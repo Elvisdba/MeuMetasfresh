@@ -33,7 +33,6 @@ import java.util.function.Consumer;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -55,6 +54,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 

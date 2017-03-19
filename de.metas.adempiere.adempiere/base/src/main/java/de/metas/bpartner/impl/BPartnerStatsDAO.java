@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -8,9 +8,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -19,6 +16,10 @@ import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.bpartner.IBPartnerStats;
+import de.metas.bpartner.IBPartnerStatsBL;
+import de.metas.bpartner.IBPartnerStatsDAO;
 
 /*
  * #%L

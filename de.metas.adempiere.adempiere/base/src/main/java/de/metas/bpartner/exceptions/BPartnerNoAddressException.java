@@ -11,24 +11,29 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,    *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
  *****************************************************************************/
-package org.adempiere.exceptions;
+package de.metas.bpartner.exceptions;
 
 import org.compiere.model.I_C_BPartner;
 
 /**
- * Thrown when Bill To Address is required for a BPartner but not found.
+ * Thrown when an location/address is required for a BPartner but not found.
  * @author Teo Sarca, www.arhipac.ro
  */
-public class BPartnerNoBillToAddressException extends BPartnerException
+public class BPartnerNoAddressException extends BPartnerException
 {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -8423260338845096466L;
-	public static final String AD_Message = "BPartnerNoBillToAddress";
-	
-	public BPartnerNoBillToAddressException(I_C_BPartner bp)
+	private static final long serialVersionUID = -1892858395845764918L;
+	public static final String AD_Message = "BPartnerNoAddress";
+
+	/**
+	 * @param message
+	 * @param bp
+	 */
+	public BPartnerNoAddressException(I_C_BPartner bp)
 	{
 		super(AD_Message, bp);
 	}
+
 }

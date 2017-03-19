@@ -25,8 +25,9 @@ package org.adempiere.bpartner.service.impl;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.async.spi.impl.C_BPartner_UpdateStatsFromBPartner;
+
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
 
 public class AsyncBPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 {

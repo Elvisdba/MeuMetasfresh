@@ -1,4 +1,4 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 /*
  * #%L
@@ -30,6 +30,7 @@ import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.impl.BPartnerBL;
 import de.metas.interfaces.I_C_BPartner;
 import mockit.Expectations;
 import mockit.Mocked;

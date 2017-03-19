@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
@@ -38,6 +37,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.ModelValidator;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.X_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorDAO;

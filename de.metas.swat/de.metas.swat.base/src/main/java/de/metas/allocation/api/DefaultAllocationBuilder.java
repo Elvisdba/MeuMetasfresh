@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.builder.BuilderSupport;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;

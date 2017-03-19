@@ -25,10 +25,10 @@ package org.adempiere.bpartner.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.IBPartnerBL;
 
 @Callout(I_C_BPartner_Location.class)
 public class C_BPartner_Location

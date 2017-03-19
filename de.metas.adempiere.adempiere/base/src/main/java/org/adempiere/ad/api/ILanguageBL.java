@@ -29,10 +29,11 @@ package org.adempiere.ad.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Language;
 import org.compiere.util.Language;
+
+import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 
 /**
  * {@link I_AD_Language} related helpers.

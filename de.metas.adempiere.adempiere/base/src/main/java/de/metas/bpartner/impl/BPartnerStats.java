@@ -1,11 +1,12 @@
-package org.adempiere.bpartner.service.impl;
+package de.metas.bpartner.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
 import org.compiere.model.I_C_BPartner_Stats;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.bpartner.IBPartnerStats;
 
 /*
  * #%L

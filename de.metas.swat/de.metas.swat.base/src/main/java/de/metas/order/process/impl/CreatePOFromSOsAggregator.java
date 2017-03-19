@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,6 +21,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.interfaces.I_C_OrderLine;
 
 /*

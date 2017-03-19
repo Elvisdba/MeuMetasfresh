@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.service.IProcessingService;
@@ -66,6 +65,7 @@ import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.MHRProcess;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.commission.exception.CommissionException;
 import de.metas.commission.inout.model.validator.M_InOut;
 import de.metas.commission.interfaces.I_AD_User;
