@@ -1,5 +1,9 @@
 package org.adempiere.util;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 /*
  * #%L
  * de.metas.util
@@ -32,21 +36,21 @@ public class UnitTestServiceNamePolicy extends DefaultServiceNamePolicy implemen
 {
 
 	@Override
-	public String getServiceImplementationClassName(Class<? extends IService> clazz)
+	public List<String> getServiceImplementationClassNames(final Class<? extends IService> interfaceClass)
 	{
-		final String servicePackageName = clazz.getPackage().getName() + ".impl.";
+		final String servicePackageName = interfaceClass.getPackage().getName() + ".impl.";
 
 		String serviceClassName;
-		if (clazz.getSimpleName().startsWith("I"))
-			serviceClassName = clazz.getSimpleName().substring(1);
+		if (interfaceClass.getSimpleName().startsWith("I"))
+			serviceClassName = interfaceClass.getSimpleName().substring(1);
 		else
-			serviceClassName = clazz.getSimpleName();
+			serviceClassName = interfaceClass.getSimpleName();
 
 		final String plainServiceClassNameFQ = servicePackageName + "Plain" + serviceClassName;
 		try
 		{
 			Thread.currentThread().getContextClassLoader().loadClass(plainServiceClassNameFQ);
-			return plainServiceClassNameFQ;
+			return ImmutableList.of(plainServiceClassNameFQ);
 		}
 		catch (ClassNotFoundException e)
 		{
@@ -54,7 +58,7 @@ public class UnitTestServiceNamePolicy extends DefaultServiceNamePolicy implemen
 			// Plain Service not found, use original one
 
 			// TODO also try to load
-			return super.getServiceImplementationClassName(clazz);
+			return super.getServiceImplementationClassNames(interfaceClass);
 		}
 	}
 

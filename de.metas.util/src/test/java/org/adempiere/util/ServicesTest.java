@@ -13,24 +13,25 @@ package org.adempiere.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.Field;
 
 import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.testservice.IMockedMultitonService;
+import org.adempiere.util.testservice.IMockedSingletonSamePackageService;
 import org.adempiere.util.testservice.IMockedSingletonService;
 import org.adempiere.util.testservice.ITestMissingService;
 import org.adempiere.util.testservice.ITestServiceWithFailingConstructor;
 import org.adempiere.util.testservice.ITestServiceWithPrivateImplementation;
+import org.adempiere.util.testservice.MockedSingletonSamePackageService;
 import org.adempiere.util.testservice.impl.MockedMultitonService;
 import org.adempiere.util.testservice.impl.MockedSingletonService;
 import org.junit.After;
@@ -100,6 +101,38 @@ public class ServicesTest
 		Assert.assertEquals("Invalid instanceNo", 2, instance3.getInstanceNo());
 		// Check again, this time shall be the same
 		final IMockedSingletonService instance4 = Services.get(IMockedSingletonService.class);
+		Assert.assertEquals("Invalid instanceNo", 2, instance4.getInstanceNo());
+	}
+
+	/**
+	 * Same as {@link #test_getSingleton_SameInstanceOnEachCall()} but we are testing with {@link IMockedSingletonSamePackageService},
+	 * which has the implementation in same package.
+	 */
+	@Test
+	public void test_getSingleton_SamePackage_SameInstanceOnEachCall()
+	{
+		MockedSingletonService.resetNextInstanceNumber();
+
+		final int expectedInstanceNo = 1;
+		Assert.assertEquals("Invalid NEXT_INSTANCE_NUMBER", expectedInstanceNo, MockedSingletonSamePackageService.NEXT_INSTANCE_NUMBER);
+
+		final IMockedSingletonSamePackageService instance1 = Services.get(IMockedSingletonSamePackageService.class);
+		Assert.assertEquals("Invalid instanceNo", expectedInstanceNo, instance1.getInstanceNo());
+		Assert.assertEquals("Same package", IMockedSingletonSamePackageService.class.getPackage(), instance1.getClass().getPackage());
+
+		final IMockedSingletonSamePackageService instance2 = Services.get(IMockedSingletonSamePackageService.class);
+		Assert.assertEquals("Invalid instanceNo", expectedInstanceNo, instance2.getInstanceNo());
+		Assert.assertSame("instance2 shall be the same as instance1", instance1, instance2);
+
+		//
+		// Clear and test it again
+		Services.clear();
+
+		// Make sure a new instance is created
+		final IMockedSingletonSamePackageService instance3 = Services.get(IMockedSingletonSamePackageService.class);
+		Assert.assertEquals("Invalid instanceNo", 2, instance3.getInstanceNo());
+		// Check again, this time shall be the same
+		final IMockedSingletonSamePackageService instance4 = Services.get(IMockedSingletonSamePackageService.class);
 		Assert.assertEquals("Invalid instanceNo", 2, instance4.getInstanceNo());
 	}
 

@@ -24,6 +24,8 @@ package org.adempiere.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -232,19 +234,8 @@ public class Services
 
 		//
 		// Find service implementation class
-		final String serviceClassname = serviceNameAutoDetectPolicy.getServiceImplementationClassName(serviceInterfaceClass);
-		Class<T> serviceImplClass = null;
-		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		try
-		{
-			@SuppressWarnings("unchecked")
-			final Class<T> clazz = (Class<T>)classLoader.loadClass(serviceClassname);
-			serviceImplClass = clazz;
-		}
-		catch (ClassNotFoundException e)
-		{
-			throw new ServicesException("Cannot find service implementation class: " + serviceClassname + " (classLoader=" + classLoader + ")", e);
-		}
+		final List<String> serviceClassnames = serviceNameAutoDetectPolicy.getServiceImplementationClassNames(serviceInterfaceClass);
+		Class<T> serviceImplClass = findServiceImplementationClass(serviceClassnames);
 
 		//
 		// Create intercepted class, if applies
@@ -263,6 +254,37 @@ public class Services
 		serviceImplConstructor.setAccessible(true);
 
 		return serviceImplConstructor;
+	}
+	
+	private static final <T extends IService> Class<T> findServiceImplementationClass(final List<String> serviceClassnames)
+	{
+		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+		List<Throwable> causes = null;
+		for(final String serviceClassname : serviceClassnames)
+		{
+			try
+			{
+				@SuppressWarnings("unchecked")
+				final Class<T> clazz = (Class<T>)classLoader.loadClass(serviceClassname);
+				return clazz;
+			}
+			catch (final ClassNotFoundException ex)
+			{
+				if(causes == null)
+				{
+					causes = new ArrayList<>();
+				}
+				causes.add(ex);
+			}
+		}
+		
+		final ServicesException ex = new ServicesException("Cannot find service implementation class: " + serviceClassnames + " (classLoader=" + classLoader + ")");
+		if(causes != null)
+		{
+			causes.forEach(throwable -> ex.addSuppressed(throwable));
+		}
+		throw ex;
 	}
 
 	/**

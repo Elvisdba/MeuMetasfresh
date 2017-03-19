@@ -1,5 +1,7 @@
 package org.adempiere.util;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.util
@@ -34,5 +36,6 @@ package org.adempiere.util;
  */
 public interface IServiceNameAutoDetectPolicy
 {
-	String getServiceImplementationClassName(Class<? extends IService> clazz);
+	/** @return a list of possible service implementations which shall be checked */
+	List<String> getServiceImplementationClassNames(Class<? extends IService> interfaceClass);
 }

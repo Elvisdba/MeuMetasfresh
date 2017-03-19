@@ -1,5 +1,9 @@
 package org.adempiere.util;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 /*
  * #%L
  * de.metas.util
@@ -34,19 +38,24 @@ public class DefaultServiceNamePolicy implements IServiceNameAutoDetectPolicy
 {
 
 	@Override
-	public String getServiceImplementationClassName(Class<? extends IService> clazz)
+	public List<String> getServiceImplementationClassNames(final Class<? extends IService> interfaceClass)
 	{
-		final String servicePackageName = clazz.getPackage().getName() + ".impl.";
-
-		String serviceClassName;
-		if (clazz.getSimpleName().startsWith("I"))
-			serviceClassName = clazz.getSimpleName().substring(1);
+		final String serviceClassName;
+		if (interfaceClass.getSimpleName().startsWith("I"))
+		{
+			serviceClassName = interfaceClass.getSimpleName().substring(1);
+		}
 		else
-			serviceClassName = clazz.getSimpleName();
+		{
+			serviceClassName = interfaceClass.getSimpleName();
+		}
 
-		final String serviceClassNameFQ = servicePackageName + serviceClassName;
-		return serviceClassNameFQ;
+		final String interfacePackageName = interfaceClass.getPackage().getName();
 
+		return ImmutableList.of(
+				interfacePackageName + ".impl." + serviceClassName // impl package: de.metas.package.IServiceBL -> de.metas.package.impl.ServiceBL
+				, interfacePackageName + "." + serviceClassName // same package: de.metas.package.IServiceBL -> de.metas.package.ServiceBL
+		);
 	}
 
 }
