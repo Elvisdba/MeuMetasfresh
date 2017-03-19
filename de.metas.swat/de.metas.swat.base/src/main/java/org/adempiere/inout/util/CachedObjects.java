@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_InOut;
@@ -36,7 +37,6 @@ import org.compiere.util.CCache;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.interfaces.I_C_BPartner;
 
 /**
  * Contains maps to cache objects that are used in die shipment context so they need to be loaded only once from DB. Should be replaced with a generic caching implementation. This framework would need

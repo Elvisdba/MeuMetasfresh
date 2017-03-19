@@ -16,7 +16,7 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 435996068L;
+	private static final long serialVersionUID = 215483786L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (Properties ctx, int C_BPartner_Stats_ID, String trxName)
@@ -125,43 +125,6 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 		return ii.intValue();
 	}
 
-	/** 
-	 * SOCreditStatus AD_Reference_ID=289
-	 * Reference name: C_BPartner SOCreditStatus
-	 */
-	public static final int SOCREDITSTATUS_AD_Reference_ID=289;
-	/** CreditStop = S */
-	public static final String SOCREDITSTATUS_CreditStop = "S";
-	/** CreditHold = H */
-	public static final String SOCREDITSTATUS_CreditHold = "H";
-	/** CreditWatch = W */
-	public static final String SOCREDITSTATUS_CreditWatch = "W";
-	/** NoCreditCheck = X */
-	public static final String SOCREDITSTATUS_NoCreditCheck = "X";
-	/** CreditOK = O */
-	public static final String SOCREDITSTATUS_CreditOK = "O";
-	/** NurEineRechnung = I */
-	public static final String SOCREDITSTATUS_NurEineRechnung = "I";
-	/** Set Kreditstatus.
-		@param SOCreditStatus 
-		Kreditstatus des Geschäftspartners
-	  */
-	@Override
-	public void setSOCreditStatus (java.lang.String SOCreditStatus)
-	{
-
-		set_Value (COLUMNNAME_SOCreditStatus, SOCreditStatus);
-	}
-
-	/** Get Kreditstatus.
-		@return Kreditstatus des Geschäftspartners
-	  */
-	@Override
-	public java.lang.String getSOCreditStatus () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
-	}
-
 	/** Set Kredit gewährt.
 		@param SO_CreditUsed 
 		Gegenwärtiger Aussenstand
@@ -182,6 +145,43 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** 
+	 * SOCreditStatus AD_Reference_ID=289
+	 * Reference name: C_BPartner SOCreditStatus
+	 */
+	public static final int SOCREDITSTATUS_AD_Reference_ID=289;
+	/** CreditStop = S */
+	public static final String SOCREDITSTATUS_CreditStop = "S";
+	/** CreditHold = H */
+	public static final String SOCREDITSTATUS_CreditHold = "H";
+	/** CreditWatch = W */
+	public static final String SOCREDITSTATUS_CreditWatch = "W";
+	/** NoCreditCheck = X */
+	public static final String SOCREDITSTATUS_NoCreditCheck = "X";
+	/** CreditOK = O */
+	public static final String SOCREDITSTATUS_CreditOK = "O";
+	/** OnOpenInvoice = I */
+	public static final String SOCREDITSTATUS_OnOpenInvoice = "I";
+	/** Set Kreditstatus.
+		@param SOCreditStatus 
+		Kreditstatus des Geschäftspartners
+	  */
+	@Override
+	public void setSOCreditStatus (java.lang.String SOCreditStatus)
+	{
+
+		set_Value (COLUMNNAME_SOCreditStatus, SOCreditStatus);
+	}
+
+	/** Get Kreditstatus.
+		@return Kreditstatus des Geschäftspartners
+	  */
+	@Override
+	public java.lang.String getSOCreditStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
 	}
 
 	/** Set Offener Saldo.

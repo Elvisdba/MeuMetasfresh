@@ -59,6 +59,7 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -90,7 +91,6 @@ import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListener;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -331,8 +331,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// FRESH-334 retrieve the bp product for org or for org 0
 			final int orgId = product.getAD_Org_ID();
 
-			final de.metas.interfaces.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId),
-					de.metas.interfaces.I_C_BPartner_Product.class);
+			final org.compiere.model.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId),
+					org.compiere.model.I_C_BPartner_Product.class);
 
 			if (bpp == null)
 			{

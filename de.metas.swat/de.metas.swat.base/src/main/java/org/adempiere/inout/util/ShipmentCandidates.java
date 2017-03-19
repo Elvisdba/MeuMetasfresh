@@ -30,12 +30,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
@@ -44,12 +43,13 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class to manage the shipments that might actually be created in the end.
@@ -545,7 +545,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 		{
 			final I_C_BPartner bPartner = InterfaceWrapperHelper.create(shipmentCandidate.getC_BPartner(), I_C_BPartner.class);
 
-			final BigDecimal postageFree = (BigDecimal)bPartner.getPostageFreeAmt();
+			final BigDecimal postageFree = bPartner.getPostageFreeAmt();
 
 			BigDecimal shipmentValue = BigDecimal.ZERO;
 

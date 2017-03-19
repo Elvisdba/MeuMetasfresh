@@ -228,7 +228,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			final boolean soTrx,
 			final String trxName)
 	{
-		final de.metas.interfaces.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, de.metas.interfaces.I_C_BPartner.class, trxName);
+		final org.compiere.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, org.compiere.model.I_C_BPartner.class, trxName);
 		// try to set the pricing system from BPartner
 
 		// metas: The method always retrieved SO-PricingSys. This caused errors in PO-Documents.
@@ -337,7 +337,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		final Properties ctx = Env.getCtx();
-		final de.metas.interfaces.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, de.metas.interfaces.I_C_BPartner.class, trxName);
+		final org.compiere.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, org.compiere.model.I_C_BPartner.class, trxName);
 
 		if (bPartner.getM_Shipper_ID() > 0)
 		{

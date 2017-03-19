@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PricingSystem;
@@ -42,7 +43,6 @@ import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 
-import test.integration.contracts.flatrate.FlatFeeScenario;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.helper.GridWindowHelper;
@@ -66,8 +66,8 @@ import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Transition;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import test.integration.contracts.flatrate.FlatFeeScenario;
 
 public class ContractsHelper extends HelperDelegator
 {

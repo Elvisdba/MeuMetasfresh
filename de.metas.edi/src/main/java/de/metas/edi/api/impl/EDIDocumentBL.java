@@ -383,7 +383,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 		if (Check.isEmpty(ediPartner.getVATaxID(), true))
 		{
-			missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
+			missingFields.add(org.compiere.model.I_C_BPartner.COLUMNNAME_VATaxID);
 		}
 
 		if (!missingFields.isEmpty())

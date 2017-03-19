@@ -44,6 +44,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
@@ -58,7 +59,6 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.bpartner.IBPartnerDAO;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxDAO;
 

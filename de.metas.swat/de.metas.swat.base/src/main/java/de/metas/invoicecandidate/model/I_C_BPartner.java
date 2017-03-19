@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.model;
 
 import de.metas.aggregation.model.I_C_Aggregation;
 
-public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
 	//@formatter:off
     public static final String COLUMNNAME_PO_Invoice_Aggregation_ID = "PO_Invoice_Aggregation_ID";

@@ -23,7 +23,7 @@ package de.metas.fresh.ordercheckup.model;
  */
 
 
-public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
 	/**
 	 * @task 09430

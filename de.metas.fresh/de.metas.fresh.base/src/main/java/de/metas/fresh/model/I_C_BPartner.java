@@ -22,7 +22,7 @@ package de.metas.fresh.model;
  * #L%
  */
 
-public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
 	// @formatter:off
 	public static final String COLUMNNAME_IsProducerAllotment = "IsProducerAllotment";

@@ -1,10 +1,10 @@
 package de.metas.fresh.setup.process;
 
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;

@@ -41,11 +41,11 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Group;
 import org.compiere.util.Env;
 
 import de.metas.callcenter.model.MRGroupProspect;
-import de.metas.interfaces.I_C_BPartner;
 
 /**
  *

@@ -443,11 +443,11 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	 * @return selected partner
 	 * @throws AdempiereException if there is no selected partner
 	 */
-	public final de.metas.interfaces.I_C_BPartner getC_BPartner()
+	public final org.compiere.model.I_C_BPartner getC_BPartner()
 	{
 		final boolean failIfNotSelected = true;
 		final int partnerId = getC_BPartner_ID(failIfNotSelected);
-		final de.metas.interfaces.I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), partnerId, de.metas.interfaces.I_C_BPartner.class, ITrx.TRXNAME_None);
+		final org.compiere.model.I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), partnerId, org.compiere.model.I_C_BPartner.class, ITrx.TRXNAME_None);
 		return partner;
 	}
 

@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MPayment;
@@ -59,7 +60,6 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.interfaces.I_C_BP_BankAccount;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
 import test.integration.swat.sales.SalesTestDriver;
 

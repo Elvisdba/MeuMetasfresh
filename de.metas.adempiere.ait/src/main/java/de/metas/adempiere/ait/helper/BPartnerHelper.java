@@ -25,19 +25,19 @@ package de.metas.adempiere.ait.helper;
 
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
-import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BP_Group;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 
 public class BPartnerHelper
@@ -126,7 +126,7 @@ public class BPartnerHelper
 			queryParam[0] = parent.parseItemName(bpNameFinal);
 		}
 
-		MBPartner bpPO = new Query(ctx, I_C_BPartner.Table_Name, whereClause, Trx.TRXNAME_None)
+		MBPartner bpPO = new Query(ctx, I_C_BPartner.Table_Name, whereClause, ITrx.TRXNAME_None)
 				.setParameters(queryParam)
 				.setClient_ID()
 				.firstOnly();

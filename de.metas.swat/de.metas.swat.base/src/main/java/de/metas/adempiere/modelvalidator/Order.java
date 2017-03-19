@@ -4,6 +4,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -20,7 +21,6 @@ import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.impl.OrderBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 
 /**

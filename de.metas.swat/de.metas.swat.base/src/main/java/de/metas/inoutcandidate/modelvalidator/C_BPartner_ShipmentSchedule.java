@@ -31,13 +31,13 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
 import de.metas.bpartner.IBPartnerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
 
 @Validator(I_C_BPartner.class)
 public class C_BPartner_ShipmentSchedule

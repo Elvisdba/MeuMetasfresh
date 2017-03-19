@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.compiere.util.Util;
+import org.adempiere.util.Check;
 import org.junit.runners.Suite.SuiteClasses;
 import org.junit.runners.model.InitializationError;
 
@@ -97,7 +97,7 @@ public class IntegrationTestListenersRegistry
 
 	public boolean registerFromAnnotatedClass(Class<?> annotatedClass) throws InitializationError
 	{
-		Util.assume(annotatedClass != null, "anntatedClass is null");
+		Check.assume(annotatedClass != null, "anntatedClass is null");
 		if (registeredAnnotatedClasses.contains(annotatedClass))
 		{
 			return false;

@@ -27,11 +27,10 @@ import static org.junit.Assert.assertSame;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.impl.BPartnerBL;
-import de.metas.interfaces.I_C_BPartner;
 import mockit.Expectations;
 import mockit.Mocked;
 

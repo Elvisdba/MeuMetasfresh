@@ -27,12 +27,12 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
 
 /**
  * Returns the "effective" values for a given shipment schedules when it has both an "original" and an "override" column.

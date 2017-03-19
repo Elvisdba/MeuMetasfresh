@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
@@ -40,7 +41,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
-import de.metas.interfaces.I_C_BPartner;
 
 public interface IReceiptScheduleBL extends ISingletonService
 {

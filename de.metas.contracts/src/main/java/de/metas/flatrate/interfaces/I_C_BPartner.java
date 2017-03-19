@@ -3,6 +3,8 @@
  */
 package de.metas.flatrate.interfaces;
 
+import org.compiere.model.X_C_BPartner;
+
 /*
  * #%L
  * de.metas.contracts
@@ -27,9 +29,9 @@ package de.metas.flatrate.interfaces;
 
 
 
-public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
-	public static final String POSTAGEFREE_Subscription = "Su";
+	public static final String POSTAGEFREE_Subscription = X_C_BPartner.POSTAGEFREE_Subscription; //"Su"
 	
 	public static final String COLUMNNAME_IsSubscriptionConfirmRequired = "IsSubscriptionConfirmRequired";
 	

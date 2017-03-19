@@ -34,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
@@ -46,7 +47,6 @@ import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 
 public class AddressBuilder

@@ -27,13 +27,13 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 
 import de.metas.commission.model.I_C_AdvComSystem;
 import de.metas.commission.model.I_C_AdvCommissionSalaryGroup;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.util.LevelAndSponsor;
-import de.metas.interfaces.I_C_BPartner;
 
 /**
  * @author ts

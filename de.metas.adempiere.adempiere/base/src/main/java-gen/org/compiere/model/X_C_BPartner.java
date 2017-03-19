@@ -18,7 +18,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1677576635L;
+	private static final long serialVersionUID = -458729884L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -30,6 +30,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 // Y
 			setC_BP_Group_ID (0);
 			setC_BPartner_ID (0);
+			setIsCreateDefaultPOReference (false);
+// N
 			setIsCustomer (false);
 			setIsEmployee (false);
 			setIsOneTime (false);
@@ -44,9 +46,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 // P
 			setPaymentRulePO (null);
 // P
+			setPostageFree (null);
+// Su
 			setSendEMail (false);
 			setSO_CreditLimit (Env.ZERO);
-			setSO_CreditUsed (Env.ZERO);
 			setValue (null);
         } */
     }
@@ -479,6 +482,133 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
+	@Override
+	public org.compiere.model.I_C_BP_Group getCustomer_Group() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Customer_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setCustomer_Group(org.compiere.model.I_C_BP_Group Customer_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_Customer_Group_ID, org.compiere.model.I_C_BP_Group.class, Customer_Group);
+	}
+
+	/** Set Kundengruppe.
+		@param Customer_Group_ID Kundengruppe	  */
+	@Override
+	public void setCustomer_Group_ID (int Customer_Group_ID)
+	{
+		if (Customer_Group_ID < 1) 
+			set_Value (COLUMNNAME_Customer_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_Customer_Group_ID, Integer.valueOf(Customer_Group_ID));
+	}
+
+	/** Get Kundengruppe.
+		@return Kundengruppe	  */
+	@Override
+	public int getCustomer_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Customer_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getDefault_Bill_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Default_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setDefault_Bill_Location(org.compiere.model.I_C_BPartner_Location Default_Bill_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_Default_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Default_Bill_Location);
+	}
+
+	/** Set Rechnungsstandort.
+		@param Default_Bill_Location_ID 
+		Standort des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public void setDefault_Bill_Location_ID (int Default_Bill_Location_ID)
+	{
+		throw new IllegalArgumentException ("Default_Bill_Location_ID is virtual column");	}
+
+	/** Get Rechnungsstandort.
+		@return Standort des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public int getDefault_Bill_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Default_Bill_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getDefault_Ship_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Default_Ship_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setDefault_Ship_Location(org.compiere.model.I_C_BPartner_Location Default_Ship_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_Default_Ship_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Default_Ship_Location);
+	}
+
+	/** Set Default ship location.
+		@param Default_Ship_Location_ID Default ship location	  */
+	@Override
+	public void setDefault_Ship_Location_ID (int Default_Ship_Location_ID)
+	{
+		throw new IllegalArgumentException ("Default_Ship_Location_ID is virtual column");	}
+
+	/** Get Default ship location.
+		@return Default ship location	  */
+	@Override
+	public int getDefault_Ship_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Default_Ship_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getDefault_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Default_User_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setDefault_User(org.compiere.model.I_AD_User Default_User)
+	{
+		set_ValueFromPO(COLUMNNAME_Default_User_ID, org.compiere.model.I_AD_User.class, Default_User);
+	}
+
+	/** Set Default contact.
+		@param Default_User_ID Default contact	  */
+	@Override
+	public void setDefault_User_ID (int Default_User_ID)
+	{
+		throw new IllegalArgumentException ("Default_User_ID is virtual column");	}
+
+	/** Get Default contact.
+		@return Default contact	  */
+	@Override
+	public int getDefault_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Default_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
@@ -801,6 +931,32 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isCompany () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCompany);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Autom. Referenz-Wert in Auftrag.
+		@param IsCreateDefaultPOReference 
+		Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	  */
+	@Override
+	public void setIsCreateDefaultPOReference (boolean IsCreateDefaultPOReference)
+	{
+		set_Value (COLUMNNAME_IsCreateDefaultPOReference, Boolean.valueOf(IsCreateDefaultPOReference));
+	}
+
+	/** Get Autom. Referenz-Wert in Auftrag.
+		@return Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	  */
+	@Override
+	public boolean isCreateDefaultPOReference () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCreateDefaultPOReference);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1334,6 +1490,43 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
@@ -1368,6 +1561,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Memo.
+		@param Memo 
+		Memo Text
+	  */
+	@Override
+	public void setMemo (java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	/** Get Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo);
 	}
 
 	/** 
@@ -1749,6 +1961,53 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPOReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+	}
+
+	/** Set Auftrag Referenz-Wert Vorlage.
+		@param POReferencePattern 
+		Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	  */
+	@Override
+	public void setPOReferencePattern (java.lang.String POReferencePattern)
+	{
+		set_Value (COLUMNNAME_POReferencePattern, POReferencePattern);
+	}
+
+	/** Get Auftrag Referenz-Wert Vorlage.
+		@return Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	  */
+	@Override
+	public java.lang.String getPOReferencePattern () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POReferencePattern);
+	}
+
+	/** 
+	 * PostageFree AD_Reference_ID=540091
+	 * Reference name: PostageFree
+	 */
+	public static final int POSTAGEFREE_AD_Reference_ID=540091;
+	/** Standard = St */
+	public static final String POSTAGEFREE_Standard = "St";
+	/** Subscription = Su */
+	public static final String POSTAGEFREE_Subscription = "Su";
+	/** Always = Al */
+	public static final String POSTAGEFREE_Always = "Al";
+	/** Set Potofreie Lieferung.
+		@param PostageFree Potofreie Lieferung	  */
+	@Override
+	public void setPostageFree (java.lang.String PostageFree)
+	{
+
+		set_Value (COLUMNNAME_PostageFree, PostageFree);
+	}
+
+	/** Get Potofreie Lieferung.
+		@return Potofreie Lieferung	  */
+	@Override
+	public java.lang.String getPostageFree () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PostageFree);
 	}
 
 	/** Set PostageFreeAmt.

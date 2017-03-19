@@ -27,6 +27,7 @@ package test.integration.commission.bPartner;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,7 +36,6 @@ import de.metas.adempiere.ait.helper.BPartnerHelper;
 import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.commission.interfaces.I_C_BPartner_Location;
-import de.metas.interfaces.I_C_BPartner;
 
 public class BPartnerLocationTest extends AIntegrationTestDriver
 {

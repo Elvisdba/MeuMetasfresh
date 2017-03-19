@@ -25,7 +25,7 @@ package de.metas.commission.interfaces;
 
 import de.metas.commission.model.I_C_Sponsor;
 
-public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
 	public String COLUMNNAME_C_Sponsor_Parent_ID = "C_Sponsor_Parent_ID";
 

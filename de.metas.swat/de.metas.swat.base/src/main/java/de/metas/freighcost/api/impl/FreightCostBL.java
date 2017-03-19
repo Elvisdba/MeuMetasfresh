@@ -36,6 +36,7 @@ import org.adempiere.model.MFreightCostDetail;
 import org.adempiere.model.MFreightCostShipper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
@@ -44,6 +45,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.PO;
+import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
@@ -53,7 +55,6 @@ import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
@@ -93,7 +94,7 @@ public class FreightCostBL implements IFreightCostBL
 
 		final String postageFree = bPartner.getPostageFree();
 
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(postageFree))
+		if (X_C_BPartner.POSTAGEFREE_Always.equals(postageFree))
 		{
 			logger.debug("No freigtcost because of receiving c_bpartner has postageFree={}; Order: {}", postageFree, orderOrInOut);
 			return true;

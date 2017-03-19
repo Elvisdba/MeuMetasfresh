@@ -32,6 +32,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.MBPartner;
@@ -46,7 +47,6 @@ import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.IBPartnerAware;
 import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
-import de.metas.interfaces.I_C_BPartner;
 
 public class BPartnerBL implements IBPartnerBL
 {
@@ -80,8 +80,8 @@ public class BPartnerBL implements IBPartnerBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner);
 		final int bPartnerId = bpartner.getC_BPartner_ID();
 		final String trxName = InterfaceWrapperHelper.getTrxName(bpartner);
-		final org.compiere.model.I_AD_User userPO = retrieveShipContact(ctx, bPartnerId, trxName);
-		return InterfaceWrapperHelper.create(userPO, I_AD_User.class);
+		final I_AD_User user = retrieveShipContact(ctx, bPartnerId, trxName);
+		return user;
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public class BPartnerBL implements IBPartnerBL
 	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(bpLocation.getC_Location(),
-				InterfaceWrapperHelper.create(bpLocation.getC_BPartner(), I_C_BPartner.class),
+				bpLocation.getC_BPartner(),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
@@ -162,8 +162,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		Check.assumeNotNull(partner, "partner not null");
 
-		final I_C_BPartner partnerToUse = InterfaceWrapperHelper.create(partner, de.metas.interfaces.I_C_BPartner.class);
-		final boolean partnerAllowConsolidateInOut = partnerToUse.isAllowConsolidateInOut();
+		final boolean partnerAllowConsolidateInOut = partner.isAllowConsolidateInOut();
 		if (partnerAllowConsolidateInOut)
 		{
 			return true;
@@ -215,7 +214,7 @@ public class BPartnerBL implements IBPartnerBL
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.create(bpartnerAware.getC_BPartner(), I_C_BPartner.class);
+		return bpartnerAware.getC_BPartner();
 	}
 
 

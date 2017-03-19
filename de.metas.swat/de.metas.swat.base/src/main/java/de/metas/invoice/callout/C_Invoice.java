@@ -32,6 +32,7 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
@@ -42,7 +43,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
-import de.metas.interfaces.I_C_BPartner;
 
 @Callout(I_C_Invoice.class)
 public class C_Invoice
@@ -55,7 +55,7 @@ public class C_Invoice
 			return;
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner partner = invoice.getC_BPartner();
 		if (partner == null)
 		{
 			return;

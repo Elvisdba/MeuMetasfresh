@@ -38,6 +38,7 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
@@ -53,7 +54,6 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.ProcessExecutor;
 
 /**

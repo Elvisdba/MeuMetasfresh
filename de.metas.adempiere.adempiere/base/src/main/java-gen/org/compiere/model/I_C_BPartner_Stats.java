@@ -201,31 +201,6 @@ public interface I_C_BPartner_Stats
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSOCreditStatus (java.lang.String SOCreditStatus);
-
-	/**
-	 * Get Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getSOCreditStatus();
-
-    /** Column definition for SOCreditStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SOCreditStatus = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SOCreditStatus", null);
-    /** Column name SOCreditStatus */
-    public static final String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
-
-	/**
 	 * Set Kredit gewährt.
 	 * Gegenwärtiger Aussenstand
 	 *
@@ -249,6 +224,31 @@ public interface I_C_BPartner_Stats
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SO_CreditUsed = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SO_CreditUsed", null);
     /** Column name SO_CreditUsed */
     public static final String COLUMNNAME_SO_CreditUsed = "SO_CreditUsed";
+
+	/**
+	 * Set Kreditstatus.
+	 * Kreditstatus des Geschäftspartners
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSOCreditStatus (java.lang.String SOCreditStatus);
+
+	/**
+	 * Get Kreditstatus.
+	 * Kreditstatus des Geschäftspartners
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSOCreditStatus();
+
+    /** Column definition for SOCreditStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SOCreditStatus = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SOCreditStatus", null);
+    /** Column name SOCreditStatus */
+    public static final String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
 
 	/**
 	 * Set Offener Saldo.

@@ -26,11 +26,10 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Language;
-
-import de.metas.interfaces.I_C_BPartner;
 
 public interface IBPartnerBL extends ISingletonService
 {
@@ -84,7 +83,7 @@ public interface IBPartnerBL extends ISingletonService
 	I_AD_User retrieveShipContact(org.compiere.model.I_C_BPartner bpartner);
 
 	/**
-	 * @param partner the partner to check for. Internally working with {@link de.metas.interfaces.I_C_BPartner}.
+	 * @param partner the partner to check for. Internally working with {@link org.compiere.model.I_C_BPartner}.
 	 * @param isSOTrx
 	 * @return true if InOut consolidation is allowed for given partner
 	 */

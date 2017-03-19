@@ -33,6 +33,7 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
@@ -90,7 +91,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return null;
 		}
 
-		final de.metas.interfaces.I_C_BPartner bp = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.interfaces.I_C_BPartner.class);
+		final I_C_BPartner bp = order.getC_BPartner();
 		if (!bp.isCustomer() || bp.getM_Warehouse_ID() <= 0)
 		{
 			return null;

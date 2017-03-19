@@ -11,10 +11,10 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
 import de.metas.bpartner.IBPartnerDAO;
-import de.metas.interfaces.I_C_BPartner;
 
 /*
  * #%L

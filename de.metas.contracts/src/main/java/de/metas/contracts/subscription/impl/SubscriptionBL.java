@@ -50,6 +50,7 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
+import org.compiere.model.X_C_BPartner;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -178,7 +179,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(order.getBill_BPartner(), I_C_BPartner.class);
 		final String bpPostageFree = bPartner.getPostageFree();
 
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
+		if (X_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
 				|| I_C_BPartner.POSTAGEFREE_Subscription.equals(bpPostageFree))
 		{
 			postageFree = true;
@@ -377,7 +378,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(olCand.getBill_BPartner(), I_C_BPartner.class);
 		final String bpPostageFree = bPartner.getPostageFree();
 
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
+		if (X_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
 				|| I_C_BPartner.POSTAGEFREE_Subscription.equals(bpPostageFree))
 		{
 			postageFree = true;

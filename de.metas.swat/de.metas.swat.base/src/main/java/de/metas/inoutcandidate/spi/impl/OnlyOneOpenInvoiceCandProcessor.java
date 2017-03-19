@@ -32,6 +32,8 @@ import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Msg;
 
 import de.metas.bpartner.IBPartnerStats;
@@ -39,7 +41,6 @@ import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
-import de.metas.interfaces.I_C_BPartner;
 
 /**
  * 
@@ -83,7 +84,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 		
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(billPartner);
 
-		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
+		final String creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_OnOpenInvoice;
 
 		if (creditStatus.equals(stats.getSOCreditStatus()))
 		{

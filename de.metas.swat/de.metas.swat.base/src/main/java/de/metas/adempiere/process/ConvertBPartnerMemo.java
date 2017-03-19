@@ -36,11 +36,11 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
 
 public class ConvertBPartnerMemo extends JavaProcess {

@@ -39,6 +39,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
 
 import de.metas.async.api.IWorkPackageQueue;
@@ -50,10 +51,9 @@ import de.metas.bpartner.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 /**
  * Contains basic utility BL needed to create processes which send mails for given selection.

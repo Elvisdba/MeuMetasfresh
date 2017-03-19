@@ -465,6 +465,125 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_CreateSO = "CreateSO";
 
 	/**
+	 * Set Kundengruppe.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomer_Group_ID (int Customer_Group_ID);
+
+	/**
+	 * Get Kundengruppe.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCustomer_Group_ID();
+
+	public org.compiere.model.I_C_BP_Group getCustomer_Group();
+
+	public void setCustomer_Group(org.compiere.model.I_C_BP_Group Customer_Group);
+
+    /** Column definition for Customer_Group_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_Customer_Group_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group>(I_C_BPartner.class, "Customer_Group_ID", org.compiere.model.I_C_BP_Group.class);
+    /** Column name Customer_Group_ID */
+    public static final String COLUMNNAME_Customer_Group_ID = "Customer_Group_ID";
+
+	/**
+	 * Set Rechnungsstandort.
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDefault_Bill_Location_ID (int Default_Bill_Location_ID);
+
+	/**
+	 * Get Rechnungsstandort.
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getDefault_Bill_Location_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getDefault_Bill_Location();
+
+	@Deprecated
+	public void setDefault_Bill_Location(org.compiere.model.I_C_BPartner_Location Default_Bill_Location);
+
+    /** Column definition for Default_Bill_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BPartner_Location> COLUMN_Default_Bill_Location_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BPartner_Location>(I_C_BPartner.class, "Default_Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name Default_Bill_Location_ID */
+    public static final String COLUMNNAME_Default_Bill_Location_ID = "Default_Bill_Location_ID";
+
+	/**
+	 * Set Default ship location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDefault_Ship_Location_ID (int Default_Ship_Location_ID);
+
+	/**
+	 * Get Default ship location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getDefault_Ship_Location_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getDefault_Ship_Location();
+
+	@Deprecated
+	public void setDefault_Ship_Location(org.compiere.model.I_C_BPartner_Location Default_Ship_Location);
+
+    /** Column definition for Default_Ship_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BPartner_Location> COLUMN_Default_Ship_Location_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BPartner_Location>(I_C_BPartner.class, "Default_Ship_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name Default_Ship_Location_ID */
+    public static final String COLUMNNAME_Default_Ship_Location_ID = "Default_Ship_Location_ID";
+
+	/**
+	 * Set Default contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDefault_User_ID (int Default_User_ID);
+
+	/**
+	 * Get Default contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getDefault_User_ID();
+
+	public org.compiere.model.I_AD_User getDefault_User();
+
+	@Deprecated
+	public void setDefault_User(org.compiere.model.I_AD_User Default_User);
+
+    /** Column definition for Default_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_User> COLUMN_Default_User_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_User>(I_C_BPartner.class, "Default_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name Default_User_ID */
+    public static final String COLUMNNAME_Default_User_ID = "Default_User_ID";
+
+	/**
 	 * Set Lieferart.
 	 * Defines the timing of Delivery
 	 *
@@ -811,6 +930,31 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsCompany = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsCompany", null);
     /** Column name IsCompany */
     public static final String COLUMNNAME_IsCompany = "IsCompany";
+
+	/**
+	 * Set Autom. Referenz-Wert in Auftrag.
+	 * Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCreateDefaultPOReference (boolean IsCreateDefaultPOReference);
+
+	/**
+	 * Get Autom. Referenz-Wert in Auftrag.
+	 * Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCreateDefaultPOReference();
+
+    /** Column definition for IsCreateDefaultPOReference */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsCreateDefaultPOReference = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsCreateDefaultPOReference", null);
+    /** Column name IsCreateDefaultPOReference */
+    public static final String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
 
 	/**
 	 * Set Kunde.
@@ -1317,6 +1461,35 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_M_Shipper>(I_C_BPartner.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
 	 * Set Lager.
 	 * Lager oder Ort für Dienstleistung
 	 *
@@ -1344,6 +1517,31 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_M_Warehouse>(I_C_BPartner.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo (java.lang.String Memo);
+
+	/**
+	 * Get Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo();
+
+    /** Column definition for Memo */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo", null);
+    /** Column name Memo */
+    public static final String COLUMNNAME_Memo = "Memo";
 
 	/**
 	 * Set Exclude from MRP.
@@ -1683,6 +1881,54 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "POReference", null);
     /** Column name POReference */
     public static final String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Auftrag Referenz-Wert Vorlage.
+	 * Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPOReferencePattern (java.lang.String POReferencePattern);
+
+	/**
+	 * Get Auftrag Referenz-Wert Vorlage.
+	 * Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPOReferencePattern();
+
+    /** Column definition for POReferencePattern */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_POReferencePattern = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "POReferencePattern", null);
+    /** Column name POReferencePattern */
+    public static final String COLUMNNAME_POReferencePattern = "POReferencePattern";
+
+	/**
+	 * Set Potofreie Lieferung.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPostageFree (java.lang.String PostageFree);
+
+	/**
+	 * Get Potofreie Lieferung.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPostageFree();
+
+    /** Column definition for PostageFree */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_PostageFree = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "PostageFree", null);
+    /** Column name PostageFree */
+    public static final String COLUMNNAME_PostageFree = "PostageFree";
 
 	/**
 	 * Set PostageFreeAmt.
@@ -2044,12 +2290,9 @@ public interface I_C_BPartner
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
-	 * <br>
-	 * Type: DateTime
-	 * <br>
-	 * Mandatory: true
-	 * <br>
-	 * Virtual Column: false
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getUpdated();
 

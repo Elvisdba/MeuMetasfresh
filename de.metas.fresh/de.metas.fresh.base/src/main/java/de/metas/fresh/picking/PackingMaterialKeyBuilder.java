@@ -40,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_C_BPartner;
 
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -51,7 +52,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.interfaces.I_C_BPartner;
 
 public class PackingMaterialKeyBuilder
 {
