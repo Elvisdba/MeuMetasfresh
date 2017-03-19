@@ -21,6 +21,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
@@ -32,6 +33,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -821,6 +823,14 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	protected final int getAD_User_ID()
 	{
 		return getProcessInfo().getAD_User_ID();
+	}
+	
+	/**
+	 * @return process owner
+	 */
+	protected final I_AD_User getAD_User()
+	{
+		return Services.get(IUserDAO.class).retrieveUser(getCtx(), getAD_User_ID());
 	}
 
 	/**

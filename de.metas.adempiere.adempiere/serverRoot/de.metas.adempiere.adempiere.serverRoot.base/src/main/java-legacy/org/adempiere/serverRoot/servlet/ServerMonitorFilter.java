@@ -17,6 +17,7 @@
 package org.adempiere.serverRoot.servlet;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.servlet.Filter;
@@ -31,9 +32,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.bind.DatatypeConverter;
 
-import org.compiere.model.MUser;
+import org.adempiere.user.api.IUserBL;
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -121,7 +127,7 @@ public class ServerMonitorFilter implements Filter
 	 * @param authorization authorization
 	 * @return true if authenticated
 	 */
-	private boolean checkAuthorization(String authorization)
+	private boolean checkAuthorization(final String authorization)
 	{
 		if (authorization == null)
 		{
@@ -132,27 +138,46 @@ public class ServerMonitorFilter implements Filter
 			final String userInfo = authorization.substring(6).trim();
 			final String namePassword = new String(DatatypeConverter.parseBase64Binary(userInfo));
 
-			// log.debug("checkAuthorization - Name:Password=" + namePassword);
 			final int index = namePassword.indexOf(':');
 			final String name = namePassword.substring(0, index);
 			final String password = namePassword.substring(index + 1);
-			final MUser user = MUser.get(Env.getCtx(), name, password);
-			if (user == null)
+			
+			final I_AD_User user = Services.get(IUserDAO.class).retrieveUserByLogin(Env.getCtx(), name);
+			if(user == null)
 			{
-				log.warn("User not found: '" + name + "/" + password + "'");
+				log.warn("User not found: {}", name);
 				return false;
 			}
-			if (!user.isAdministrator())
+			
+			if(!user.isActive())
 			{
-				log.warn("Not a Sys Admin = " + name);
+				log.warn("User not active: {}", user);
 				return false;
 			}
-			log.info("Name=" + name);
+
+			if(Check.isEmpty(password))
+			{
+				log.warn("Empty passwords are not allowed");
+				return false;
+			}
+			if(!Objects.equals(password, user.getPassword()))
+			{
+				log.warn("Invalid password for user: {}", name);
+				return false;
+			}
+
+			if (!Services.get(IUserBL.class).isAdministrator(Env.getCtx(), user.getAD_User_ID()))
+			{
+				log.warn("Not a Sys Admin: {}", name);
+				return false;
+			}
+			
+			log.info("Name={}", name);
 			return true;
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			log.error("check", e);
+			log.error("check", ex);
 		}
 		return false;
 	}	// check

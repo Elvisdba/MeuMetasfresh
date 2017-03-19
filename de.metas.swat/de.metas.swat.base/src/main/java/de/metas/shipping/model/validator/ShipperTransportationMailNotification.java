@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
@@ -188,7 +189,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 			}
 
 			@Override
-			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
 			{
 				variables.put(MADBoilerPlate.VAR_UserPO, io);
 				//

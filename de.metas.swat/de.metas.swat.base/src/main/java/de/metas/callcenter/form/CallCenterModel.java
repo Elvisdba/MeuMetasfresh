@@ -30,11 +30,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.MiscUtils;
+import org.adempiere.util.Services;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_ContactInterest;
 import org.compiere.model.Lookup;
 import org.compiere.model.MColumn;
@@ -44,7 +48,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -52,6 +55,7 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.CallCenterValidator;
 import de.metas.callcenter.model.I_RV_R_Group_Prospect;
@@ -470,11 +474,12 @@ public class CallCenterModel
 		final ArrayList<ContactPhoneNo> list = new ArrayList<ContactPhoneNo>();
 		if (prospect == null)
 			return list;
-		for (MUser contact : MUser.getOfBPartner(m_ctx, prospect.getC_BPartner_ID(), null))
+		
+		for (I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(m_ctx, prospect.getC_BPartner_ID(), ITrx.TRXNAME_None))
 		{
-			if (!Util.isEmpty(contact.getPhone(), true))
+			if (!Check.isEmpty(contact.getPhone(), true))
 				list.add(new ContactPhoneNo(contact.getPhone(), contact.getName(), contact.getAD_User_ID()));
-			if (!Util.isEmpty(contact.getPhone2(), true))
+			if (!Check.isEmpty(contact.getPhone2(), true))
 				list.add(new ContactPhoneNo(contact.getPhone2(), contact.getName(), contact.getAD_User_ID()));
 		}
 		return list;

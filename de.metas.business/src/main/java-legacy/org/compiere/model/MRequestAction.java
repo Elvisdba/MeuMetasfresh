@@ -19,6 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
 import org.compiere.util.Msg;
 
 /**
@@ -87,8 +89,7 @@ public class MRequestAction extends X_R_RequestAction
 	 */
 	public String getCreatedByName()
 	{
-		MUser user = MUser.get(getCtx(), getCreatedBy());
-		return user.getName();
+		return Services.get(IUserDAO.class).retrieveUserName(getCreatedBy());
 	}	//	getCreatedByName
 
 	/**
@@ -134,7 +135,7 @@ public class MRequestAction extends X_R_RequestAction
 		for (int i = 0; i < chars.length; i++)
 		{
 			char c = chars[i];
-			int ii = (int)c;
+			int ii = c;
 			if (ii > 255)
 				sb.append("&#").append(ii).append(";");
 			else
@@ -177,6 +178,7 @@ public class MRequestAction extends X_R_RequestAction
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		return true;

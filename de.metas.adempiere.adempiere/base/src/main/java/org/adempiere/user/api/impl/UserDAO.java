@@ -32,12 +32,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -117,9 +120,40 @@ public class UserDAO implements IUserDAO
 	@Cached(cacheName = I_AD_User.Table_Name)
 	public I_AD_User retrieveUser(@CacheCtx final Properties ctx, final int adUserId)
 	{
+		// NOTE: we use the query API to handle the case of AD_User_ID=0
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
+				.create()
+				.firstOnly(I_AD_User.class);
+	}
+
+	@Override
+	public I_AD_User retrieveUser(final Properties ctx)
+	{
+		return retrieveUser(ctx, Env.getAD_User_ID(ctx));
+	}
+
+	@Override
+	public String retrieveUserName(final int adUserId)
+	{
+		final String sql = "SELECT " + I_AD_User.COLUMNNAME_Name
+				+ " FROM " + I_AD_User.Table_Name
+				+ " WHERE " + I_AD_User.COLUMNNAME_AD_User_ID + "=?";
+
+		final String name = DB.getSQLValueString(ITrx.TRXNAME_None, sql, adUserId);
+		return Check.isEmpty(name) ? "?" : name;
+	}
+
+	@Override
+	public I_AD_User retrieveUserByLogin(final Properties ctx, final String login)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_User.COLUMN_IsSystemUser, true)
+				.addEqualsFilter(I_AD_User.COLUMN_Login, login)
 				.create()
 				.firstOnly(I_AD_User.class);
 	}

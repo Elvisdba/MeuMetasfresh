@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
@@ -124,4 +125,18 @@ public interface IBPartnerBL extends ISingletonService
 	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
 	
 	int getM_PriceList_ID(final I_C_BPartner bpartner, final boolean isSOTrx);
+
+	/**
+	 * @param bpartner
+	 * @return new bpartner contact (not saved)
+	 */
+	I_AD_User createContact(I_C_BPartner bpartner);
+
+	/**
+	 * Set BP Group and update bpartner fields from group.
+	 * 
+	 * @param group
+	 *            group
+	 */
+	void setBPGroup(I_C_BPartner bpartner, I_C_BP_Group group);
 }

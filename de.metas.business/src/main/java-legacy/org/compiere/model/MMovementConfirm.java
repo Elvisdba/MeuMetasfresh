@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
@@ -200,9 +201,9 @@ public class MMovementConfirm extends X_M_MovementConfirm implements DocAction
 	{
 		if (IsApproved && !isApproved())
 		{
-			int AD_User_ID = Env.getAD_User_ID(getCtx());
-			MUser user = MUser.get(getCtx(), AD_User_ID);
-			String info = user.getName() 
+			final int AD_User_ID = Env.getAD_User_ID(getCtx());
+			final String username = Services.get(IUserDAO.class).retrieveUserName(AD_User_ID);
+			String info = username 
 				+ ": "
 				+ Msg.translate(getCtx(), "IsApproved")
 				+ " - " + new Timestamp(System.currentTimeMillis());

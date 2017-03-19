@@ -26,6 +26,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
@@ -112,17 +113,18 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	public void setBPartner(MBPartner bp, boolean isSOTrx)
 	{
 		setC_BPartner_ID(bp.getC_BPartner_ID());
-		MBPartnerLocation[] locations = bp.getLocations(false);
+		
+		final List<I_C_BPartner_Location> locations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp);
 		// Location
-		if (locations.length == 1)
-			setC_BPartner_Location_ID(locations[0].getC_BPartner_Location_ID());
+		if (locations.size() == 1)
+			setC_BPartner_Location_ID(locations.get(0).getC_BPartner_Location_ID());
 		else
 		{
-			MBPartnerLocation firstActive = null;
-			MBPartnerLocation firstBillTo = null;
-			for (int i = 0; i < locations.length; i++)
+			I_C_BPartner_Location firstActive = null;
+			I_C_BPartner_Location firstBillTo = null;
+			for (int i = 0; i < locations.size(); i++)
 			{
-				MBPartnerLocation location = locations[i];
+				final I_C_BPartner_Location location = locations.get(i);
 				if (!location.isActive())
 				{
 					continue;
@@ -169,17 +171,18 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			throw new BPartnerNoAddressException(bp);
 		}
 		// User with location
-		MUser[] users = MUser.getOfBPartner(getCtx(), bp.getC_BPartner_ID(), get_TrxName());
-		if (users.length == 1)
-			setAD_User_ID(users[0].getAD_User_ID());
+		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(bp);
+		if (users.size() == 1)
+		{
+			setAD_User_ID(users.get(0).getAD_User_ID());
+		}
 		else
 		{
-			for (int i = 0; i < users.length; i++)
+			for (final I_AD_User user : users)
 			{
-				MUser user = users[i];
 				if (user.getC_BPartner_Location_ID() == getC_BPartner_Location_ID())
 				{
-					setAD_User_ID(users[i].getAD_User_ID());
+					setAD_User_ID(user.getAD_User_ID());
 					break;
 				}
 			}

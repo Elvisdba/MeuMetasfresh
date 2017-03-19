@@ -22,9 +22,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
 import org.apache.ecs.xhtml.b;
 import org.apache.ecs.xhtml.hr;
 import org.apache.ecs.xhtml.p;
@@ -32,6 +32,9 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Chat Model
@@ -191,6 +194,7 @@ public class MChat extends X_CM_Chat
      * 
      * @param Description
      */
+	@Override
 	public void setDescription (String Description)
 	{
 		if (Description != null && Description.length() > 0)
@@ -220,8 +224,9 @@ public class MChat extends X_CM_Chat
 				history.addElement(new hr());
 			//	User & Date
 			b b = new b();
-			MUser user = MUser.get(getCtx(), entry.getCreatedBy());
-			b.addElement(user.getName());
+			final String username = Services.get(IUserDAO.class).retrieveUserName(entry.getCreatedBy());
+
+			b.addElement(username);
 			b.addElement(" \t");
 			Timestamp created = entry.getCreated();
 			if (m_format == null)

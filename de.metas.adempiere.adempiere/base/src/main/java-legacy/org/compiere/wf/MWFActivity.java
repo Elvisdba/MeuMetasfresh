@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
@@ -52,7 +53,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserRoles;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -1372,8 +1372,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			// Send Approval Notification
 			if (newState.equals(StateEngine.STATE_Aborted))
 			{
-				MUser to = new MUser(getCtx(), doc.getDoc_User_ID(), null);
 				final IUserBL userBL = Services.get(IUserBL.class);
+				I_AD_User to = Services.get(IUserDAO.class).retrieveUser(getCtx(), doc.getDoc_User_ID());
 				// send email
 				if (userBL.isNotificationEMail(to))
 				{
@@ -1415,15 +1415,15 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		if (AD_User_ID == getAD_User_ID())
 		{
-			log.warn("Same User - AD_User_ID=" + AD_User_ID);
+			log.warn("Same User - AD_User_ID={}", AD_User_ID);
 			return false;
 		}
 		//
-		MUser oldUser = MUser.get(getCtx(), getAD_User_ID());
-		MUser user = MUser.get(getCtx(), AD_User_ID);
-		if (user == null || user.get_ID() == 0)
+		I_AD_User oldUser = getAD_User();
+		I_AD_User user = Services.get(IUserDAO.class).retrieveUser(getCtx(), AD_User_ID);
+		if (user == null || user.getAD_User_ID() <= 0)
 		{
-			log.warn("Does not exist - AD_User_ID=" + AD_User_ID);
+			log.warn("Does not exist - AD_User_ID={}", AD_User_ID);
 			return false;
 		}
 		// Update
@@ -1626,7 +1626,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				final I_AD_Role role = resp.getRole();
 				if (role != null)
 				{
-					for (final I_AD_User user : MUser.getWithRole(role))
+					for (final I_AD_User user : Services.get(IRoleDAO.class).retrieveUsersForRole(getCtx(), role.getAD_Role_ID()))
 					{
 						sendEMail(client, user.getAD_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
 					}
@@ -1657,9 +1657,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	private void sendEMail(MClient client, int AD_User_ID, String email,
 			String subject, String message, File pdf, boolean isHtml)
 	{
-		if (AD_User_ID != 0)
+		if (AD_User_ID > 0)
 		{
-			MUser user = MUser.get(getCtx(), AD_User_ID);
+			I_AD_User user = Services.get(IUserDAO.class).retrieveUser(getCtx(), AD_User_ID);
 			email = user.getEMail();
 			if (email != null && email.length() > 0)
 			{
@@ -1779,13 +1779,13 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 */
 	public String toStringX()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(getWFStateText())
 				.append(": ").append(getNode().getName());
 		if (getAD_User_ID() > 0)
 		{
-			MUser user = MUser.get(getCtx(), getAD_User_ID());
-			sb.append(" (").append(user.getName()).append(")");
+			final String username = Services.get(IUserDAO.class).retrieveUserName(getAD_User_ID());
+			sb.append(" (").append(username).append(")");
 		}
 		return sb.toString();
 	}	// toStringX
@@ -1819,9 +1819,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 		if (sr != null)
 		{
-			MUser user = MUser.get(getCtx(), sr.intValue());
-			if (user != null)
-				sb.append(user.getName()).append(" ");
+			final String username = Services.get(IUserDAO.class).retrieveUserName(sr.intValue());
+			if (!Check.isEmpty(username, true))
+				sb.append(username).append(" ");
 		}
 		//
 		index = po.get_ColumnIndex("C_BPartner_ID");

@@ -35,6 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Role_Included;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.MRole;
@@ -97,6 +98,25 @@ public class RoleDAO implements IRoleDAO
 				.create()
 				.list(I_AD_Role.class);
 	}
+	
+	@Override
+	public List<I_AD_User> retrieveUsersForRole(@CacheCtx final Properties ctx, final int adRoleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Roles.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
+				.andCollect(I_AD_User_Roles.COLUMN_AD_User_ID)
+				.addOnlyActiveRecordsFilter()
+				//
+				.orderBy()
+				.addColumn(I_AD_User.COLUMN_AD_User_ID)
+				.endOrderBy()
+				//
+				.create()
+				.list(I_AD_User.class);
+	}
+
 
 	@Override
 	public final List<I_AD_Role> retrieveSubstituteRoles(final Properties ctx, final int adUserId, final Date date)

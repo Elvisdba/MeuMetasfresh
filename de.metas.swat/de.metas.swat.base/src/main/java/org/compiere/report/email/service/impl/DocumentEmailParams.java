@@ -1,45 +1,25 @@
 package org.compiere.report.email.service.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-
-import java.util.ArrayList;
-
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
-import org.compiere.model.MUser;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
-import de.metas.letters.model.I_AD_BoilerPlate;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.process.ProcessInfo;
 
@@ -61,7 +41,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 	private final String subject;
 	private final String to;
 	private final String attachmentPrefix;
-	private final MUser from;
+	private final I_AD_User from;
 
 	private final static String EXPORT_FILE_PREFIX = null;
 
@@ -85,11 +65,11 @@ public final class DocumentEmailParams implements IEmailParameters {
 		String documentNo = null;
 		String subjectKey = null;
 		String attachmentKey = null;
-		ArrayList<Integer> userIds = new ArrayList<Integer>();
+		Set<Integer> userIds = new LinkedHashSet<>();
 		int targetDocTypeId = 0;
 
-		if (isOrder) {
-
+		if (isOrder)
+		{
 			MOrder order = new MOrder(Env.getCtx(), pi.getRecord_ID(), null);
 			documentNo = order.getDocumentNo();
 			subjectKey = MSG_SUBJECT_ORDER_DOC_NO;
@@ -97,35 +77,39 @@ public final class DocumentEmailParams implements IEmailParameters {
 			targetDocTypeId = order.getC_DocTypeTarget_ID();
 
 			final int billUserId = order.getBill_User_ID();
-			if (billUserId != 0) {
+			if (billUserId > 0)
+			{
 				userIds.add(billUserId);
 			}
+			
 			final int billBPartnerId = order.getBill_BPartner_ID();
-			if (billBPartnerId != 0) {
-				for (I_AD_User user : MUser.getOfBPartner(Env.getCtx(), billBPartnerId, null))
+			if (billBPartnerId > 0)
+			{
+				final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(billBPartnerId);
+				if(contact != null)
 				{
-					if(user.isDefaultContact())
-					{
-						userIds.add(user.getAD_User_ID());
-					}
+					userIds.add(contact.getAD_User_ID());
 				}
 			}
+			
 			final int userId = order.getAD_User_ID();
-			if (userId != 0) {
+			if (userId > 0)
+			{
 				userIds.add(userId);
 			}
+			
 			final int bPartnerId = order.getC_BPartner_ID();
-			if (bPartnerId != 0) {
-				for (I_AD_User user : MUser.getOfBPartner(Env.getCtx(), bPartnerId, null))
+			if (bPartnerId > 0)
+			{
+				final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bPartnerId);
+				if(contact != null)
 				{
-					if(user.isDefaultContact())
-					{
-						userIds.add(user.getAD_User_ID());
-					}
+					userIds.add(contact.getAD_User_ID());
 				}
 			}
-		} else if (isInOut) {
-
+		}
+		else if (isInOut)
+		{
 			MInOut inOut = new MInOut(Env.getCtx(), pi.getRecord_ID(), null);
 			documentNo = inOut.getDocumentNo();
 			subjectKey = MSG_SUBJECT_SHIPMENT_DOC_NO;
@@ -133,14 +117,23 @@ public final class DocumentEmailParams implements IEmailParameters {
 			targetDocTypeId = inOut.getC_DocType_ID();
 
 			final int userId = inOut.getAD_User_ID();
-			if (userId != 0) {
+			if (userId > 0)
+			{
 				userIds.add(userId);
 			}
+			
 			final int bPartnerId = inOut.getC_BPartner_ID();
-			if (bPartnerId != 0) {
-				userIds.add(MBPartner.getDefaultContactId(bPartnerId));
+			if (bPartnerId > 0)
+			{
+				final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bPartnerId);
+				if(contact != null)
+				{
+					userIds.add(contact.getAD_User_ID());
+				}
 			}
-		} else if (isInvoice) {
+		}
+		else if (isInvoice)
+		{
 
 			MInvoice invoice = new MInvoice(Env.getCtx(), pi.getRecord_ID(),
 					null);
@@ -150,42 +143,50 @@ public final class DocumentEmailParams implements IEmailParameters {
 			targetDocTypeId = invoice.getC_DocTypeTarget_ID();
 
 			final int userId = invoice.getAD_User_ID();
-			if (userId != 0) {
+			if (userId > 0)
+			{
 				userIds.add(userId);
 			}
+			
 			final int bPartnerId = invoice.getC_BPartner_ID();
-			if (bPartnerId != 0) {
-				userIds.add(MBPartner.getDefaultContactId(bPartnerId));
+			if (bPartnerId > 0)
+			{
+				final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bPartnerId);
+				if(contact != null)
+				{
+					userIds.add(contact.getAD_User_ID());
+				}
 			}
 		}
 
-		subject = Msg.getMsg(Env.getCtx(), subjectKey,
-				new Object[] { documentNo });
-		attachmentPrefix = Msg.getMsg(Env.getCtx(), attachmentKey,
-				new Object[] { documentNo });
+		subject = Msg.getMsg(Env.getCtx(), subjectKey, new Object[] { documentNo });
+		attachmentPrefix = Msg.getMsg(Env.getCtx(), attachmentKey, new Object[] { documentNo });
 
 		// attempt to figure out an email-address for the customer
 		String toFound = "";
-		for (int userId : userIds) {
-			if (userId < 1) {
+		for (int userId : userIds)
+		{
+			if (userId < 1)
+			{
 				continue;
 			}
-			MUser contanct = MUser.get(Env.getCtx(), userId);
-			if (contanct.getEMail() != null && !"".equals(contanct.getEMail())) {
-				toFound = contanct.getEMail();
+			final I_AD_User contact = Services.get(IUserDAO.class).retrieveUser(Env.getCtx(), userId);
+			if(!Check.isEmpty(contact.getEMail(), true))
+			{
+				toFound = contact.getEMail();
 				break;
 			}
 		}
 		to = toFound;
 
-		if (targetDocTypeId != 0) {
-			MDocType docType = MDocType.get(Env.getCtx(), targetDocTypeId);
-			defaultBoilerPlateId = (Integer) docType
-					.get_Value(I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID);
+		if (targetDocTypeId != 0)
+		{
+			final I_C_DocType docType = MDocType.get(Env.getCtx(), targetDocTypeId);
+			defaultBoilerPlateId = docType.getAD_BoilerPlate_ID();
 
 		}
 
-		from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		from = Services.get(IUserDAO.class).retrieveUser(Env.getCtx());
 	}
 
 	@Override
@@ -197,7 +198,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 	}
 
 	@Override
-	public MUser getFrom() {
+	public I_AD_User getFrom() {
 		return from;
 	}
 

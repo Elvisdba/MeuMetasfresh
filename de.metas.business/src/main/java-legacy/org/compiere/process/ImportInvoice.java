@@ -21,19 +21,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 
-import org.adempiere.util.LegacyAdapters;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLocation;
-import org.compiere.model.MUser;
 import org.compiere.model.X_I_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.service.ILocationBL;
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -46,6 +50,8 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class ImportInvoice extends JavaProcess
 {
+	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
+
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;
 	/**	Organization to be imported to		*/
@@ -520,36 +526,33 @@ public class ImportInvoice extends JavaProcess
 						imp.setName (imp.getBPartnerValue ());
 				}
 				//	BPartner
-				MBPartner bp = LegacyAdapters.convertToPO(Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue()));
+				I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue());
 				if (bp == null)
 				{
-					bp = new MBPartner (getCtx (), -1, get_TrxName());
-					bp.setClientOrg (imp.getAD_Client_ID (), imp.getAD_Org_ID ());
+					bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, imp);
 					bp.setValue (imp.getBPartnerValue ());
 					bp.setName (imp.getName ());
-					if (!bp.save ())
-						continue;
+					InterfaceWrapperHelper.save(bp);
 				}
 				imp.setC_BPartner_ID (bp.getC_BPartner_ID ());
 				
 				//	BP Location
-				MBPartnerLocation bpl = null; 
-				MBPartnerLocation[] bpls = bp.getLocations(true);
-				for (int i = 0; bpl == null && i < bpls.length; i++)
+				I_C_BPartner_Location bpl = null; 
+				for (final I_C_BPartner_Location currentLoc : Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp))
 				{
-					if (imp.getC_BPartner_Location_ID() == bpls[i].getC_BPartner_Location_ID())
-						bpl = bpls[i];
+					if (imp.getC_BPartner_Location_ID() == currentLoc.getC_BPartner_Location_ID())
+						bpl = currentLoc;
 					//	Same Location ID
-					else if (imp.getC_Location_ID() == bpls[i].getC_Location_ID())
-						bpl = bpls[i];
+					else if (imp.getC_Location_ID() == currentLoc.getC_Location_ID())
+						bpl = currentLoc;
 					//	Same Location Info
 					else if (imp.getC_Location_ID() == 0)
 					{
-						MLocation loc = bpl.getLocation(false);
-						if (loc.equals(imp.getC_Country_ID(), imp.getC_Region_ID(), 
+						if (locationBL.equals(currentLoc.getC_Location()
+								, imp.getC_Country_ID(), imp.getC_Region_ID(), 
 								imp.getPostal(), "", imp.getCity(), 
 								imp.getAddress1(), imp.getAddress2()))
-							bpl = bpls[i];
+							bpl = currentLoc;
 					}
 				}
 				if (bpl == null)
@@ -568,8 +571,7 @@ public class ImportInvoice extends JavaProcess
 					//
 					bpl = new MBPartnerLocation (bp);
 					bpl.setC_Location_ID (imp.getC_Location_ID() > 0 ? imp.getC_Location_ID() : loc.getC_Location_ID());
-					if (!bpl.save ())
-						continue;
+					InterfaceWrapperHelper.save(bpl);
 				}
 				imp.setC_Location_ID (bpl.getC_Location_ID ());
 				imp.setC_BPartner_Location_ID (bpl.getC_BPartner_Location_ID ());
@@ -579,29 +581,29 @@ public class ImportInvoice extends JavaProcess
 					|| imp.getEMail () != null 
 					|| imp.getPhone () != null)
 				{
-					MUser[] users = bp.getContacts(true);
-					MUser user = null;
-					for (int i = 0; user == null && i < users.length;  i++)
+					final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(bp);
+					I_AD_User user = null;
+					for (int i = 0; user == null && i < users.size();  i++)
 					{
-						String name = users[i].getName();
+						String name = users.get(i).getName();
 						if (name.equals(imp.getContactName()) 
 							|| name.equals(imp.getName()))
 						{
-							user = users[i];
+							user = users.get(i);
 							imp.setAD_User_ID (user.getAD_User_ID ());
 						}
 					}
 					if (user == null)
 					{
-						user = new MUser (bp);
+						user = Services.get(IBPartnerBL.class).createContact(bp);
 						if (imp.getContactName () == null)
 							user.setName (imp.getName ());
 						else
 							user.setName (imp.getContactName ());
 						user.setEMail (imp.getEMail ());
 						user.setPhone (imp.getPhone ());
-						if (user.save ())
-							imp.setAD_User_ID (user.getAD_User_ID ());
+						InterfaceWrapperHelper.save(user);
+						imp.setAD_User_ID (user.getAD_User_ID ());
 					}
 				}
 				imp.save ();

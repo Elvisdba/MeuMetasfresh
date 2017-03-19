@@ -31,6 +31,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.engine.IDocActionBL;
 
 /**
@@ -578,10 +579,10 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 			return m_AD_User_ID;
 		if (getC_BPartner_ID() != 0)
 		{
-			MUser[] users = MUser.getOfBPartner(getCtx(), getC_BPartner_ID());
-			if (users.length > 0)
+			final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(getC_BPartner_ID());
+			if(contact != null)
 			{
-				m_AD_User_ID = users[0].getAD_User_ID();
+				m_AD_User_ID = contact.getAD_User_ID();
 				return m_AD_User_ID;
 			}
 		}

@@ -31,7 +31,6 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.MUser;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
@@ -196,7 +195,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 		}
 		else
 		{
-			setUser(new KeyNamePair(userId, MUser.getNameOfUser(userId)));
+			setUser(new KeyNamePair(userId, Services.get(IUserDAO.class).retrieveUserName(userId)));
 			final ITerminalKey key = usersPanel.getKeyLayout().findKeyByValue(userId);
 			usersPanel.onKeySelected(key);
 		}

@@ -13,28 +13,27 @@ package org.adempiere.user.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 
-
-
 public interface IUserBL extends ISingletonService
 {
 	String PARAM_ACTION = "action";
 	String ACTION_ResetPassword = "ResetPassword";
 	String PARAM_AccountPasswordResetCode = "AccountPasswordResetCode";
+
+	boolean isAdministrator(Properties ctx, int adUserId);
 
 	void createResetPasswordByEMailRequest(I_AD_User user);
 
@@ -56,7 +55,7 @@ public interface IUserBL extends ISingletonService
 	 * @return true if is employee
 	 */
 	boolean isEmployee(final org.compiere.model.I_AD_User user);
-	
+
 	String buildContactName(final String firstName, final String lastName);
 
 	/**
@@ -74,4 +73,18 @@ public interface IUserBL extends ISingletonService
 	boolean isNotificationNote(I_AD_User user);
 
 	boolean isNotifyUserIncharge(I_AD_User recipient);
+
+	/**
+	 * Could we send an email
+	 * 
+	 * @return true if EMail Uwer/PW exists
+	 */
+	boolean isCanSendEMailFromUser(I_AD_User user);
+
+	/**
+	 * Is the email valid
+	 * 
+	 * @return return true if email is valid (artificial check)
+	 */
+	boolean isEMailValid(I_AD_User user);
 }

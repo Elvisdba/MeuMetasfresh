@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.inout.service.IMTransactionDAO;
@@ -48,9 +49,11 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
 import de.metas.bpartner.IBPartnerStatsDAO;
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
@@ -855,33 +858,32 @@ public class MInOut extends X_M_InOut implements DocAction
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(MBPartner bp)
+	public void setBPartner(final MBPartner bp)
 	{
 		if (bp == null)
 			return;
 
-		setC_BPartner_ID(bp.getC_BPartner_ID());
+		setC_BPartner(bp);
 
 		// Set Locations
-		MBPartnerLocation[] locs = bp.getLocations(false);
-		if (locs != null)
 		{
-			for (int i = 0; i < locs.length; i++)
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(getCtx(), bp.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			if (bpLocation != null)
 			{
-				if (locs[i].isShipTo())
-					setC_BPartner_Location_ID(locs[i].getC_BPartner_Location_ID());
+				setC_BPartner_Location(bpLocation);
 			}
-			// set to first if not set
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
-				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+			else
+			{
+				log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
+			}
 		}
-		if (getC_BPartner_Location_ID() == 0)
-			log.error("Has no To Address: {}", bp);
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
-		if (contacts != null && contacts.length > 0)  // get first User
-			setAD_User_ID(contacts[0].getAD_User_ID());
+		final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrFirstOrNull(bp.getC_BPartner_ID());
+		if (contact != null)
+		{
+			setAD_User(contact);
+		}
 	} // setBPartner
 
 	/**

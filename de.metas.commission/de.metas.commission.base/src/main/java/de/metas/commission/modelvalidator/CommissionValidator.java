@@ -39,6 +39,7 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.LegacyAdapters;
@@ -54,7 +55,6 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -237,7 +237,8 @@ public class CommissionValidator implements ModelValidator
 
 	private void setCommission_Calendar_ID(final Properties ctx)
 	{
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(MUser.get(ctx).getC_BPartner(), I_C_BPartner.class);
+		final org.compiere.model.I_AD_User user = Services.get(IUserDAO.class).retrieveUser(ctx);
+		final I_C_BPartner bp = InterfaceWrapperHelper.create(user.getC_BPartner(), I_C_BPartner.class);
 		if (bp == null || bp.getC_BPartner_ID() == 0)
 		{
 			return;

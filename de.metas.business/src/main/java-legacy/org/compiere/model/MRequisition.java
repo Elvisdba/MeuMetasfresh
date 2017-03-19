@@ -605,7 +605,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 */
 	public String getUserName()
 	{
-		return MUser.get(getCtx(), getAD_User_ID()).getName();
+		return getAD_User().getName();
 	}	//	getUserName
 
 	/**

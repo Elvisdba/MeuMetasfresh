@@ -54,5 +54,17 @@ public interface IUserDAO extends ISingletonService
 	List<I_AD_User> retrieveUsersSubstitudedBy(Properties ctx, int adUserId, Timestamp date, String trxName);
 
 	I_AD_User retrieveUser(Properties ctx, int adUserId);
+	
+	I_AD_User retrieveUser(Properties ctx);
 
+
+	/**
+	 * Get user's Name
+	 * 
+	 * @param adUserId
+	 * @return Name of user or ?
+	 */
+	String retrieveUserName(int adUserId);
+
+	I_AD_User retrieveUserByLogin(Properties ctx, String login);
 }

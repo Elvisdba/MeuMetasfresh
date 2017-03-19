@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -51,6 +52,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
@@ -327,8 +329,14 @@ public final class VBPartner extends CDialog implements ActionListener
 		fName2.setText(m_partner.getName2());
 
 		//	Contact - Load values
-		m_pLocation = m_partner.getLocation(
-			Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_BPartner_Location_ID"));
+		final int bpLocationId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_BPartner_Location_ID");
+		m_pLocation = Services.get(IBPartnerDAO.class)
+				.retrieveBPartnerLocations(m_partner)
+				.stream()
+				.filter(bpl -> bpl.getC_BPartner_Location_ID() == bpLocationId)
+				.findFirst()
+				.map(bpl -> (MBPartnerLocation)LegacyAdapters.convertToPO(bpl))
+				.orElse(null);
 		if (m_pLocation != null)
 		{
 			int location = m_pLocation.getC_Location_ID();
@@ -339,8 +347,14 @@ public final class VBPartner extends CDialog implements ActionListener
 			fFax.setText(m_pLocation.getFax());
 		}
 		//	User - Load values
-		m_user = m_partner.getContact(
-			Env.getContextAsInt(Env.getCtx(), m_WindowNo, "AD_User_ID"));
+		final int userId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "AD_User_ID");
+		m_user = Services.get(IBPartnerDAO.class)
+				.retrieveContacts(m_partner)
+				.stream()
+				.filter(contact -> contact.getAD_User_ID() == userId)
+				.findFirst()
+				.map(contact -> (MUser)LegacyAdapters.convertToPO(contact))
+				.orElse(null);
 		if (m_user != null)
 		{
 			fGreetingC.setSelectedItem(getGreeting(m_user.getC_Greeting_ID()));
@@ -465,7 +479,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		String contact = fContact.getText();
 		String email = fEMail.getText();
 		if (m_user == null && (contact.length() > 0 || email.length() > 0))
-			m_user = new MUser (m_partner);
+		{
+			m_user = LegacyAdapters.convertToPO(Services.get(IBPartnerBL.class).createContact(m_partner));
+		}
 		if (m_user != null)
 		{
 			if (contact.length() == 0)

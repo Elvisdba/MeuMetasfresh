@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -38,6 +39,7 @@ import org.compiere.model.Query;
 import org.junit.Assert;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.logging.LogManager;
 
 public class BPartnerHelper
@@ -134,10 +136,9 @@ public class BPartnerHelper
 
 		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpPO, I_C_BPartner.class);
 
-		if (bpPO.getLocations(false).length == 0)
+		if (Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp).isEmpty())
 		{
 			createBPLocation(bp, "Main");
-			bpPO.getLocations(true); // force cache reset/reload locations
 		}
 
 		return bp;

@@ -16,17 +16,18 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.ad.dao.IQueryBL;
+import java.util.Properties;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Reset Password
@@ -83,15 +84,11 @@ public class UserPassword extends JavaProcess
 	{
 		log.info("AD_User_ID=" + p_AD_User_ID + " from " + getAD_User_ID());
 
-		final I_AD_User user = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class, getCtx(), get_TrxName())
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, p_AD_User_ID)
-				.create()
-				.firstOnly(I_AD_User.class);
-		log.debug("User=" + user);
+		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(getCtx(), p_AD_User_ID);
+		log.debug("User={}", user);
 		
 		//	Do we need a password ?
-		if (Check.isEmpty(p_OldPassword) && isOldPasswordRequired(p_AD_User_ID))		//	Password required
+		if (Check.isEmpty(p_OldPassword) && isOldPasswordRequired(getCtx(), user.getAD_User_ID()))		//	Password required
 		{
 			throw new IllegalArgumentException("@OldPasswordMandatory@");
 		}
@@ -134,18 +131,12 @@ public class UserPassword extends JavaProcess
 		}
 	}	// doIt
 
-	private boolean isOldPasswordRequired(final int adUserId)
+	private static boolean isOldPasswordRequired(final Properties ctx, final int adUserId)
 	{
-		final MUser operator = MUser.get(getCtx(), getAD_User_ID());
-
-		if (adUserId == IUserDAO.SYSTEM_USER_ID			//	change of System
-				|| adUserId == IUserDAO.SUPERUSER_USER_ID		//	change of SuperUser
-				|| !operator.isAdministrator())
-		{
-			return true;
-		}
-		
-		return false;
+		return adUserId == IUserDAO.SYSTEM_USER_ID			// change of System
+				|| adUserId == IUserDAO.SUPERUSER_USER_ID		// change of SuperUser
+				|| !Services.get(IUserBL.class).isAdministrator(ctx, adUserId) // change of an Administrator user
+		;
 	}
 }	//	UserPassword
 

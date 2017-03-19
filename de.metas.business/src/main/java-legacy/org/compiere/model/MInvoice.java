@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
@@ -427,32 +428,23 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 
 		// Set Locations
-		final MBPartner bpartnerPO = LegacyAdapters.convertToPO(bp);
-		MBPartnerLocation[] locs = bpartnerPO.getLocations(false);
-		if (locs != null)
 		{
-			for (int i = 0; i < locs.length; i++)
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).retrieveBillToLocation(getCtx(), bp.getC_BPartner_ID(), isSOTrx());
+			if (bpLocation != null)
 			{
-				if ((locs[i].isBillTo() && isSOTrx())
-						|| (locs[i].isPayFrom() && !isSOTrx()))
-					setC_BPartner_Location_ID(locs[i].getC_BPartner_Location_ID());
+				setC_BPartner_Location(bpLocation);
 			}
-			// set to first
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			else
 			{
-				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+				log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
 			}
-		}
-		if (getC_BPartner_Location_ID() == 0)
-		{
-			log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
 		}
 
 		// Set Contact
-		MUser[] contacts = bpartnerPO.getContacts(false);
-		if (contacts != null && contacts.length > 0) 	// get first User
+		final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrFirstOrNull(bp.getC_BPartner_ID());
+		if (contact != null)
 		{
-			setAD_User_ID(contacts[0].getAD_User_ID());
+			setAD_User(contact);
 		}
 	}	// setBPartner
 

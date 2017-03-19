@@ -1,13 +1,16 @@
 package org.compiere.report.email.service.impl;
 
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MUser;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
@@ -27,7 +30,7 @@ public final class BPartnerEmailParams implements IEmailParameters
 	private final String attachmentPrefix;
 	private final static MADBoilerPlate DEFAULT_TEXT_PRESET = null;
 	private final String exportFilePrefix;
-	private final MUser from;
+	private final I_AD_User from;
 	private final static String MESSAGE = null;
 	private final String subject;
 	private final String title;
@@ -42,7 +45,7 @@ public final class BPartnerEmailParams implements IEmailParameters
 		subject = pi.getTitle();
 		exportFilePrefix = pi.getTitle();
 
-		from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		from = Services.get(IUserDAO.class).retrieveUser(Env.getCtx());
 	}
 
 	private String updateTo(final IParams params)
@@ -62,18 +65,16 @@ public final class BPartnerEmailParams implements IEmailParameters
 		}
 		else
 		{
-			final int userId = MBPartner.getDefaultContactId(bpartnerId);
-			if (userId > 0)
+			final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bpartnerId);
+			if (contact != null)
 			{
-				final MUser contanct = MUser.get(Env.getCtx(), userId);
-
-				if (contanct.getEMail() == null || "".equals(contanct.getEMail()))
+				if(Check.isEmpty(contact.getEMail(), true))
 				{
-					logger.info("Default contact " + contanct + " doesn't have an email address");
+					logger.info("Default contact " + contact + " doesn't have an email address");
 				}
 				else
 				{
-					toTmp = contanct.getEMail();
+					toTmp = contact.getEMail();
 				}
 			}
 		}
@@ -110,7 +111,7 @@ public final class BPartnerEmailParams implements IEmailParameters
 	}
 
 	@Override
-	public MUser getFrom()
+	public I_AD_User getFrom()
 	{
 		return from;
 	}

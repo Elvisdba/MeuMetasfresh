@@ -25,24 +25,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MDocType;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MProject;
 import org.compiere.model.MStorage;
-import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -53,6 +52,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.product.IProductBL;
 
@@ -289,38 +290,28 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		if (getSalesRep_ID() == 0)
 		{
 			final int salesRepId = Env.getAD_User_ID(getCtx());
-			if (salesRepId != 0)
+			if (salesRepId > 0)
 				setSalesRep_ID(salesRepId);
 		}
 
 		// Set Locations
-		final MBPartner bpartnerPO = LegacyAdapters.convertToPO(bp);
-		MBPartnerLocation[] locs = bpartnerPO.getLocations(false);
-		if (locs != null)
 		{
-			for (int i = 0; i < locs.length; i++)
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(getCtx(), bp.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			if (bpLocation != null)
 			{
-				if (locs[i].isShipTo())
-				{
-					super.setC_BPartner_Location_ID(locs[i].getC_BPartner_Location_ID());
-				}
+				setC_BPartner_Location(bpLocation);
 			}
-			// set to first
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			else
 			{
-				super.setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+				log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
 			}
-		}
-		if (getC_BPartner_Location_ID() == 0)
-		{
-			log.error("MDDOrder.setBPartner - Has no Ship To Address: " + bp);
 		}
 
 		// Set Contact
-		MUser[] contacts = bpartnerPO.getContacts(false);
-		if (contacts != null && contacts.length == 1)
+		final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrFirstOrNull(bp.getC_BPartner_ID());
+		if (contact != null)
 		{
-			setAD_User_ID(contacts[0].getAD_User_ID());
+			setAD_User(contact);
 		}
 	}	// setBPartner
 

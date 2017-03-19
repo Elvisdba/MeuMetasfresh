@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
@@ -33,6 +34,7 @@ import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
@@ -950,7 +952,7 @@ public final class MSetup
 		MBPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());
 		bp.setValue(defaultName);
 		bp.setName(defaultName);
-		bp.setBPGroup(bpg);
+		Services.get(IBPartnerBL.class).setBPGroup(bp, bpg);
 		if (bp.save())
 			m_info.append(Msg.translate(m_lang, "C_BPartner_ID")).append("=").append(defaultName).append("\n");
 		else
@@ -1109,7 +1111,7 @@ public final class MSetup
 		MBPartner bpCU = new MBPartner (m_ctx, 0, m_trx.getTrxName());
 		bpCU.setValue(AD_User_U_Name);
 		bpCU.setName(AD_User_U_Name);
-		bpCU.setBPGroup(bpg);
+		Services.get(IBPartnerBL.class).setBPGroup(bpCU, bpg);
 		bpCU.setIsEmployee(true);
 		bpCU.setIsSalesRep(true);
 		if (bpCU.save())
@@ -1135,7 +1137,7 @@ public final class MSetup
 		MBPartner bpCA = new MBPartner (m_ctx, 0, m_trx.getTrxName());
 		bpCA.setValue(AD_User_Name);
 		bpCA.setName(AD_User_Name);
-		bpCA.setBPGroup(bpg);
+		Services.get(IBPartnerBL.class).setBPGroup(bpCA, bpg);
 		bpCA.setIsEmployee(true);
 		bpCA.setIsSalesRep(true);
 		if (bpCA.save())

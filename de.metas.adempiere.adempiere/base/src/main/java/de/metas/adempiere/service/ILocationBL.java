@@ -115,4 +115,19 @@ public interface ILocationBL extends ISingletonService
 	 * @return new duplicated location
 	 */
 	I_C_Location duplicate(org.compiere.model.I_C_Location location);
+
+	/**
+	 * Compares <code>location</code> with given location parts.
+	 * 
+	 * @param location
+	 * @param C_Country_ID if 0 ignored
+	 * @param C_Region_ID if 0 ignored
+	 * @param Postal match postal
+	 * @param Postal_Add match postal add
+	 * @param City match city
+	 * @param Address1 match address 1
+	 * @param Address2 match address 2
+	 * @return true if equals
+	 */
+	boolean equals(I_C_Location location, int C_Country_ID, int C_Region_ID, String Postal, String Postal_Add, String City, String Address1, String Address2);
 }

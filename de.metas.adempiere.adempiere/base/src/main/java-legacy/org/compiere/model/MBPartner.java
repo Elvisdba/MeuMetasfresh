@@ -1,60 +1,23 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
+import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
-import de.metas.logging.LogManager;
 
 /**
- * Business Partner Model
- * 
- * @author Jorg Janke
- * @version $Id: MBPartner.java,v 1.5 2006/09/23 19:38:07 comdivision Exp $
- * 
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1568774 ] Walk-In BP:
- *         invalid created/updated values
- *         <li>BF [ 1817752 ]
- *         MBPartner.getLocations should return only active one
- * @author Armen Rizal, GOODWILL CONSULT
- *         <LI>BF [ 2041226 ] BP Open Balance
- *         should count only Completed Invoice
- *         <LI>BF [ 2498949 ] BP Get Not
- *         Invoiced Shipment Value return null
+ * BPartner model
+ * @author metas-dev <dev@metasfresh.com>
+ * @author based on original version created by Jorg Janke, Teo Sarca, Armen Rizal
  */
-// metas: synched with rev 10155
+@SuppressWarnings("serial")
 public class MBPartner extends X_C_BPartner
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3669895599574182217L;
-
 	public MBPartner(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -97,138 +60,7 @@ public class MBPartner extends X_C_BPartner
 		// Reason: at this stage we don't yet have a POInfo, but the toString() method calls getValue which requires a POInfo
 		// log.debug(toString());
 	} // MBPartner
-
-	/**
-	 * Import Contstructor
-	 * 
-	 * @param impBP
-	 *            import
-	 */
-	public MBPartner(final I_I_BPartner impBP)
-	{
-		this(InterfaceWrapperHelper.getCtx(impBP),
-				0,
-				InterfaceWrapperHelper.getTrxName(impBP));
-		setClientOrg(InterfaceWrapperHelper.getPO(impBP));
-		setUpdatedBy(impBP.getUpdatedBy());
-		//
-		String value = impBP.getValue();
-		if (value == null || value.length() == 0)
-			value = impBP.getEMail();
-		if (value == null || value.length() == 0)
-			value = impBP.getContactName();
-		setValue(value);
-		String name = impBP.getName();
-		if (name == null || name.length() == 0)
-			name = impBP.getContactName();
-		if (name == null || name.length() == 0)
-			name = impBP.getEMail();
-		setName(name);
-		setName2(impBP.getName2());
-		setDescription(impBP.getDescription());
-		// setHelp(impBP.getHelp());
-		setDUNS(impBP.getDUNS());
-		setTaxID(impBP.getTaxID());
-		setNAICS(impBP.getNAICS());
-		setC_BP_Group_ID(impBP.getC_BP_Group_ID());
-	} // MBPartner
-
-	/** Addressed */
-	private MBPartnerLocation[] m_locations = null;
-	/** Prim Address */
-	private Integer m_primaryC_BPartner_Location_ID = null;
-	/** Prim User */
-	private Integer m_primaryAD_User_ID = null;
-	/** Credit Limit recently calcualted */
-
-
-	/**
-	 * Get All Contacts
-	 * 
-	 * @param reload
-	 *            if true users will be requeried
-	 * @return contacts
-	 */
-	public MUser[] getContacts(boolean reload)
-	{
-		final List<I_AD_User> contacts = Services.get(IBPartnerDAO.class).retrieveContacts(this);
-		return LegacyAdapters.convertToPOArray(contacts, MUser.class);
-	}
-
-	/**
-	 * Get specified or first Contact
-	 * 
-	 * @param AD_User_ID
-	 *            optional user
-	 * @return contact or null
-	 */
-	public MUser getContact(int AD_User_ID)
-	{
-		MUser[] users = getContacts(false);
-		if (users.length == 0)
-			return null;
-		for (int i = 0; AD_User_ID != 0 && i < users.length; i++)
-		{
-			if (users[i].getAD_User_ID() == AD_User_ID)
-				return users[i];
-		}
-		return users[0];
-	} // getContact
-
-	/**
-	 * Get All Locations (only active)
-	 * 
-	 * @param reload
-	 *            if true locations will be requeried
-	 * @return locations
-	 * 
-	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerLocations(I_C_BPartner)}
-	 */
-	@Deprecated
-	public MBPartnerLocation[] getLocations(boolean reload)
-	{
-		if (reload || m_locations == null || m_locations.length == 0)
-			;
-		else
-			return m_locations;
-		//
-
-		final List<I_C_BPartner_Location> locations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(this);
-		m_locations = LegacyAdapters.convertToPOArray(locations, MBPartnerLocation.class);
-
-		return m_locations;
-	} // getLocations
-
-	/**
-	 * Get explicit or first bill Location
-	 * 
-	 * @param C_BPartner_Location_ID
-	 *            optional explicit location
-	 * @return location or null
-	 */
-	public MBPartnerLocation getLocation(int C_BPartner_Location_ID)
-	{
-		MBPartnerLocation[] locations = getLocations(false);
-		if (locations.length == 0)
-			return null;
-		MBPartnerLocation retValue = null;
-		for (int i = 0; i < locations.length; i++)
-		{
-			if (locations[i].getC_BPartner_Location_ID() == C_BPartner_Location_ID)
-				return locations[i];
-			if (retValue == null && locations[i].isBillTo())
-				retValue = locations[i];
-		}
-		if (retValue == null)
-			return locations[0];
-		return retValue;
-	} // getLocation
-
-	/**************************************************************************
-	 * String Representation
-	 * 
-	 * @return info
-	 */
+	
 	@Override
 	public String toString()
 	{
@@ -237,60 +69,12 @@ public class MBPartner extends X_C_BPartner
 		// final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
 		final StringBuilder sb = new StringBuilder("MBPartner[ID=").append(get_ID())
-				.append(",Value=").append(getValue()).append(",Name=").append(getName())
+				.append(",Value=").append(getValue())
+				.append(",Name=").append(getName())
 				// .append(",Open=").append(stats.getTotalOpenBalance())
 				.append("]");
 		return sb.toString();
 	} // toString
-
-	/**
-	 * Set Client/Org
-	 * 
-	 * @param AD_Client_ID
-	 *            client
-	 * @param AD_Org_ID
-	 *            org
-	 */
-	@Override
-	public void setClientOrg(int AD_Client_ID, int AD_Org_ID)
-	{
-		super.setClientOrg(AD_Client_ID, AD_Org_ID);
-	} // setClientOrg
-
-	// /**
-	// * Set Linked Organization. (is Button)
-	// *
-	// * @param AD_OrgBP_ID
-	// */
-	// public void setAD_OrgBP_ID(int AD_OrgBP_ID) {
-	// if (AD_OrgBP_ID == 0)
-	// super.setAD_OrgBP_ID(null);
-	// else
-	// super.setAD_OrgBP_ID(String.valueOf(AD_OrgBP_ID));
-	// } // setAD_OrgBP_ID
-	//
-	// @Override
-	// public void setAD_OrgBP_ID(final String AD_OrgBP_ID) {
-	//
-	// if (AD_OrgBP_ID == null) {
-	// setAD_OrgBP_ID(0);
-	// } else {
-	// throw new RuntimeException(
-	// "DB-Column 'AD_OrgBP_ID' is numeric, not varchar");
-	// }
-	// }
-
-	/*
-	 * This is the original source. It assumes that the DB column has a String
-	 * type while in fact it has a numeric type.
-	 */
-	// public void setAD_OrgBP_ID (int AD_OrgBP_ID)
-	// {
-	// if (AD_OrgBP_ID == 0)
-	// super.setAD_OrgBP_ID (null);
-	// else
-	// super.setAD_OrgBP_ID (String.valueOf(AD_OrgBP_ID));
-	// } // setAD_OrgBP_ID
 
 	/**
 	 * Get Linked Organization. (is Button) The Business Partner is another
@@ -301,171 +85,29 @@ public class MBPartner extends X_C_BPartner
 	public int getAD_OrgBP_ID_Int()
 	{
 		return super.getAD_OrgBP_ID();
-		// String org = super.getAD_OrgBP_ID();
-		// if (org == null)
-		// return 0;
-		// int AD_OrgBP_ID = 0;
-		// try {
-		// AD_OrgBP_ID = Integer.parseInt(org);
-		// } catch (Exception ex) {
-		// log.error(org, ex);
-		// }
-		// return AD_OrgBP_ID;
-	} // getAD_OrgBP_ID_Int
-
-	/**
-	 * Get Primary C_BPartner_Location_ID
-	 * 
-	 * @return C_BPartner_Location_ID
-	 */
-	public int getPrimaryC_BPartner_Location_ID()
-	{
-		if (m_primaryC_BPartner_Location_ID == null)
-		{
-			MBPartnerLocation[] locs = getLocations(false);
-			for (int i = 0; m_primaryC_BPartner_Location_ID == null
-					&& i < locs.length; i++)
-			{
-				if (locs[i].isBillTo())
-				{
-					setPrimaryC_BPartner_Location_ID(locs[i]
-							.getC_BPartner_Location_ID());
-					break;
-				}
-			}
-			// get first
-			if (m_primaryC_BPartner_Location_ID == null && locs.length > 0)
-				setPrimaryC_BPartner_Location_ID(locs[0]
-						.getC_BPartner_Location_ID());
-		}
-		if (m_primaryC_BPartner_Location_ID == null)
-			return 0;
-		return m_primaryC_BPartner_Location_ID.intValue();
-	} // getPrimaryC_BPartner_Location_ID
-
-	/**
-	 * Get Primary C_BPartner_Location
-	 * 
-	 * @return C_BPartner_Location
-	 */
-	public MBPartnerLocation getPrimaryC_BPartner_Location()
-	{
-		if (m_primaryC_BPartner_Location_ID == null)
-		{
-			m_primaryC_BPartner_Location_ID = getPrimaryC_BPartner_Location_ID();
-		}
-		if (m_primaryC_BPartner_Location_ID == null)
-			return null;
-		return new MBPartnerLocation(getCtx(), m_primaryC_BPartner_Location_ID,
-				null);
-	} // getPrimaryC_BPartner_Location
-
-	/**
-	 * Get Primary AD_User_ID
-	 * 
-	 * @return AD_User_ID
-	 */
-	public int getPrimaryAD_User_ID()
-	{
-		if (m_primaryAD_User_ID == null)
-		{
-			MUser[] users = getContacts(false);
-			// for (int i = 0; i < users.length; i++)
-			// {
-			// }
-			if (m_primaryAD_User_ID == null && users.length > 0)
-				setPrimaryAD_User_ID(users[0].getAD_User_ID());
-		}
-		if (m_primaryAD_User_ID == null)
-			return 0;
-		return m_primaryAD_User_ID.intValue();
-	} // getPrimaryAD_User_ID
-
-	/**
-	 * Set Primary C_BPartner_Location_ID
-	 * 
-	 * @param C_BPartner_Location_ID
-	 *            id
-	 */
-	public void setPrimaryC_BPartner_Location_ID(int C_BPartner_Location_ID)
-	{
-		m_primaryC_BPartner_Location_ID = new Integer(C_BPartner_Location_ID);
-	} // setPrimaryC_BPartner_Location_ID
-
-	/**
-	 * Set Primary AD_User_ID
-	 * 
-	 * @param AD_User_ID
-	 *            id
-	 */
-	public void setPrimaryAD_User_ID(int AD_User_ID)
-	{
-		m_primaryAD_User_ID = new Integer(AD_User_ID);
-	} // setPrimaryAD_User_ID
-
-	/**
-	 * Get BP Group
-	 * 
-	 * @param group
-	 *            group
-	 */
-	public void setBPGroup(final I_C_BP_Group group)
-	{
-		if (group == null)
-		{
-			return;
-		}
-		super.setC_BP_Group(group);
-		
-		if (group.getC_Dunning_ID() != 0)
-			setC_Dunning_ID(group.getC_Dunning_ID());
-		if (group.getM_PriceList_ID() != 0)
-			setM_PriceList_ID(group.getM_PriceList_ID());
-		if (group.getPO_PriceList_ID() != 0)
-			setPO_PriceList_ID(group.getPO_PriceList_ID());
-		if (group.getM_DiscountSchema_ID() != 0)
-			setM_DiscountSchema_ID(group.getM_DiscountSchema_ID());
-		if (group.getPO_DiscountSchema_ID() != 0)
-			setPO_DiscountSchema_ID(group.getPO_DiscountSchema_ID());
-	} // setBPGroup
-
-	// metas
-	public static int getDefaultContactId(final int cBPartnerId)
-	{
-		for (I_AD_User user : MUser.getOfBPartner(Env.getCtx(), cBPartnerId))
-		{
-			if(user.isDefaultContact())
-			{
-				return user.getAD_User_ID();
-			}
-		}
-		LogManager.getLogger(MBPartner.class).warn("Every BPartner with associated contacts is expected to have exactly one default contact, but C_BPartner_ID " + cBPartnerId + " doesn't have one.");
-		return -1;
 	}
-
-	// end metas
 
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
 		if (newRecord || is_ValueChanged(COLUMNNAME_C_BP_Group_ID))
 		{
-			I_C_BP_Group grp = getC_BP_Group();
-			if(grp == null)
+			I_C_BP_Group bpGroup = getC_BP_Group();
+			if(bpGroup == null)
 			{
-				grp = Services.get(IBPartnerDAO.class).retrieveDefaultBPGroup(getCtx());
+				bpGroup = Services.get(IBPartnerDAO.class).retrieveDefaultBPGroup(getCtx());
 			}
-			if (grp == null)
+			if (bpGroup == null)
 			{
 				throw new AdempiereException("@NotFound@:  @C_BP_Group_ID@");
 			}
-			setBPGroup(grp); // setDefaults
+			Services.get(IBPartnerBL.class).setBPGroup(this, bpGroup);
 		}
 		return true;
-	} // beforeSave
+	}
 
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		if (newRecord && success)
 		{
@@ -479,24 +121,19 @@ public class MBPartner extends X_C_BPartner
 		}
 
 		// Value/Name change
-		if (success && !newRecord
-				&& (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
-			MAccount.updateValueDescription(getCtx(), "C_BPartner_ID="
-					+ getC_BPartner_ID(), get_TrxName());
+		if (success && !newRecord && (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
+		{
+			MAccount.updateValueDescription(getCtx(), "C_BPartner_ID=" + getC_BPartner_ID(), get_TrxName());
+		}
 
 		return success;
-	} // afterSave
+	}
 
-	/**
-	 * Before Delete
-	 * 
-	 * @return true
-	 */
 	@Override
 	protected boolean beforeDelete()
 	{
 		return delete_Accounting(I_C_BP_Customer_Acct.Table_Name)
 				&& delete_Accounting(I_C_BP_Vendor_Acct.Table_Name)
 				&& delete_Accounting(I_C_BP_Employee_Acct.Table_Name);
-	} // beforeDelete
-} // MBPartner
+	}
+}

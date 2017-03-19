@@ -28,6 +28,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +44,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_AD_User;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -63,6 +69,13 @@ public class UserBL implements IUserBL
 	public UserBL()
 	{
 		super();
+	}
+
+	@Override
+	public boolean isAdministrator(final Properties ctx, final int adUserId)
+	{
+		return Services.get(IUserRolePermissionsDAO.class)
+				.matchUserRolesPermissionsForUser(ctx, adUserId, IUserRolePermissions::isSystemAdministrator);
 	}
 
 	@Override
@@ -290,5 +303,54 @@ public class UserBL implements IUserBL
 	public boolean isNotifyUserIncharge(I_AD_User user)
 	{
 		return X_AD_User.NOTIFICATIONTYPE_NotifyUserInCharge.equals(user.getNotificationType());
+	}
+	
+	@Override
+	public boolean isCanSendEMailFromUser(final I_AD_User user)
+	{
+		final String emailUser = user.getEMailUser();
+		if(Check.isEmpty(emailUser, true))
+		{
+			return false;
+		}
+		
+		// If SMTP authorization is not required, then don't check password - teo_sarca [ 1723309 ]
+		if (!Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())
+		{
+			return true;
+		}
+		final String emailPassword = user.getEMailUserPW();
+		return !Check.isEmpty(emailPassword, false);
+	}
+
+	@Override
+	public boolean isEMailValid(final I_AD_User user)
+	{
+		final InternetAddress email = toInternetAddressOrNull(user.getEMail());
+		if(email == null)
+		{
+			return false;
+		}
+		return !Check.isEmpty(email.getAddress());
+	}
+	
+	private static final InternetAddress toInternetAddressOrNull(final String email)
+	{
+		if (Check.isEmpty(email, true))
+		{
+			return null;
+		}
+		try
+		{
+			final InternetAddress ia = new InternetAddress (email, true);
+			if (ia != null)
+				ia.validate();	//	throws AddressException
+			return ia;
+		}
+		catch (AddressException ex)
+		{
+			logger.warn("Failed creating InternetAddress for {}", email, ex);
+		}
+		return null;
 	}
 }

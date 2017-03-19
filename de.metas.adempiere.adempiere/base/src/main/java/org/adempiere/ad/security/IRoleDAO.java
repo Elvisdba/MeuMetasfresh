@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Role_Included;
+import org.compiere.model.I_AD_User;
 
 import de.metas.adempiere.model.I_AD_Role;
 
@@ -45,6 +46,9 @@ public interface IRoleDAO extends ISingletonService
 	I_AD_Role retrieveRole(Properties ctx, int AD_Role_ID);
 
 	List<I_AD_Role> retrieveRolesForUser(Properties ctx, int adUserId);
+	
+	List<I_AD_User> retrieveUsersForRole(Properties ctx, int adRoleId);
+
 
 	/**
 	 * Retrieves substitute roles for a given user.

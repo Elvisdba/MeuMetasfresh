@@ -33,6 +33,7 @@ import javax.swing.KeyStroke;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartner;
@@ -40,7 +41,6 @@ import org.compiere.model.MBPartnerInfo;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
@@ -51,6 +51,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;
@@ -475,8 +476,8 @@ public class SubOrder extends PosSubPanel
 		Vector<KeyNamePair> locationVector = new Vector<KeyNamePair>();
 		if (m_bpartner != null)
 		{
-			for (I_C_BPartner_Location location : m_bpartner.getLocations(false))
-				locationVector.add(new KeyNamePair(location.getC_BPartner_Location_ID(), location.getName()));
+			for (final I_C_BPartner_Location bpl : Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(m_bpartner))
+				locationVector.add(new KeyNamePair(bpl.getC_BPartner_Location_ID(), bpl.getName()));
 		}
 		DefaultComboBoxModel locationModel = new DefaultComboBoxModel(locationVector); 
 		f_location.setModel(locationModel);
@@ -484,9 +485,10 @@ public class SubOrder extends PosSubPanel
 		Vector<KeyNamePair> userVector = new Vector<KeyNamePair>();
 		if (m_bpartner != null)
 		{
-			MUser[] users = m_bpartner.getContacts(false);
-			for (int i = 0; i < users.length; i++)
-				userVector.add(new KeyNamePair(users[i].getAD_User_ID(), users[i].getName()));
+			for (final I_AD_User user : Services.get(IBPartnerDAO.class).retrieveContacts(m_bpartner))
+			{
+				userVector.add(new KeyNamePair(user.getAD_User_ID(), user.getName()));
+			}
 		}
 		DefaultComboBoxModel userModel = new DefaultComboBoxModel(userVector); 
 		f_user.setModel(userModel);

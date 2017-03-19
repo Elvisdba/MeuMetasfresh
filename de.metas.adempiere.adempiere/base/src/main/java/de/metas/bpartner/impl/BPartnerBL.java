@@ -326,4 +326,32 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
 		return isSOTrx ? bpGroup.getM_PriceList_ID() : bpGroup.getPO_PriceList_ID();
 	}
+
+	@Override
+	public I_AD_User createContact(final I_C_BPartner bpartner)
+	{
+		final I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner, true);
+		contact.setC_BPartner(bpartner);
+		contact.setName(bpartner.getName());
+		
+		return contact;
+	}
+
+	@Override
+	public void setBPGroup(final I_C_BPartner bpartner, final I_C_BP_Group group)
+	{
+		bpartner.setC_BP_Group(group);
+		
+		if (group.getC_Dunning_ID() != 0)
+			bpartner.setC_Dunning_ID(group.getC_Dunning_ID());
+		if (group.getM_PriceList_ID() != 0)
+			bpartner.setM_PriceList_ID(group.getM_PriceList_ID());
+		if (group.getPO_PriceList_ID() != 0)
+			bpartner.setPO_PriceList_ID(group.getPO_PriceList_ID());
+		if (group.getM_DiscountSchema_ID() != 0)
+			bpartner.setM_DiscountSchema_ID(group.getM_DiscountSchema_ID());
+		if (group.getPO_DiscountSchema_ID() != 0)
+			bpartner.setPO_DiscountSchema_ID(group.getPO_DiscountSchema_ID());
+	}
+
 }

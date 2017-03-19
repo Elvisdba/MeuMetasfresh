@@ -708,4 +708,49 @@ public class LocationBL implements ILocationBL
 		InterfaceWrapperHelper.save(locationNew);
 		return locationNew;
 	}
+	
+	@Override
+	public boolean equals (final I_C_Location location //
+			, final int C_Country_ID //
+			, final int C_Region_ID // 
+			, final String Postal //
+			, final String Postal_Add //
+			, final String City //
+			, final String Address1 //
+			, final String Address2 //
+			)
+		{
+			if (C_Country_ID != 0 && location.getC_Country_ID() != C_Country_ID)
+				return false;
+			if (C_Region_ID != 0 && location.getC_Region_ID() != C_Region_ID)
+				return false;
+			//	must match
+			if (!equalsNull(Postal, location.getPostal()))
+				return false;
+			if (!equalsNull(Postal_Add, location.getPostal_Add()))
+				return false;
+			if (!equalsNull(City, location.getCity()))
+				return false;
+			if (!equalsNull(Address1, location.getAddress1()))
+				return false;
+			if (!equalsNull(Address2, location.getAddress2()))
+				return false;
+			return true;
+		}	//	equals
+		
+		/**
+		 * 	Equals if "" or Null
+		 *	@param c1 c1
+		 *	@param c2 c2
+		 *	@return true if equal (ignore case)
+		 */
+		private static final boolean equalsNull (String c1, String c2)
+		{
+			if (c1 == null)
+				c1 = "";
+			if (c2 == null)
+				c2 = "";
+			return c1.equalsIgnoreCase(c2);
+		}	//	equalsNull
+
 }

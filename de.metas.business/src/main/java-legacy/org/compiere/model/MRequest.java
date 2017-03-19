@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -520,24 +521,12 @@ public class MRequest extends X_R_Request
 	}	//	setDateLastAlert
 
 	/**
-	 * 	Get Sales Rep
-	 *	@return Sales Rep User
-	 */
-	@Override
-	public MUser getSalesRep()
-	{
-		if (getSalesRep_ID() == 0)
-			return null;
-		return MUser.get(getCtx(), getSalesRep_ID());
-	}	//	getSalesRep
-	
-	/**
 	 * 	Get Sales Rep Name
 	 *	@return Sales Rep User
 	 */
 	public String getSalesRepName()
 	{
-		MUser sr = getSalesRep();
+		final I_AD_User sr = getSalesRep();
 		if (sr == null)
 			return "n/a";
 		return sr.getName();
@@ -549,8 +538,7 @@ public class MRequest extends X_R_Request
 	 */
 	public String getCreatedByName()
 	{
-		MUser user = MUser.get(getCtx(), getCreatedBy());
-		return user.getName();
+		return Services.get(IUserDAO.class).retrieveUserName(getCreatedBy());
 	}	//	getCreatedByName
 
 	/**
@@ -840,10 +828,11 @@ public class MRequest extends X_R_Request
 			if (oldSalesRep_ID != 0)
 			{
 				//  RequestActionTransfer - Request {} was transfered by {} from {} to {}
+				final IUserDAO userDAO = Services.get(IUserDAO.class);
 				Object[] args = new Object[] {getDocumentNo(), 
-					MUser.getNameOfUser(AD_User_ID), 
-					MUser.getNameOfUser(oldSalesRep_ID),
-					MUser.getNameOfUser(getSalesRep_ID())
+						userDAO.retrieveUserName(AD_User_ID), 
+						userDAO.retrieveUserName(oldSalesRep_ID),
+						userDAO.retrieveUserName(getSalesRep_ID())
 					};
 				String msg = Msg.getMsg(getCtx(), "RequestActionTransfer", args);
 				addToResult(msg);
@@ -1112,7 +1101,7 @@ public class MRequest extends X_R_Request
 		StringBuffer message = new StringBuffer();
 		//		UpdatedBy: Joe
 		int UpdatedBy = Env.getAD_User_ID(getCtx());
-		MUser from = MUser.get(getCtx(), UpdatedBy);
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUser(getCtx(), UpdatedBy);
 		if (from != null)
 			message.append(Msg.translate(getCtx(), "UpdatedBy")).append(": ")
 				.append(from.getName());
@@ -1215,12 +1204,11 @@ public class MRequest extends X_R_Request
 				}
 
 				//	Check duplicate receivers
-				Integer ii = new Integer (AD_User_ID);
-				if (userList.contains(ii))
+				if (userList.contains(AD_User_ID))
 					continue;
-				userList.add(ii);
+				userList.add(AD_User_ID);
 				//
-				MUser to = MUser.get (getCtx(), AD_User_ID);
+				final I_AD_User to = Services.get(IUserDAO.class).retrieveUser(getCtx(), AD_User_ID);
 				//	Send Mail
 				if (X_AD_User.NOTIFICATIONTYPE_EMail.equals(NotificationType)
 					|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(NotificationType))

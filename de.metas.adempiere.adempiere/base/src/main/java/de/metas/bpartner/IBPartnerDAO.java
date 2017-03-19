@@ -148,6 +148,11 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 
+	I_AD_User retrieveDefaultContactOrNull(int bpartnerId);
+	
+	I_AD_User retrieveDefaultContactOrFirstOrNull(int bpartnerId);
+
+
 	/**
 	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)
 	 *
@@ -167,6 +172,16 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return ship to location or null
 	 */
 	I_C_BPartner_Location retrieveShipToLocation(Properties ctx, int bPartnerId, String trxName);
+	
+	/**
+	 * Retrieve default/first BillTo(if sales) or PayFrom(if purchase) location.
+	 * 
+	 * @param ctx
+	 * @param bPartnerId
+	 * @param isSOTrx
+	 * @return
+	 */
+	I_C_BPartner_Location retrieveBillToLocation(Properties ctx, int bPartnerId, boolean isSOTrx);
 
 	/**
 	 * Retrieve all (active) ship to locations.
