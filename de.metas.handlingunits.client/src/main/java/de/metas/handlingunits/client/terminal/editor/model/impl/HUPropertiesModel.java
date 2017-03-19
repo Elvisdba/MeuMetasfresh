@@ -26,8 +26,7 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.Objects;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,6 +39,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.AbstractPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
@@ -52,6 +52,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.logging.LogManager;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to edit some HU fields.
@@ -231,7 +232,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 				}
 
 				final int bpartnerId = getPropertyValueAsInt(I_M_HU.COLUMNNAME_C_BPartner_ID);
-				final List<de.metas.adempiere.model.I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(
+				final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(
 						terminalContext.getCtx(),
 						bpartnerId,
 						ITrx.TRXNAME_None);
@@ -361,7 +362,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		for (final IHUProperty huProperty : properties)
 		{
-			if (Check.equals(huProperty.getPropertyName(), propertyName))
+			if (Objects.equals(huProperty.getPropertyName(), propertyName))
 			{
 				return huProperty;
 			}

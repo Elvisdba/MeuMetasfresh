@@ -44,6 +44,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.Query;
@@ -51,7 +52,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.IBPartnerDAO;
@@ -500,7 +500,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(I_C_BP_Relation.class); // just added an UC
 		if (billtoRelation != null)
 		{
-			return InterfaceWrapperHelper.create(billtoRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+			return billtoRelation.getC_BPartnerRelation_Location();
 		}
 		return null;
 	}

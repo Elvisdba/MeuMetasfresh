@@ -12,7 +12,7 @@ public interface I_C_BPartner_Location
     public static final String Table_Name = "C_BPartner_Location";
 
     /** AD_Table_ID=293 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -405,6 +405,29 @@ public interface I_C_BPartner_Location
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_ISDN = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "ISDN", null);
     /** Column name ISDN */
     public static final String COLUMNNAME_ISDN = "ISDN";
+
+	/**
+	 * Set Abladeort.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsHandOverLocation (boolean IsHandOverLocation);
+
+	/**
+	 * Get Abladeort.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isHandOverLocation();
+
+    /** Column definition for IsHandOverLocation */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsHandOverLocation = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "IsHandOverLocation", null);
+    /** Column name IsHandOverLocation */
+    public static final String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
 
 	/**
 	 * Set Zahlungs-Adresse.

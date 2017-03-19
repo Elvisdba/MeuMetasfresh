@@ -37,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
@@ -45,7 +46,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;

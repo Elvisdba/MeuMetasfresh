@@ -34,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Greeting;
@@ -41,7 +42,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;

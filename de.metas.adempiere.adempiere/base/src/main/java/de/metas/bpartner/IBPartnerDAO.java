@@ -29,10 +29,10 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
 
 public interface IBPartnerDAO extends ISingletonService

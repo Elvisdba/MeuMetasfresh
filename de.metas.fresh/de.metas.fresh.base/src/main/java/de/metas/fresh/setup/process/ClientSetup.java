@@ -19,6 +19,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MPriceList;
@@ -26,7 +27,6 @@ import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;

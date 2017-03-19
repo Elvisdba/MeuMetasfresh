@@ -28,18 +28,16 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
 import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BP_Group;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 public class BPartnerHelper

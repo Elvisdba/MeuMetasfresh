@@ -60,6 +60,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Attribute;
@@ -76,7 +77,6 @@ import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;

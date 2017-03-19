@@ -44,6 +44,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -57,7 +58,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.bpartner.IBPartnerBL;
@@ -298,7 +298,7 @@ public class OrderBL implements IOrderBL
 		// Case: Bill Location is set, we can use it to retrieve the contact for that location
 		if (order.getBill_Location_ID() > 0)
 		{
-			final I_C_BPartner_Location billLocation = InterfaceWrapperHelper.create(order.getBill_Location(), I_C_BPartner_Location.class);
+			final I_C_BPartner_Location billLocation = order.getBill_Location();
 			billContact = bpartnerService.retrieveUserForLoc(billLocation);
 		}
 		// Case: Bill Location is NOT set, we search for default bill contact
@@ -627,14 +627,13 @@ public class OrderBL implements IOrderBL
 		// Set Locations
 		final List<I_C_BPartner_Location> shipLocations = new ArrayList<I_C_BPartner_Location>();
 		boolean foundLoc = false;
-		for (final I_C_BPartner_Location loc : locations)
+		for (final I_C_BPartner_Location bpLoc : locations)
 		{
-			if (loc.isShipTo() && loc.isActive())
+			if (bpLoc.isShipTo() && bpLoc.isActive())
 			{
-				shipLocations.add(loc);
+				shipLocations.add(bpLoc);
 			}
 
-			final de.metas.adempiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, de.metas.adempiere.model.I_C_BPartner_Location.class);
 			if (bpLoc.isShipToDefault())
 			{
 				order.setC_BPartner_Location_ID(bpLoc.getC_BPartner_Location_ID());
@@ -693,7 +692,7 @@ public class OrderBL implements IOrderBL
 		// Search in relation and try to find an adequate Bill Partner if the bill location could not be found
 		final I_C_BP_Relation billPartnerRelation = bPartnerDAO.retrieveBillBPartnerRelationFirstEncountered(order,
 				order.getC_BPartner(),
-				InterfaceWrapperHelper.create(order.getC_BPartner_Location(), de.metas.adempiere.model.I_C_BPartner_Location.class));
+				order.getC_BPartner_Location());
 
 		if (billPartnerRelation == null)
 		{
@@ -731,24 +730,23 @@ public class OrderBL implements IOrderBL
 			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner);
 
 			// Set Locations
-			final List<I_C_BPartner_Location> invLocations = new ArrayList<I_C_BPartner_Location>();
-			for (final I_C_BPartner_Location loc : locations)
+			final List<I_C_BPartner_Location> invLocations = new ArrayList<>();
+			for (final I_C_BPartner_Location bpLoc : locations)
 			{
 				if (foundLoc)
 				{
 					break;
 				}
 
-				final de.metas.adempiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, de.metas.adempiere.model.I_C_BPartner_Location.class);
 				if (bpLoc.isBillToDefault())
 				{
 					billLocationIdToUse = bpLoc.getC_BPartner_Location_ID();
 					foundLoc = true;
 				}
 
-				if (loc.isBillTo())
+				if (bpLoc.isBillTo())
 				{
-					invLocations.add(loc);
+					invLocations.add(bpLoc);
 				}
 			}
 

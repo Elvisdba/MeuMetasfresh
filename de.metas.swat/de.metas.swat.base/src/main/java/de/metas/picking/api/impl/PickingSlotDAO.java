@@ -39,8 +39,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.picking.api.IPickingSlotBL;

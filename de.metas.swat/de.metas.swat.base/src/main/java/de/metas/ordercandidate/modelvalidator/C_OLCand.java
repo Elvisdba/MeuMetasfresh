@@ -35,12 +35,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.interfaces.I_C_BP_Relation;

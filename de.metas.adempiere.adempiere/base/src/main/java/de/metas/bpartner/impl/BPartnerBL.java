@@ -32,6 +32,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
@@ -40,7 +41,6 @@ import org.compiere.util.Language;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.IBPartnerAware;

@@ -80,7 +80,6 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -140,7 +139,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		final IInOutCandHandlerBL inOutCandHandlerBL = Services.get(IInOutCandHandlerBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
@@ -1062,7 +1060,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String adress = bPartnerBL.mkFullAddress(bPartner,
-				InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_BPartner_Location.class),
+				location,
 				user, trxName);
 
 		sched.setBPartnerAddress_Override(adress);

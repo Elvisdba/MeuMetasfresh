@@ -32,12 +32,12 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;

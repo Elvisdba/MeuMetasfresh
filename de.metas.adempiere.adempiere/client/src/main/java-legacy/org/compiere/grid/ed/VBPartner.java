@@ -29,12 +29,14 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -48,10 +50,8 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -198,13 +198,19 @@ public final class VBPartner extends CDialog implements ActionListener
 		//	Location
 		boolean ro = m_readOnly;
 		if (!ro)
+		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()), 
-				MBPartnerLocation.Table_ID, 0, false);
+				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx())
+				, InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class), 0
+				, false // createError
+				);
+		}
 		if (!ro)
+		{
 			ro = !Env.getUserRolePermissions().canUpdate(
 				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()), 
 				MLocation.Table_ID, 0, false);
+		}
 		fAddress = new VLocation ("C_Location_ID", false, ro, true, new MLocationLookup (Env.getCtx(), m_WindowNo));
 		fAddress.setValue (null);
 		createLine (fAddress, "C_Location_ID", true).setFontBold(true);

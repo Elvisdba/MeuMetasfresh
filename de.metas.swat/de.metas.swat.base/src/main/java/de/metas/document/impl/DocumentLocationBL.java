@@ -28,9 +28,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.IBPartnerBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
@@ -61,7 +61,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		{
 			return;
 		}
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(location.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpartnerLocation = location.getC_BPartner_Location();
 
 		final I_AD_User user;
 		if (location.getAD_User_ID() > 0)
@@ -91,7 +91,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		{
 			return;
 		}
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(billLocation.getBill_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpartnerLocation = billLocation.getBill_Location();
 
 		final I_AD_User user;
 		if (billLocation.getBill_User_ID() > 0)
@@ -135,7 +135,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		{
 			return;
 		}
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(docDeliveryLocation.getDropShip_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpartnerLocation = docDeliveryLocation.getDropShip_Location();
 
 		final I_AD_User user;
 		if (docDeliveryLocation.getDropShip_User_ID() > 0)
@@ -165,7 +165,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
 		}
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(warehouse.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpLocation = warehouse.getC_BPartner_Location();
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(bpLocation.getC_BPartner(), I_C_BPartner.class);
 
 		// There is no contact available for warehouse

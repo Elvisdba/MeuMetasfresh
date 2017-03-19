@@ -26,8 +26,8 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.IBPartnerBL;
 
 @Callout(I_C_BPartner_Location.class)

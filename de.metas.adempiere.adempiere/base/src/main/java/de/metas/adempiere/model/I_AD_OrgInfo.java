@@ -78,9 +78,9 @@ public interface I_AD_OrgInfo extends org.compiere.model.I_AD_OrgInfo
 
 	public int getOrgBP_Location_ID();
 
-	public I_C_BPartner_Location getOrgBP_Location();
+	public org.compiere.model.I_C_BPartner_Location getOrgBP_Location();
 
-	public void setOrgBP_Location(I_C_BPartner_Location OrgBP_Location);
+	public void setOrgBP_Location(org.compiere.model.I_C_BPartner_Location OrgBP_Location);
 
 	public void setOrgBP_Location_ID(int OrgBP_Location_ID);
 }

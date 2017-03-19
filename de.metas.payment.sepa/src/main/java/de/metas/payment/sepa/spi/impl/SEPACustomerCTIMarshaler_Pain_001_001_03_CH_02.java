@@ -52,9 +52,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.jaxb.DynamicObjectFactory;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;

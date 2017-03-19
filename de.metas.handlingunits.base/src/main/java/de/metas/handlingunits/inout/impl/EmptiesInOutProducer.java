@@ -36,6 +36,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.LazyInitializer;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -45,7 +46,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;

@@ -27,8 +27,8 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.bpartner.IBPartnerDAO;
 
 public class C_BPartner_Location_Tab_Callout extends TabCalloutAdapter

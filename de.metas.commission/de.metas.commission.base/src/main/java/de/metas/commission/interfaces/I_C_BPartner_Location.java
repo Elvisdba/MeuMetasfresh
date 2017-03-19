@@ -23,17 +23,21 @@ package de.metas.commission.interfaces;
  */
 
 
-public interface I_C_BPartner_Location extends de.metas.adempiere.model.I_C_BPartner_Location
+public interface I_C_BPartner_Location extends org.compiere.model.I_C_BPartner_Location
 {
 	public static String COLUMNNAME_IsCommissionTo = "IsCommissionTo";
 
+	@Override
 	public boolean isCommissionTo();
 
+	@Override
 	public void setIsCommissionTo(boolean IsCommissionTo);
 
 	public static String COLUMNNAME_IsCommissionToDefault = "IsCommissionToDefault";
 
+	@Override
 	public boolean isCommissionToDefault();
 
+	@Override
 	public void setIsCommissionToDefault(boolean IsCommissionToDefault);
 }

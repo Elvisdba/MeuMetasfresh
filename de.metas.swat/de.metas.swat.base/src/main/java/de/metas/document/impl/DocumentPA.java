@@ -38,12 +38,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MDocType;
 import org.compiere.model.MSequence;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.IDocumentPA;

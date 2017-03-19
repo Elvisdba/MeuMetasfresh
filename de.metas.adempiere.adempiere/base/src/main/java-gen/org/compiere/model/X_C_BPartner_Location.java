@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2087579086L;
+	private static final long serialVersionUID = 657560938L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -27,10 +27,12 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 			setC_Location_ID (0);
 			setIsBillTo (true);
 // Y
+			setIsHandOverLocation (true);
+// Y
 			setIsPayFrom (true);
 // Y
-			setIsRemitTo (true);
-// Y
+			setIsRemitTo (false);
+// N
 			setIsShipTo (true);
 // Y
 			setName (null);
@@ -342,6 +344,29 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getISDN () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ISDN);
+	}
+
+	/** Set Abladeort.
+		@param IsHandOverLocation Abladeort	  */
+	@Override
+	public void setIsHandOverLocation (boolean IsHandOverLocation)
+	{
+		set_Value (COLUMNNAME_IsHandOverLocation, Boolean.valueOf(IsHandOverLocation));
+	}
+
+	/** Get Abladeort.
+		@return Abladeort	  */
+	@Override
+	public boolean isHandOverLocation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsHandOverLocation);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Zahlungs-Adresse.

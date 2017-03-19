@@ -36,12 +36,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
