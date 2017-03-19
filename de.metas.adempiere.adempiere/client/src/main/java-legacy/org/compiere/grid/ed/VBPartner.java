@@ -464,7 +464,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		
 		//	***** Business Partner - Location *****
 		if (m_pLocation == null)
-			m_pLocation = new MBPartnerLocation(m_partner);
+		{
+			m_pLocation = LegacyAdapters.convertToPO(Services.get(IBPartnerBL.class).createBPLocation(m_partner));
+		}
 		m_pLocation.setC_Location_ID(fAddress.getC_Location_ID());
 		//
 		m_pLocation.setPhone(fPhone.getText());

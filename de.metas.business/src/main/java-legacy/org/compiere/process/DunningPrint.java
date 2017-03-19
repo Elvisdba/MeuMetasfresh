@@ -19,7 +19,7 @@ package org.compiere.process;
 import java.io.File;
 
 import org.adempiere.util.Services;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
@@ -136,8 +136,8 @@ public class DunningPrint extends JavaProcess
 			if (p_PrintUnprocessedOnly && entry.isProcessed())
 				continue;
 			//	To BPartner
-			MBPartner bp = new MBPartner (getCtx(), entry.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
+			I_C_BPartner bp = entry.getC_BPartner();
+			if (bp == null || bp.getC_BPartner_ID() <= 0)
 			{
 				addLog (entry.get_ID(), null, null, "@NotFound@: @C_BPartner_ID@ " + entry.getC_BPartner_ID());
 				errors++;

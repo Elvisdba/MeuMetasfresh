@@ -321,7 +321,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		setDocumentNo(line.getDocumentNo());
 		//
 		setIsSOTrx(batch.isSOTrx());
-		MBPartner bp = new MBPartner(line.getCtx(), line.getC_BPartner_ID(), line.get_TrxName());
+		I_C_BPartner bp = line.getC_BPartner();
 		setBPartner(bp);	// defaults
 		//
 		setIsTaxIncluded(line.isTaxIncluded());
@@ -470,7 +470,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		setIsSOTrx(ship.isSOTrx());
 		//
-		MBPartner bp = new MBPartner(getCtx(), ship.getC_BPartner_ID(), null);
+		I_C_BPartner bp = new MBPartner(getCtx(), ship.getC_BPartner_ID(), null);
 		setBPartner(bp);
 		//
 		setAD_User_ID(ship.getAD_User_ID());
@@ -1900,12 +1900,12 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (counterC_BPartner_ID == 0)
 			return null;
 		// Business Partner needs to be linked to Org
-		MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName()); // metas: load BP in transaction
-		int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
+		I_C_BPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName()); // metas: load BP in transaction
+		int counterAD_Org_ID = bp.getAD_OrgBP_ID();
 		if (counterAD_Org_ID == 0)
 			return null;
 
-		MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, get_TrxName()); // metas: load BP in transaction
+		I_C_BPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, get_TrxName()); // metas: load BP in transaction
 		// MOrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID);
 		log.debug("Counter BP=" + counterBP.getName());
 

@@ -328,9 +328,19 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public I_C_BPartner_Location createBPLocation(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
+		bpLocation.setAD_Org_ID(bpartner.getAD_Org_ID());
+		bpLocation.setC_BPartner(bpartner);
+		return bpLocation;
+	}
+
+	@Override
 	public I_AD_User createContact(final I_C_BPartner bpartner)
 	{
 		final I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner, true);
+		contact.setAD_Org_ID(bpartner.getAD_Org_ID());
 		contact.setC_BPartner(bpartner);
 		contact.setName(bpartner.getName());
 		

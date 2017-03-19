@@ -941,7 +941,7 @@ public final class MSetup
 		 *  Business Partner
 		 */
 		//  Create BP Group
-		I_C_BP_Group bpg = InterfaceWrapperHelper.create(m_ctx, I_C_BP_Group.class, m_trx.getTrxName());
+		final I_C_BP_Group bpg = InterfaceWrapperHelper.create(m_ctx, I_C_BP_Group.class, m_trx.getTrxName());
 		bpg.setValue(defaultName);
 		bpg.setName(defaultName);
 		bpg.setIsDefault(true);
@@ -949,30 +949,29 @@ public final class MSetup
 		m_info.append(Msg.translate(m_lang, "C_BP_Group_ID")).append("=").append(defaultName).append("\n");
 
 		//	Create BPartner
-		MBPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());
-		bp.setValue(defaultName);
-		bp.setName(defaultName);
-		Services.get(IBPartnerBL.class).setBPGroup(bp, bpg);
-		if (bp.save())
+		final I_C_BPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());
+		{
+			bp.setValue(defaultName);
+			bp.setName(defaultName);
+			Services.get(IBPartnerBL.class).setBPGroup(bp, bpg);
+			InterfaceWrapperHelper.save(bp);
 			m_info.append(Msg.translate(m_lang, "C_BPartner_ID")).append("=").append(defaultName).append("\n");
-		else
-			log.error("BPartner NOT inserted");
-		//  Location for Standard BP
-		MLocation bpLoc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
-		bpLoc.save();
-		MBPartnerLocation bpl = new MBPartnerLocation(bp);
-		bpl.setC_Location_ID(bpLoc.getC_Location_ID());
-		if (!bpl.save())
-			log.error("BP_Location (Standard) NOT inserted");
-		//  Default
-		sqlCmd = new StringBuffer ("UPDATE C_AcctSchema_Element SET ");
-		sqlCmd.append("C_BPartner_ID=").append(bp.getC_BPartner_ID());
-		sqlCmd.append(" WHERE C_AcctSchema_ID=").append(m_as.getC_AcctSchema_ID());
-		sqlCmd.append(" AND ElementType='BP'");
-		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
-		if (no != 1)
-			log.error("AcctSchema Element BPartner NOT updated");
-		createPreference("C_BPartner_ID", String.valueOf(bp.getC_BPartner_ID()), 143);
+			//  Location for Standard BP
+			MLocation bpLoc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+			bpLoc.save();
+			I_C_BPartner_Location bpl = Services.get(IBPartnerBL.class).createBPLocation(bp);
+			bpl.setC_Location(bpLoc);
+			InterfaceWrapperHelper.save(bpl);
+			//  Default
+			sqlCmd = new StringBuffer ("UPDATE C_AcctSchema_Element SET ");
+			sqlCmd.append("C_BPartner_ID=").append(bp.getC_BPartner_ID());
+			sqlCmd.append(" WHERE C_AcctSchema_ID=").append(m_as.getC_AcctSchema_ID());
+			sqlCmd.append(" AND ElementType='BP'");
+			no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
+			if (no != 1)
+				log.error("AcctSchema Element BPartner NOT updated");
+			createPreference("C_BPartner_ID", String.valueOf(bp.getC_BPartner_ID()), 143);
+		}
 
 		/**
 		 *  Product
@@ -1108,55 +1107,53 @@ public final class MSetup
 
 
 		//	Create Sales Rep for Client-User
-		MBPartner bpCU = new MBPartner (m_ctx, 0, m_trx.getTrxName());
-		bpCU.setValue(AD_User_U_Name);
-		bpCU.setName(AD_User_U_Name);
-		Services.get(IBPartnerBL.class).setBPGroup(bpCU, bpg);
-		bpCU.setIsEmployee(true);
-		bpCU.setIsSalesRep(true);
-		if (bpCU.save())
+		{
+			final I_C_BPartner bpCU = new MBPartner (m_ctx, 0, m_trx.getTrxName());
+			bpCU.setValue(AD_User_U_Name);
+			bpCU.setName(AD_User_U_Name);
+			Services.get(IBPartnerBL.class).setBPGroup(bpCU, bpg);
+			bpCU.setIsEmployee(true);
+			bpCU.setIsSalesRep(true);
+			InterfaceWrapperHelper.save(bpCU);
 			m_info.append(Msg.translate(m_lang, "SalesRep_ID")).append("=").append(AD_User_U_Name).append("\n");
-		else
-			log.error("SalesRep (User) NOT inserted");
-		//  Location for Client-User
-		MLocation bpLocCU = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
-		bpLocCU.save();
-		MBPartnerLocation bplCU = new MBPartnerLocation(bpCU);
-		bplCU.setC_Location_ID(bpLocCU.getC_Location_ID());
-		if (!bplCU.save())
-			log.error("BP_Location (User) NOT inserted");
-		//  Update User
-		sqlCmd = new StringBuffer ("UPDATE AD_User SET C_BPartner_ID=");
-		sqlCmd.append(bpCU.getC_BPartner_ID()).append(" WHERE AD_User_ID=").append(AD_User_U_ID);
-		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
-		if (no != 1)
-			log.error("User of SalesRep (User) NOT updated");
+			//  Location for Client-User
+			MLocation bpLocCU = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+			bpLocCU.save();
+			I_C_BPartner_Location bplCU = Services.get(IBPartnerBL.class).createBPLocation(bpCU);
+			bplCU.setC_Location_ID(bpLocCU.getC_Location_ID());
+			InterfaceWrapperHelper.save(bplCU);
+			//  Update User
+			sqlCmd = new StringBuffer ("UPDATE AD_User SET C_BPartner_ID=");
+			sqlCmd.append(bpCU.getC_BPartner_ID()).append(" WHERE AD_User_ID=").append(AD_User_U_ID);
+			no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
+			if (no != 1)
+				log.error("User of SalesRep (User) NOT updated");
+		}
 
 
 		//	Create Sales Rep for Client-Admin
-		MBPartner bpCA = new MBPartner (m_ctx, 0, m_trx.getTrxName());
-		bpCA.setValue(AD_User_Name);
-		bpCA.setName(AD_User_Name);
-		Services.get(IBPartnerBL.class).setBPGroup(bpCA, bpg);
-		bpCA.setIsEmployee(true);
-		bpCA.setIsSalesRep(true);
-		if (bpCA.save())
+		{
+			final I_C_BPartner bpCA = new MBPartner (m_ctx, 0, m_trx.getTrxName());
+			bpCA.setValue(AD_User_Name);
+			bpCA.setName(AD_User_Name);
+			Services.get(IBPartnerBL.class).setBPGroup(bpCA, bpg);
+			bpCA.setIsEmployee(true);
+			bpCA.setIsSalesRep(true);
+			InterfaceWrapperHelper.save(bpCA);
 			m_info.append(Msg.translate(m_lang, "SalesRep_ID")).append("=").append(AD_User_Name).append("\n");
-		else
-			log.error("SalesRep (Admin) NOT inserted");
-		//  Location for Client-Admin
-		MLocation bpLocCA = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
-		bpLocCA.save();
-		MBPartnerLocation bplCA = new MBPartnerLocation(bpCA);
-		bplCA.setC_Location_ID(bpLocCA.getC_Location_ID());
-		if (!bplCA.save())
-			log.error("BP_Location (Admin) NOT inserted");
-		//  Update User
-		sqlCmd = new StringBuffer ("UPDATE AD_User SET C_BPartner_ID=");
-		sqlCmd.append(bpCA.getC_BPartner_ID()).append(" WHERE AD_User_ID=").append(AD_User_ID);
-		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
-		if (no != 1)
-			log.error("User of SalesRep (Admin) NOT updated");
+			//  Location for Client-Admin
+			MLocation bpLocCA = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+			bpLocCA.save();
+			I_C_BPartner_Location bplCA = Services.get(IBPartnerBL.class).createBPLocation(bpCA);
+			bplCA.setC_Location_ID(bpLocCA.getC_Location_ID());
+			InterfaceWrapperHelper.save(bplCA);
+			//  Update User
+			sqlCmd = new StringBuffer ("UPDATE AD_User SET C_BPartner_ID=");
+			sqlCmd.append(bpCA.getC_BPartner_ID()).append(" WHERE AD_User_ID=").append(AD_User_ID);
+			no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
+			if (no != 1)
+				log.error("User of SalesRep (Admin) NOT updated");
+		}
 
 
 		//  Payment Term

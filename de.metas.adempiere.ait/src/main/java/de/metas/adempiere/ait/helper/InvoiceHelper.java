@@ -37,7 +37,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MQuery;
@@ -145,7 +144,7 @@ public class InvoiceHelper
 		}
 		else
 		{
-			invoicePO.setBPartner((MBPartner)InterfaceWrapperHelper.getPO(bp));
+			invoicePO.setBPartner(bp);
 		}
 
 		//

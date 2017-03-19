@@ -21,10 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -33,8 +29,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
@@ -53,6 +49,8 @@ import org.compiere.util.Language;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Generate Invoices
@@ -90,7 +88,7 @@ public class InvoiceGenerate extends JavaProcess
 	/** Line Number */
 	private int m_line = 0;
 	/** Business Partner */
-	private MBPartner m_bp = null;
+	private I_C_BPartner m_bp = null;
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -248,12 +246,10 @@ public class InvoiceGenerate extends JavaProcess
 				if (MOrder.INVOICERULE_CustomerScheduleAfterDelivery
 						.equals(order.getInvoiceRule()))
 				{
-					m_bp = new MBPartner(getCtx(), order.getBill_BPartner_ID(),
-							null);
+					m_bp = order.getBill_BPartner();
 					if (m_bp.getC_InvoiceSchedule_ID() == 0)
 					{
-						log
-								.warn("BPartner has no Schedule - set to After Delivery");
+						log.warn("BPartner has no Schedule - set to After Delivery");
 						order.setInvoiceRule(MOrder.INVOICERULE_AfterDelivery);
 						order.save();
 					}
@@ -396,8 +392,7 @@ public class InvoiceGenerate extends JavaProcess
 		// metas : renumber invoice lines
 		if (m_invoice != null)
 		{
-			m_bp = new MBPartner(getCtx(), m_invoice.getC_BPartner_ID(),
-					get_TrxName());
+			m_bp = m_invoice.getC_BPartner();
 			if (p_ConsolidateDocument && allowsCons(m_invoice.isSOTrx()))
 			{
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(m_invoice, de.metas.adempiere.model.I_C_Invoice.class);
@@ -500,8 +495,7 @@ public class InvoiceGenerate extends JavaProcess
 			MDocType dt = MDocType.get(getCtx(), ship.getC_DocType_ID());
 			if (m_bp == null
 					|| m_bp.getC_BPartner_ID() != ship.getC_BPartner_ID())
-				m_bp = new MBPartner(getCtx(), ship.getC_BPartner_ID(),
-						get_TrxName());
+				m_bp = ship.getC_BPartner(); 
 
 			// Reference: Delivery: 12345 - 12.12.12
 			MClient client = MClient.get(getCtx(), order.getAD_Client_ID());

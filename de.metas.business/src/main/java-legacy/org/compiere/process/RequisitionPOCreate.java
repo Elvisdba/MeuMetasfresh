@@ -28,7 +28,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MCharge;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -507,7 +506,7 @@ public class RequisitionPOCreate extends JavaProcess
 		if (m_excludedVendors.contains(C_BPartner_ID))
 			return false;
 		//
-		boolean match = new Query(getCtx(), MBPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", get_TrxName())
+		boolean match = new Query(getCtx(), I_C_BPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", get_TrxName())
 		.setParameters(new Object[]{C_BPartner_ID, p_C_BP_Group_ID})
 		.match();
 		if (!match)

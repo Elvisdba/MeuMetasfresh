@@ -40,7 +40,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MContactInterest;
 import org.compiere.model.MLocation;
 import org.compiere.model.ModelValidationEngine;
@@ -408,7 +407,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 			//
 			final I_C_BPartner bpartner = importRecord.getC_BPartner();
-			bpartnerLocation = new MBPartnerLocation(bpartner);
+			bpartnerLocation = bpartnerBL.createBPLocation(bpartner);
 			bpartnerLocation.setC_BPartner(bpartner);
 			bpartnerLocation.setC_Location(location);
 			bpartnerLocation.setPhone(importRecord.getPhone());
@@ -560,8 +559,8 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	/**
 	 * Set type of Business Partner
 	 *
-	 * @param X_I_BPartner impBP
-	 * @param MBPartner bp
+	 * @param impBP
+	 * @param bp
 	 */
 	private void setTypeOfBPartner(I_I_BPartner impBP, I_C_BPartner bp)
 	{

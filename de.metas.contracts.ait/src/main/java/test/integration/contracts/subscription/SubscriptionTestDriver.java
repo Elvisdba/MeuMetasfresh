@@ -40,7 +40,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.util.time.TimeSource;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MBPartnerLocation;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
@@ -60,6 +60,7 @@ import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.currency.ICurrencyDAO;
@@ -295,16 +296,16 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		final I_C_BPartner bp = helper.mkBPartnerHelper().getC_BPartner(testConfig);
 		assertTrue("Expecting " + bp + " to be a customer", bp.isCustomer());
 
-		final MBPartnerLocation[] bPartnerLocs = MBPartnerLocation.getForBPartner(getCtx(), bp.getC_BPartner_ID());
-		assertThat("Expecting " + bp + " to have at least one location", bPartnerLocs.length, greaterThan(0));
+		final List<I_C_BPartner_Location> bPartnerLocs = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp);
+		assertThat("Expecting " + bp + " to have at least one location", bPartnerLocs.size(), greaterThan(0));
 
 		olCand.setAD_User_EnteredBy_ID(testConfig.getAD_User_Normal_ID());
 
 		olCand.setC_BPartner_ID(bp.getC_BPartner_ID());
-		olCand.setC_BPartner_Location_ID(bPartnerLocs[0].getC_BPartner_Location_ID());
+		olCand.setC_BPartner_Location_ID(bPartnerLocs.get(0).getC_BPartner_Location_ID());
 
 		olCand.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		olCand.setBill_Location_ID(bPartnerLocs[0].getC_BPartner_Location_ID());
+		olCand.setBill_Location_ID(bPartnerLocs.get(0).getC_BPartner_Location_ID());
 
 		olCand.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 		olCand.setQty(BigDecimal.ONE);

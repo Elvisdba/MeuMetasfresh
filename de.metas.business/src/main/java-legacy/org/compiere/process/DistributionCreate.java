@@ -17,11 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionList;
 import org.compiere.model.MDistributionListLine;
@@ -29,6 +26,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create Distribution List Order
@@ -68,6 +68,7 @@ public class DistributionCreate extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -100,6 +101,7 @@ public class DistributionCreate extends JavaProcess
 	 *  @return Message (text with variables)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("M_DistributionList_ID=" + p_M_DistributionList_ID 
@@ -129,8 +131,8 @@ public class DistributionCreate extends JavaProcess
 		//	Create Single Order
 		if (!p_IsTest && p_IsCreateSingleOrder) 
 		{
-			MBPartner bp = new MBPartner (getCtx(), p_Bill_BPartner_ID, get_TrxName());
-			if (bp.get_ID() == 0)
+			I_C_BPartner bp = new MBPartner (getCtx(), p_Bill_BPartner_ID, get_TrxName());
+			if (bp == null || bp.getC_BPartner_ID() <= 0)
 				throw new IllegalArgumentException("Single Business Partner not found - C_BPartner_ID=" + p_Bill_BPartner_ID);
 			//
 			m_singleOrder = new MOrder (getCtx(), 0, get_TrxName());
@@ -168,8 +170,8 @@ public class DistributionCreate extends JavaProcess
 	 */
 	private boolean createOrder (MDistributionListLine dll)
 	{
-		MBPartner bp = new MBPartner (getCtx(), dll.getC_BPartner_ID(), get_TrxName());
-		if (bp.get_ID() == 0)
+		final I_C_BPartner bp =dll.getC_BPartner();
+		if (bp == null || bp.getC_BPartner_ID() <= 0)
 			throw new IllegalArgumentException("Business Partner not found - C_BPartner_ID=" + dll.getC_BPartner_ID());
 
 		//	Create Order

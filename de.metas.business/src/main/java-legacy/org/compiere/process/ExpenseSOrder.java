@@ -20,13 +20,9 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.util.Services;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProject;
@@ -36,6 +32,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create Sales Orders from Expense Reports
@@ -112,7 +110,7 @@ public class ExpenseSOrder extends JavaProcess
 		sql.append(" ORDER BY el.C_BPartner_ID, el.C_Project_ID, el.S_TimeExpense_ID, el.Line");
 
 		//
-		MBPartner oldBPartner = null;
+		I_C_BPartner oldBPartner = null;
 		int old_Project_ID = -1;
 		MTimeExpense te = null;
 		//
@@ -141,7 +139,7 @@ public class ExpenseSOrder extends JavaProcess
 					|| oldBPartner.getC_BPartner_ID() != tel.getC_BPartner_ID())
 				{
 					completeOrder ();
-					oldBPartner = new MBPartner (getCtx(), tel.getC_BPartner_ID(), get_TrxName());
+					oldBPartner = tel.getC_BPartner();
 				}
 				//	New Project - New Order
 				if (old_Project_ID != tel.getC_Project_ID())
@@ -175,7 +173,7 @@ public class ExpenseSOrder extends JavaProcess
 	 *	@param tel line
 	 *	@param bp bp
 	 */
-	private void processLine (MTimeExpense te, MTimeExpenseLine tel, MBPartner bp)
+	private void processLine (MTimeExpense te, MTimeExpenseLine tel, I_C_BPartner bp)
 	{
 		if (m_order == null)
 		{

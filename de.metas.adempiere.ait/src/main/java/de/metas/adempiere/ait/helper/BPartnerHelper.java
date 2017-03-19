@@ -34,7 +34,6 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -128,13 +127,11 @@ public class BPartnerHelper
 			queryParam[0] = parent.parseItemName(bpNameFinal);
 		}
 
-		MBPartner bpPO = new Query(ctx, I_C_BPartner.Table_Name, whereClause, ITrx.TRXNAME_None)
+		I_C_BPartner bp = new Query(ctx, I_C_BPartner.Table_Name, whereClause, ITrx.TRXNAME_None)
 				.setParameters(queryParam)
 				.setClient_ID()
-				.firstOnly();
-		Check.assumeNotNull(bpPO, "Parameter bpPO is not null");
-
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpPO, I_C_BPartner.class);
+				.firstOnly(I_C_BPartner.class);
+		Check.assumeNotNull(bp, "Parameter bpPO is not null");
 
 		if (Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp).isEmpty())
 		{

@@ -858,7 +858,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(final MBPartner bp)
+	public void setBPartner(final I_C_BPartner bp)
 	{
 		if (bp == null)
 			return;
@@ -2056,12 +2056,12 @@ public class MInOut extends X_M_InOut implements DocAction
 		if (counterC_BPartner_ID == 0)
 			return null;
 		// Business Partner needs to be linked to Org
-		MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
+		I_C_BPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
+		int counterAD_Org_ID = bp.getAD_OrgBP_ID();
 		if (counterAD_Org_ID == 0)
 			return null;
 
-		MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
+		I_C_BPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
 		I_AD_OrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID, null);
 		log.debug("Counter BP={}", counterBP);
 

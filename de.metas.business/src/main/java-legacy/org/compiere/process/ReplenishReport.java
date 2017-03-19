@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
@@ -417,7 +418,7 @@ public class ReplenishReport extends JavaProcess
 				order = new MOrder(getCtx(), 0, get_TrxName());
 				order.setIsSOTrx(false);
 				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
-				MBPartner bp = new MBPartner(getCtx(), replenish.getC_BPartner_ID(), get_TrxName());
+				I_C_BPartner bp = replenish.getC_BPartner();
 				order.setBPartner(bp);
 				order.setSalesRep_ID(getAD_User_ID());
 				order.setDescription(Msg.getMsg(getCtx(), "Replenishment"));
@@ -620,7 +621,7 @@ public class ReplenishReport extends JavaProcess
 				int C_BPartner_ID = orgTrx.getLinkedC_BPartner_ID(get_TrxName());
 				if (C_BPartner_ID==0)
 					throw new AdempiereUserError(Msg.translate(getCtx(), "C_BPartner_ID")+ " @FillMandatory@ ");
-				MBPartner bp = new MBPartner(getCtx(),C_BPartner_ID,get_TrxName());
+				I_C_BPartner bp = new MBPartner(getCtx(),C_BPartner_ID,get_TrxName());
 				// Set BPartner Link to Org
 				order.setBPartner(bp);
 				order.setDateOrdered(new Timestamp(System.currentTimeMillis()));

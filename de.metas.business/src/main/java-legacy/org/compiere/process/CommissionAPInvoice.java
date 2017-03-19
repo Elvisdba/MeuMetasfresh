@@ -17,11 +17,7 @@
 package org.compiere.process;
 
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionRun;
@@ -29,6 +25,9 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create AP Invoices for Commission
@@ -41,6 +40,7 @@ public class CommissionAPInvoice extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -59,6 +59,7 @@ public class CommissionAPInvoice extends JavaProcess
 	 *  @return Message (variables are parsed)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - C_CommissionRun_ID=" + getRecord_ID());
@@ -73,8 +74,8 @@ public class CommissionAPInvoice extends JavaProcess
 			throw new IllegalArgumentException("CommissionAPInvoice - No Commission");
 		if (com.getC_Charge_ID() == 0)
 			throw new IllegalArgumentException("CommissionAPInvoice - No Charge on Commission");
-		MBPartner bp = new MBPartner (getCtx(), com.getC_BPartner_ID(), get_TrxName());
-		if (bp.get_ID() == 0)
+		I_C_BPartner bp = new MBPartner (getCtx(), com.getC_BPartner_ID(), get_TrxName());
+		if (bp == null || bp.getC_BPartner_ID() == 0)
 			throw new IllegalArgumentException("CommissionAPInvoice - No BPartner");
 			
 		//	Create Invoice

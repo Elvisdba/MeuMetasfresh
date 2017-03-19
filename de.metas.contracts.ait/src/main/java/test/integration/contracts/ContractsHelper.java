@@ -36,10 +36,10 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 
@@ -51,6 +51,7 @@ import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IFlatrateDAO;
@@ -265,14 +266,14 @@ public class ContractsHelper extends HelperDelegator
 
 		term.setStartDate(getToday());
 
-		final MBPartnerLocation[] bPartnerLocs = MBPartnerLocation.getForBPartner(getCtx(), bp.getC_BPartner_ID());
-		assertThat("Expecting " + bp + " to have at least one location", bPartnerLocs.length, greaterThan(0));
+		final List<I_C_BPartner_Location> bPartnerLocs = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp);
+		assertThat("Expecting " + bp + " to have at least one location", bPartnerLocs.size(), greaterThan(0));
 
 		term.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		term.setBill_Location_ID(bPartnerLocs[0].getC_BPartner_Location_ID());
+		term.setBill_Location_ID(bPartnerLocs.get(0).getC_BPartner_Location_ID());
 
 		term.setDropShip_BPartner_ID(bp.getC_BPartner_ID());
-		term.setDropShip_Location_ID(bPartnerLocs[0].getC_BPartner_Location_ID());
+		term.setDropShip_Location_ID(bPartnerLocs.get(0).getC_BPartner_Location_ID());
 
 		// hardcoded. is this ok?
 		term.setC_Currency_ID(318);

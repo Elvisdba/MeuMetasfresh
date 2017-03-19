@@ -42,7 +42,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
@@ -59,6 +58,7 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.interfaces.I_C_BPartner_Location;
@@ -539,12 +539,12 @@ public class HierarchyChangeTests extends AIntegrationTestDriver
 		final BPartnerHelper bpartnerHelper = getHelper().mkBPartnerHelper();
 		
 		sr1 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_SR1_(*)", I_C_BPartner.class);
-		final I_C_BPartner_Location sr1Location = InterfaceWrapperHelper.create(MBPartnerLocation.getForBPartner(getCtx(), sr1.getC_BPartner_ID())[0], I_C_BPartner_Location.class);
+		final I_C_BPartner_Location sr1Location = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(sr1).get(0), I_C_BPartner_Location.class);
 		sr1Location.setIsCommissionTo(true);
 		InterfaceWrapperHelper.save(sr1Location);
 
 		sr2 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_SR2_(*)", I_C_BPartner.class);
-		final I_C_BPartner_Location sr2Location = InterfaceWrapperHelper.create(MBPartnerLocation.getForBPartner(getCtx(), sr2.getC_BPartner_ID())[0], I_C_BPartner_Location.class);
+		final I_C_BPartner_Location sr2Location = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(sr2).get(0), I_C_BPartner_Location.class);
 		sr2Location.setIsCommissionTo(true);
 		InterfaceWrapperHelper.save(sr2Location);
 

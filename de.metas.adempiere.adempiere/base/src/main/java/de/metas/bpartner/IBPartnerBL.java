@@ -125,6 +125,12 @@ public interface IBPartnerBL extends ISingletonService
 	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
 	
 	int getM_PriceList_ID(final I_C_BPartner bpartner, final boolean isSOTrx);
+	
+	/**
+	 * @param bpartner
+	 * @return new bpartner location (not saved)
+	 */
+	I_C_BPartner_Location createBPLocation(I_C_BPartner bpartner);
 
 	/**
 	 * @param bpartner
@@ -139,4 +145,5 @@ public interface IBPartnerBL extends ISingletonService
 	 *            group
 	 */
 	void setBPGroup(I_C_BPartner bpartner, I_C_BP_Group group);
+
 }

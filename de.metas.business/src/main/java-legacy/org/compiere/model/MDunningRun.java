@@ -22,8 +22,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 
@@ -203,7 +201,7 @@ public class MDunningRun extends X_C_DunningRun
 		}
 		//	New Entry
 		MDunningRunEntry entry = new MDunningRunEntry (this);
-		MBPartner bp = new MBPartner (getCtx(), C_BPartnerRelated_ID, get_TrxName());
+		I_C_BPartner bp = new MBPartner (getCtx(), C_BPartnerRelated_ID, get_TrxName());
 		entry.setBPartner(bp, true);	//	AR hardcoded
 		//
 		if (entry.getSalesRep_ID() == 0)

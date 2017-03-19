@@ -31,7 +31,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Rule;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
@@ -753,14 +753,14 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		log.info("HR_Movement deleted #" + no);
 
 		linesConcept = MHRPayrollConcept.getPayrollConcepts(this);
-		MBPartner[] linesEmployee = MHREmployee.getEmployees(this);
+		List<I_C_BPartner> linesEmployee = MHREmployee.getEmployees(this);
 		//
 		int count = 1;
-		for (MBPartner bp : linesEmployee)	// =============================================================== Employee
+		for (I_C_BPartner bp : linesEmployee)	// =============================================================== Employee
 		{
 			log.info("Employee " + count + "  ---------------------- " + bp.getName());
 			count++;
-			m_C_BPartner_ID = bp.get_ID();
+			m_C_BPartner_ID = bp.getC_BPartner_ID();
 
 			MHREmployee employee = MHREmployee.getActiveEmployee(getCtx(), m_C_BPartner_ID, get_TrxName());
 			// scriptCtx.put("_DateBirth", employee.getDateBirth());
@@ -769,7 +769,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 			scriptCtx.put("_Days", org.compiere.util.TimeUtil.getDaysBetween(period.getStartDate(), period.getEndDate()) + 1);
 			scriptCtx.put("_C_BPartner_ID", bp.getC_BPartner_ID());
 
-			createCostCollectorMovements(bp.get_ID(), period, scriptCtx);
+			createCostCollectorMovements(bp.getC_BPartner_ID(), period, scriptCtx);
 
 			m_movement.clear();
 			loadMovements(m_movement, m_C_BPartner_ID);

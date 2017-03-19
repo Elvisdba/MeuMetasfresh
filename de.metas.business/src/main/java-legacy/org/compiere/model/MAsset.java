@@ -27,10 +27,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.email.EMail;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -199,7 +197,7 @@ public class MAsset extends X_A_Asset
 	 *	@param partner partner
 	 */
 	public void setValueNameDescription (MInOut shipment,  
-		int deliveryCount, MProduct product, MBPartner partner)
+		int deliveryCount, MProduct product, I_C_BPartner partner)
 	{
 		String documentNo = "_" + shipment.getDocumentNo();
 		if (deliveryCount > 1)

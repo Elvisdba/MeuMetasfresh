@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
@@ -62,7 +62,7 @@ public class MHREmployee extends X_HR_Employee
 	 *  @param p HR Process
 	 * 	@return Array of Business Partners
 	 */
-	public static MBPartner[] getEmployees (MHRProcess p)
+	public static List<I_C_BPartner> getEmployees (MHRProcess p)
 	{
 		List<Object> params = new ArrayList<Object>();
 		StringBuffer whereClause = new StringBuffer();
@@ -109,13 +109,11 @@ public class MHREmployee extends X_HR_Employee
 		whereClause.append(" AND AD_Client_ID =? ");
 		params.add(p.getAD_Client_ID());
 		
-		List<MBPartner> list = new Query(p.getCtx(), MBPartner.Table_Name, whereClause.toString(), p.get_TrxName())
+		return new Query(p.getCtx(), I_C_BPartner.Table_Name, whereClause.toString(), p.get_TrxName())
 								.setParameters(params)
 								.setOnlyActiveRecords(true)
-								.setOrderBy(COLUMNNAME_Name)
-								.list();
-
-		return list.toArray(new MBPartner[list.size()]);
+								.setOrderBy(I_C_BPartner.COLUMNNAME_Name)
+								.list(I_C_BPartner.class);
 	}	//	getEmployees
 	
 	public static MHREmployee getActiveEmployee(Properties ctx, int C_BPartner_ID, String trxName)

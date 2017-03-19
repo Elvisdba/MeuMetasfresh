@@ -110,7 +110,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	 * @param bp partner
 	 * @param isSOTrx SO
 	 */
-	public void setBPartner(MBPartner bp, boolean isSOTrx)
+	public void setBPartner(I_C_BPartner bp, boolean isSOTrx)
 	{
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 		

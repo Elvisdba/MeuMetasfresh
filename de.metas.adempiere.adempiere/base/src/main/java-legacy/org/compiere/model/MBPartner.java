@@ -21,7 +21,7 @@ public class MBPartner extends X_C_BPartner
 	public MBPartner(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	} // MBPartner
+	}
 
 	public MBPartner(Properties ctx, int C_BPartner_ID, String trxName)
 	{
@@ -59,7 +59,7 @@ public class MBPartner extends X_C_BPartner
 		// ts: doesn't work with table level caching, when this instance is created by PO.copy().
 		// Reason: at this stage we don't yet have a POInfo, but the toString() method calls getValue which requires a POInfo
 		// log.debug(toString());
-	} // MBPartner
+	}
 	
 	@Override
 	public String toString()
@@ -75,17 +75,6 @@ public class MBPartner extends X_C_BPartner
 				.append("]");
 		return sb.toString();
 	} // toString
-
-	/**
-	 * Get Linked Organization. (is Button) The Business Partner is another
-	 * Organization for explicit Inter-Org transactions
-	 * 
-	 * @return AD_Org_ID if BP
-	 */
-	public int getAD_OrgBP_ID_Int()
-	{
-		return super.getAD_OrgBP_ID();
-	}
 
 	@Override
 	protected boolean beforeSave(boolean newRecord)

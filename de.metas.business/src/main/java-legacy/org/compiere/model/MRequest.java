@@ -169,8 +169,6 @@ public class MRequest extends X_R_Request
 	private MRequestType	m_requestType = null;
 	/**	Changed						*/
 	private boolean			m_changed = false;
-	/**	BPartner					*/
-	private MBPartner		m_partner = null;
 	/** User/Contact				*/
 	private MUser			m_user = null;
 	/** List of EMail Notices		*/
@@ -557,21 +555,6 @@ public class MRequest extends X_R_Request
 	}	//	getUser
 	
 	/**
-	 * 	Get BPartner (may be not defined)
-	 *	@return Sales Rep User
-	 */
-	public MBPartner getBPartner()
-	{
-		if (getC_BPartner_ID() == 0)
-			return null;
-		if (m_partner != null && m_partner.getC_BPartner_ID() != getC_BPartner_ID())
-			m_partner = null;
-		if (m_partner == null)
-			m_partner = new MBPartner (getCtx(), getC_BPartner_ID(), get_TrxName());
-		return m_partner;
-	}	//	getBPartner
-
-	/**
 	 * 	Web Can Update Request
 	 *	@return true if Web can update
 	 */
@@ -598,9 +581,9 @@ public class MRequest extends X_R_Request
 		if (getPriorityUser() == null)
 			setPriorityUser(PRIORITYUSER_Low);
 		//
-		if (getBPartner() != null)
+		if (getC_BPartner() != null)
 		{
-			I_C_BP_Group bpg = getBPartner().getC_BP_Group();
+			I_C_BP_Group bpg = getC_BPartner().getC_BP_Group();
 			String prioBase = bpg.getPriorityBase();
 			if (prioBase != null && !prioBase.equals(X_C_BP_Group.PRIORITYBASE_Same))
 			{

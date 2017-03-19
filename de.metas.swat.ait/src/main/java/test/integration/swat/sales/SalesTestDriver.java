@@ -45,7 +45,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MAllocationHdr;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -346,7 +345,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 			getHelper().setProductPrice(pl, IHelper.DEFAULT_ProductValue, price);
 
 			MInvoice invoice = new MInvoice(ctx, 0, trxName);
-			invoice.setBPartner((MBPartner)InterfaceWrapperHelper.getPO(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig())));
+			invoice.setBPartner(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig()));
 			invoice.setDateInvoiced(SystemTime.asTimestamp());
 			invoice.setDateAcct(SystemTime.asTimestamp());
 			invoice.setM_PriceList_ID(pl.getM_PriceList_ID());
@@ -374,7 +373,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		final String trxName = getTrxName();
 
 		final MInvoice invoice = new MInvoice(ctx, 0, trxName);
-		invoice.setBPartner((MBPartner)InterfaceWrapperHelper.getPO(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig())));
+		invoice.setBPartner(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig()));
 		invoice.setDateInvoiced(SystemTime.asTimestamp());
 		invoice.setDateAcct(SystemTime.asTimestamp());
 		invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None);

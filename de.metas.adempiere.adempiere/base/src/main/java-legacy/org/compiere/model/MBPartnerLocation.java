@@ -1,314 +1,275 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                        *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.util.DB;
+import org.adempiere.util.Services;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.bpartner.IBPartnerDAO;
 
 /**
- *	Partner Location Model
- *
- *  @author Jorg Janke
- *  @version $Id: MBPartnerLocation.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ * BPartner location
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ * @author based on initial work of Jorg Janke
  */
+@SuppressWarnings("serial")
 public class MBPartnerLocation extends X_C_BPartner_Location
 {
-	private static final long serialVersionUID = 1L;
-
-
-	/**
-	 * 	Get Locations for BPartner
-	 *	@param ctx context
-	 *	@param C_BPartner_ID bp
-	 *	@return array of locations
-	 */
-	public static MBPartnerLocation[] getForBPartner (Properties ctx, int C_BPartner_ID)
+	public MBPartnerLocation(final Properties ctx, final int C_BPartner_Location_ID, final String trxName)
 	{
-		ArrayList<MBPartnerLocation> list = new ArrayList<MBPartnerLocation>();
-		
-		// metas-ts: column belongs to de.metas.terminable and can't be assumed to be available
-		String sql = "SELECT * FROM C_BPartner_Location WHERE C_BPartner_ID=?";
-		sql += " ORDER BY /*ValidTo DESC,*/ IsActive DESC, IsShipTo DESC, IsBillTo DESC"; // metas: task 03537 cg: shipTo has priority
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement (sql, null);
-			pstmt.setInt (1, C_BPartner_ID);
-			rs = pstmt.executeQuery ();
-			while (rs.next ())
-				list.add(new MBPartnerLocation(ctx, rs, null));
-		}
-		catch (Exception e)
-		{
-			s_log.error("getForBPartner", e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		MBPartnerLocation[] retValue = new MBPartnerLocation[list.size ()];
-		list.toArray (retValue);
-		return retValue;
-	}	//	getForBPartner
-	
-	/**	Static Logger					*/
-	private static Logger	s_log	= LogManager.getLogger(MBPartnerLocation.class);
-
-	
-	/**************************************************************************
-	 * 	Default Constructor
-	 *	@param ctx context
-	 *	@param C_BPartner_Location_ID id
-	 *	@param trxName transaction
-	 */
-	public MBPartnerLocation (Properties ctx, int C_BPartner_Location_ID, String trxName)
-	{
-		super (ctx, C_BPartner_Location_ID, trxName);
+		super(ctx, C_BPartner_Location_ID, trxName);
 		if (C_BPartner_Location_ID == 0)
 		{
-			setName (".");
+			setName(".");
 			//
-			setIsShipTo (true);
-			setIsRemitTo (true);
-			setIsPayFrom (true);
-			setIsBillTo (true);
+			setIsShipTo(true);
+			setIsRemitTo(true);
+			setIsPayFrom(true);
+			setIsBillTo(true);
 		}
-	}	//	MBPartner_Location
+	}
 
-	/**
-	 * 	BP Parent Constructor
-	 * 	@param bp partner
-	 */
-	public MBPartnerLocation (I_C_BPartner bp)
-	{
-		this(InterfaceWrapperHelper.getCtx(bp),
-				0,
-				InterfaceWrapperHelper.getTrxName(bp));
-		setClientOrg(InterfaceWrapperHelper.getPO(bp));
-		//	may (still) be 0
-		set_ValueNoCheck ("C_BPartner_ID", bp.getC_BPartner_ID());
-	}	//	MBPartner_Location
-
-	/**
-	 * 	Constructor from ResultSet row
-	 *	@param ctx context
-	 * 	@param rs current row of result set to be loaded
-	 *	@param trxName transaction
-	 */
-	public MBPartnerLocation (Properties ctx, ResultSet rs, String trxName)
+	public MBPartnerLocation(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MBPartner_Location
+	}
 
-	/**	Cached Location			*/
-	private MLocation 	m_location = null;
-	/**	Unique Name				*/
-	private String		m_uniqueName = null;
-	private int			m_unique = 0;
-	
-	/**
-	 * 	Get Location/Address
-	 * 	@param requery requery
-	 *	@return location
-	 * @deprecated Please use {@link #getC_Location()}
-	 */
-	@Deprecated
-	public MLocation getLocation (boolean requery)
-	{
-		if (m_location == null)
-			m_location = MLocation.get (getCtx(), getC_Location_ID(), get_TrxName());
-		return m_location;
-	}	//	getLoaction
-
-	/**
-	 *	String Representation
-	 * 	@return info
-	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MBPartner_Location[ID=")
-			.append(get_ID())
-			.append(",C_Location_ID=").append(getC_Location_ID())
-			.append(",Name=").append(getName())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+		final StringBuilder sb = new StringBuilder("MBPartner_Location[ID=")
+				.append(get_ID())
+				.append(",C_Location_ID=").append(getC_Location_ID())
+				.append(",Name=").append(getName())
+				.append("]");
+		return sb.toString();
+	}
 
-	
-	/**************************************************************************
-	 * 	Before Save.
-	 * 	- Set Name
-	 *	@param newRecord new
-	 *	@return save
-	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (getC_Location_ID() <= 0)
 		{
 			throw new FillMandatoryException(COLUMNNAME_C_Location_ID);
 		}
 
-		//	Set New Name
-		if (!newRecord)
+		// Set New Name
+		if (newRecord)
 		{
-			return true;
+			final String name = new UniqueNameBuilder(this).build();
+			setName(name);
 		}
 
-		MLocation address = getLocation(true);
-		m_uniqueName = getName();
-		if (m_uniqueName != null && m_uniqueName.equals("."))	//	default
-			m_uniqueName = null;
-		m_unique = 0;
-		
-		// metas: if possible, we want to preserve the location name as it is
-		if (Check.isEmpty(m_uniqueName, true)) {
-			makeUnique(address);
-		}
-		
-		//	Check uniqueness
-		MBPartnerLocation[] locations = getForBPartner(getCtx(), getC_BPartner_ID());
-		boolean unique = locations.length == 0;
-		
-		//metas: this code can hang if not enough location fields are set
-		while (!unique)
+		return true;
+	}
+
+	private static final class UniqueNameBuilder
+	{
+		private final I_C_BPartner_Location bpLocation;
+
+		/** Unique Name */
+		private String m_uniqueName = null;
+		private int m_unique = 0;
+
+		private UniqueNameBuilder(final I_C_BPartner_Location bpLocation)
 		{
-			unique = true;
-			for (int i = 0; i < locations.length; i++)
+			this.bpLocation = bpLocation;
+		}
+
+		public String build()
+		{
+			final I_C_Location address = getC_Location();
+			m_uniqueName = getBPLocationName();
+			if (m_uniqueName != null && m_uniqueName.equals("."))
 			{
-				MBPartnerLocation location = locations[i];
-				if (location.getC_BPartner_Location_ID() == get_ID())
-					continue;
-				if (m_uniqueName.equals(location.getName()))
+				m_uniqueName = null;
+			}
+			m_unique = 0;
+
+			// metas: if possible, we want to preserve the location name as it is
+			if (Check.isEmpty(m_uniqueName, true))
+			{
+				makeUnique(address);
+			}
+
+			// Check uniqueness
+			final List<I_C_BPartner_Location> allBPLocations = retrieveAllBPartnerLocations();
+			boolean unique = allBPLocations.isEmpty();
+
+			// metas: this code can hang if not enough location fields are set
+			while (!unique)
+			{
+				unique = true;
+				for (final I_C_BPartner_Location bpLocation : allBPLocations)
 				{
-					makeUnique(address);
-					unique = false;
-					break;
+					if (bpLocation.getC_BPartner_Location_ID() == getC_BPartner_Location_ID())
+					{
+						continue;
+					}
+					if (m_uniqueName.equals(bpLocation.getName()))
+					{
+						makeUnique(address);
+						unique = false;
+						break;
+					}
 				}
 			}
+
+			return m_uniqueName;
 		}
-		setName (m_uniqueName);
-		return true;
-	}	//	beforeSave
-	
-	/**
-	 * 	Make name Unique
-	 * 	@param address address
-	 */
-	private void makeUnique (MLocation address)
-	{
-		
-		if (m_uniqueName == null)
-			m_uniqueName = "";
-		m_unique++;
-		
-		//	0 - City
-		if (m_uniqueName.length() == 0)
+
+		private int getC_BPartner_Location_ID()
 		{
-			String xx = address.getCity(); 
-			if (xx != null && xx.length() > 0)
-				m_uniqueName = xx;
-			m_unique = 1;
+			return bpLocation.getC_BPartner_Location_ID();
 		}
-		//	1 + Address1
-		if (m_unique == 1 ||  m_uniqueName.length() == 0)
+
+		private I_C_Location getC_Location()
 		{
-			String xx = address.getAddress1();
-			if (xx != null && xx.length() > 0)
+			return bpLocation.getC_Location();
+		}
+
+		private String getBPLocationName()
+		{
+			return bpLocation.getName();
+		}
+
+		private List<I_C_BPartner_Location> retrieveAllBPartnerLocations()
+		{
+			final Comparator<I_C_BPartner_Location> ordering = Comparator.<I_C_BPartner_Location, Integer> //
+					comparing(bpl -> bpl.isActive() ? 0 : 1)
+					.thenComparing(bpl -> bpl.isShipTo() ? 0 : 1) // metas: task 03537 cg: shipTo has priority
+					.thenComparing(bpl -> bpl.isBillTo() ? 0 : 1)
+					.thenComparing(bpl -> bpl.getC_BPartner_Location_ID());
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(bpLocation);
+			final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
+			return Services.get(IBPartnerDAO.class)
+					.retrieveBPartnerLocations(ctx, bpLocation.getC_BPartner_ID(), trxName)
+					.stream()
+					.sorted(ordering)
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		/**
+		 * Make name Unique
+		 *
+		 * @param address address
+		 */
+		private void makeUnique(final I_C_Location address)
+		{
+
+			if (m_uniqueName == null)
 			{
-				if (m_uniqueName.length() > 0)
-					m_uniqueName += " ";
-				m_uniqueName += xx;
+				m_uniqueName = "";
 			}
-			m_unique = 2;
-		}
-		//	2 + Address2
-		if (m_unique == 2 ||  m_uniqueName.length() == 0)
-		{
-			String xx = address.getAddress2();
-			if (xx != null && xx.length() > 0)
+			m_unique++;
+
+			// 0 - City
+			if (m_uniqueName.length() == 0)
 			{
-				if (m_uniqueName.length() > 0)
-					m_uniqueName += " ";
-				m_uniqueName += xx;
+				final String xx = address.getCity();
+				if (xx != null && xx.length() > 0)
+				{
+					m_uniqueName = xx;
+				}
+				m_unique = 1;
 			}
-			m_unique = 3;
-		}
-		//	3 + Address3
-		if (m_unique == 3 ||  m_uniqueName.length() == 0)
-		{
-			String xx = address.getAddress3();
-			if (xx != null && xx.length() > 0)
+			// 1 + Address1
+			if (m_unique == 1 || m_uniqueName.length() == 0)
 			{
-				if (m_uniqueName.length() > 0)
-					m_uniqueName += " ";
-				m_uniqueName += xx;
+				final String xx = address.getAddress1();
+				if (xx != null && xx.length() > 0)
+				{
+					if (m_uniqueName.length() > 0)
+					{
+						m_uniqueName += " ";
+					}
+					m_uniqueName += xx;
+				}
+				m_unique = 2;
 			}
-			m_unique = 4;
-		}
-		//	4 + Address4
-		if (m_unique == 4 ||  m_uniqueName.length() == 0)
-		{
-			String xx = address.getAddress4();
-			if (xx != null && xx.length() > 0)
+			// 2 + Address2
+			if (m_unique == 2 || m_uniqueName.length() == 0)
 			{
-				if (m_uniqueName.length() > 0)
-					m_uniqueName += " ";
-				m_uniqueName += xx;
+				final String xx = address.getAddress2();
+				if (xx != null && xx.length() > 0)
+				{
+					if (m_uniqueName.length() > 0)
+					{
+						m_uniqueName += " ";
+					}
+					m_uniqueName += xx;
+				}
+				m_unique = 3;
 			}
-			m_unique = 4;
-		}
-		//	5 - Region	
-		if (m_unique == 5 ||  m_uniqueName.length() == 0)
-		{
-			String xx = address.getRegionName(true);
+			// 3 + Address3
+			if (m_unique == 3 || m_uniqueName.length() == 0)
 			{
-				if (m_uniqueName.length() > 0 && xx.length() > 0)
-					m_uniqueName += " ";
-				m_uniqueName += xx;
+				final String xx = address.getAddress3();
+				if (xx != null && xx.length() > 0)
+				{
+					if (m_uniqueName.length() > 0)
+					{
+						m_uniqueName += " ";
+					}
+					m_uniqueName += xx;
+				}
+				m_unique = 4;
 			}
-			m_unique = 5;
-		}
-		//	6 - ID	
-		if (m_unique == 6 ||  m_uniqueName.length() == 0)
-		{
-			int id = get_ID();
-			if (id == 0)
-				id = address.get_ID();
-			m_uniqueName += " #" + id;		
-			m_unique = 6;
-		}
-		// metas: we need to make sure this will return a unique result anyway and not end in an infinite loop
-		if (m_unique > 6)
-		{
-			m_uniqueName += "-"+(m_unique - 6);
-		}
-	}	//	makeUnique
-	
-}	//	MBPartnerLocation
+			// 4 + Address4
+			if (m_unique == 4 || m_uniqueName.length() == 0)
+			{
+				final String xx = address.getAddress4();
+				if (xx != null && xx.length() > 0)
+				{
+					if (m_uniqueName.length() > 0)
+					{
+						m_uniqueName += " ";
+					}
+					m_uniqueName += xx;
+				}
+				m_unique = 4;
+			}
+			// 5 - Region
+			if (m_unique == 5 || m_uniqueName.length() == 0)
+			{
+				final I_C_Region region = address.getC_Region();
+				final String regionName = region == null ? null : region.getName();
+				if (!Check.isEmpty(regionName, true))
+				{
+					if (m_uniqueName.length() > 0)
+					{
+						m_uniqueName += " ";
+					}
+					m_uniqueName += regionName;
+				}
+				m_unique = 5;
+			}
+			// 6 - ID
+			if (m_unique == 6 || m_uniqueName.length() == 0)
+			{
+				int id = getC_BPartner_Location_ID();
+				if (id <= 0)
+				{
+					id = address.getC_Location_ID();
+				}
+				m_uniqueName += " #" + id;
+				m_unique = 6;
+			}
+			// metas: we need to make sure this will return a unique result anyway and not end in an infinite loop
+			if (m_unique > 6)
+			{
+				m_uniqueName += "-" + (m_unique - 6);
+			}
+		}	// makeUnique
+
+	}
+}	// MBPartnerLocation

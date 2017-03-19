@@ -18,13 +18,9 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.util.Services;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductPO;
@@ -33,6 +29,8 @@ import org.compiere.model.MProjectLine;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *  Generate Purchase Order from Project.
@@ -139,7 +137,7 @@ public class ProjectGenPO extends JavaProcess
 		if (order == null)	//	create new Order
 		{
 			//	Vendor
-			MBPartner bp = new MBPartner (getCtx(), pos[0].getC_BPartner_ID(), get_TrxName());
+			I_C_BPartner bp = pos[0].getC_BPartner();
 			//	New Order
 			order = new MOrder (project, false, null);
 			int AD_Org_ID = projectLine.getAD_Org_ID();

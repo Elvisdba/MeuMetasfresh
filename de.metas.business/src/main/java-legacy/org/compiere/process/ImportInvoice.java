@@ -28,7 +28,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLocation;
@@ -569,7 +568,7 @@ public class ImportInvoice extends JavaProcess
 					if (!loc.save ())
 						continue;
 					//
-					bpl = new MBPartnerLocation (bp);
+					bpl = Services.get(IBPartnerBL.class).createBPLocation(bp);
 					bpl.setC_Location_ID (imp.getC_Location_ID() > 0 ? imp.getC_Location_ID() : loc.getC_Location_ID());
 					InterfaceWrapperHelper.save(bpl);
 				}

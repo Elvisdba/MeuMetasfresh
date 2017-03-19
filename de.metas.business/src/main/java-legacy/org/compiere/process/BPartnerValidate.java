@@ -31,11 +31,11 @@ import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Msg;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Validate Business Partner
@@ -88,15 +88,15 @@ public class BPartnerValidate extends JavaProcess
 
 		if (p_C_BP_Group_ID == 0)
 		{
-			MBPartner bp = new MBPartner(getCtx(), p_C_BPartner_ID, get_TrxName());
-			if (bp.get_ID() == 0)
+			I_C_BPartner bp = new MBPartner(getCtx(), p_C_BPartner_ID, get_TrxName());
+			if (bp.getC_BPartner_ID() == 0)
 				throw new AdempiereUserError("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
 			checkBP(bp);
 		}
 		else
 		{
 			String whereClause = "C_BP_Group_ID=?";
-			Iterator<MBPartner> it = new Query(getCtx(), MBPartner.Table_Name, whereClause, get_TrxName())
+			Iterator<I_C_BPartner> it = new Query(getCtx(), I_C_BPartner.Table_Name, whereClause, get_TrxName())
 					.setParameters(new Object[] { p_C_BP_Group_ID })
 					.setOnlyActiveRecords(true)
 					.iterate(null, false); // metas: guaranteed = false because we are just simple querying all bpartners
@@ -115,7 +115,7 @@ public class BPartnerValidate extends JavaProcess
 	 * @param bp bp
 	 * @throws SQLException
 	 */
-	private void checkBP(MBPartner bp) throws SQLException
+	private void checkBP(I_C_BPartner bp) throws SQLException
 	{
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
@@ -146,7 +146,7 @@ public class BPartnerValidate extends JavaProcess
 	 * 
 	 * @param bp business partner
 	 */
-	private void checkPayments(MBPartner bp)
+	private void checkPayments(I_C_BPartner bp)
 	{
 		// See also VMerge.postMerge
 		int changed = 0;
@@ -170,7 +170,7 @@ public class BPartnerValidate extends JavaProcess
 	 * 
 	 * @param bp business partner
 	 */
-	private void checkInvoices(MBPartner bp)
+	private void checkInvoices(I_C_BPartner bp)
 	{
 		// See also VMerge.postMerge
 		int changed = 0;

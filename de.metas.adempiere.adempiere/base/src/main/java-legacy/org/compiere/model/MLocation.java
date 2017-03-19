@@ -171,7 +171,7 @@ public class MLocation extends X_C_Location
 	}	//	MLocation
 
 	private MCountry m_c = null;
-	private 	MRegion			m_r = null;
+	private I_C_Region m_r = null;
 	
 	/**
 	 * 	Set Country
@@ -304,10 +304,10 @@ public class MLocation extends X_C_Location
 	 * 	Get Region
 	 *	@return region
 	 */
-	public MRegion getRegion()
+	public I_C_Region getRegion()
 	{
 		// Reset region if not match
-		if (m_r != null && m_r.get_ID() != getC_Region_ID())
+		if (m_r != null && m_r.getC_Region_ID() != getC_Region_ID())
 			m_r = null;
 		//
 		if (m_r == null && getC_Region_ID() > 0)
@@ -315,43 +315,8 @@ public class MLocation extends X_C_Location
 		return m_r;
 	}	//	getRegion
 	
-	/**
-	 * 	Get (local) Region Name
-	 *	@return	region Name or ""
-	 */
 	@Override
-	public String getRegionName()
-	{
-		return getRegionName(false);
-	}	//	getRegionName
-
-	/**
-	 * 	Get Region Name
-	 * 	@param getFromRegion get from region (not locally)
-	 *	@return	region Name or ""
-	 */
-	public String getRegionName (boolean getFromRegion)
-	{
-		if (getFromRegion && getCountry().isHasRegion() 
-			&& getRegion() != null)
-		{
-			super.setRegionName("");	//	avoid duplicates
-			return getRegion().getName();
-		}
-		//
-		String regionName = super.getRegionName();
-		if (regionName == null)
-			regionName = "";
-		return regionName;
-	}	//	getRegionName
-
-	/**
-	 * 	Equals
-	 * 	@param cmp comparator
-	 * 	@return true if ID the same
-	 */
-	@Override
-	public boolean equals (Object cmp)
+	public boolean equals (final Object cmp)
 	{
 		if (cmp == null)
 			return false;
