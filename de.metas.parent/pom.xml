@@ -48,8 +48,6 @@
 
 		<guava.version>21.0</guava.version>
 		
-		<lombok.version>1.16.14</lombok.version>
-
 		<!-- The version to be used by metasfresh, as opposed to the ESB's. The 
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
@@ -223,13 +221,6 @@
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
-
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>${lombok.version}</version>
-			</dependency>
-			
 		</dependencies>
 	</dependencyManagement>
 
