@@ -19,6 +19,7 @@ import com.google.common.base.Strings;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.model.BPartner;
 
 public class BPartnerBL implements IBPartnerBL
 {
@@ -46,11 +47,11 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public boolean isAllowConsolidateInOutEffective(final org.compiere.model.I_C_BPartner partner, final boolean isSOTrx)
+	public boolean isAllowConsolidateInOutEffective(final BPartner partner, final boolean isSOTrx)
 	{
 		Check.assumeNotNull(partner, "partner not null");
 
-		final boolean partnerAllowConsolidateInOut = partner.isAllowConsolidateInOut();
+		final boolean partnerAllowConsolidateInOut = partner.getBPartnerData().isAllowConsolidateInOut();
 		if (partnerAllowConsolidateInOut)
 		{
 			return true;

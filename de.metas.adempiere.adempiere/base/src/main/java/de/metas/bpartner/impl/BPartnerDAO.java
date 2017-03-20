@@ -55,6 +55,19 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public BPartner toBPartnerAgg(final I_C_BPartner bpartnerData)
+	{
+		if(bpartnerData == null)
+		{
+			return null;
+		}
+		
+		final Supplier<BPartnerLocations> locations = () -> retrieveLocations(Env.getCtx(), bpartnerData.getC_BPartner_ID(), ITrx.TRXNAME_None);
+		final Supplier<BPartnerContacts> contacts = () -> retrieveContactsAgg(Env.getCtx(), bpartnerData.getC_BPartner_ID(), ITrx.TRXNAME_None);
+		return new BPartner(bpartnerData, locations, contacts);
+	}
+
+	@Override
 	public BPartner retrieveBPartnerAggForModel(final Object model)
 	{
 		// 09527 get the most suitable language:
@@ -107,8 +120,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 	}
 
-	@Override
-	public I_C_BPartner retrieveBPartner(final Properties ctx, final int bpartnerId)
+	private I_C_BPartner retrieveBPartner(final Properties ctx, final int bpartnerId)
 	{
 		if (bpartnerId <= 0)
 		{

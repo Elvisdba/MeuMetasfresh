@@ -45,6 +45,8 @@ public interface IStorageQuery
 
 	IStorageQuery addProduct(I_M_Product product);
 
+	IStorageQuery addPartnerId(final int bpartnerId);
+
 	IStorageQuery addPartner(I_C_BPartner bpartner);
 
 	IStorageQuery addWarehouse(I_M_Warehouse warehouse);

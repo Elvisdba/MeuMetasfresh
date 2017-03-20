@@ -45,7 +45,6 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node_Para;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
@@ -67,6 +66,7 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
@@ -1830,7 +1830,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			final Integer bpartnerId = po.get_ValueAsInt(index);
 			if (bpartnerId != null)
 			{
-				I_C_BPartner partner = Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), bpartnerId);
+				BPartner partner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(getCtx(), bpartnerId);
 				if (partner != null)
 					sb.append(partner.getName()).append(" ");
 			}

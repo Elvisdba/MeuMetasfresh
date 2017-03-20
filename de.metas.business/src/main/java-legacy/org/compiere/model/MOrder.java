@@ -506,7 +506,12 @@ public class MOrder extends X_C_Order implements DocAction
 		{
 			return;
 		}
-
+		
+		setBPartner(bpartner);
+	}
+	
+	public void setBPartner(final BPartner bpartner)
+	{
 		setC_BPartner_ID(bpartner.getBPartnerId());
 		
 		// Defaults Payment Term

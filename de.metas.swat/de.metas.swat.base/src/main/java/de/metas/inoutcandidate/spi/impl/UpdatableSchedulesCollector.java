@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -34,16 +33,14 @@ import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.model.BPartner;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IUpdatableSchedulesCollector;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductBL;
 
@@ -53,8 +50,6 @@ import de.metas.product.IProductBL;
  */
 public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 {
-	private static Logger logger = LogManager.getLogger(UpdatableSchedulesCollector.class);
-
 	/**
 	 * Does nothing, just returns <code>seed</code>.
 	 */
@@ -66,99 +61,6 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 			final String trxName)
 	{
 		return seed;
-// @formatter:off
-//		final CachedObjects coToUse = mkCoToUse(co);
-//
-//		final Set<Integer> productsSeen = new HashSet<Integer>();
-//		inititalInspect(seed, productsSeen, coToUse, trxName);
-//
-//		final List<OlAndSched> result = new ArrayList<OlAndSched>(seed);
-//
-//		final Set<Integer> bPartnersExploded = new HashSet<Integer>();
-//
-//		int level = 1;
-//		while (inspectOlAndScheds(ctx, result, productsSeen, bPartnersExploded, coToUse, trxName) > 0)
-//		{
-//			level++;
-//			logger.debug("level=" + level);
-//		}
-//
-//		return result;
-// @formatter:on
-	}
-
-	/**
-	 * Collect all products that are referred to by the order lines of the given <code>olsAndScheds</code>.
-	 *
-	 * @param olsAndScheds
-	 * @param productSeen
-	 *            set where the different product ids are stored while the given <code>olsAndScheds</code> are iterated.
-	 * @param co
-	 *            cache where the lines' BPartners are stored while the given <code>olsAndScheds</code> are iterated.
-	 * @param trxName_NOTUSED
-	 */
-	private void inititalInspect(
-			final Collection<OlAndSched> olsAndScheds,
-			final Set<Integer> productSeen,
-			final CachedObjects co,
-			final String trxName_NOTUSED)
-	{
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
-			final I_C_OrderLine ol = olAndSched.getOl();
-			if (ol == null)
-			{
-				// ol has already been deleted
-				continue;
-			}
-			productSeen.add(ol.getM_Product_ID());
-			co.retrieveAndCacheBPartner(ol);
-
-		}
-		logger.info("Found " + productSeen.size() + " different M_Product_IDs");
-	}
-
-	/**
-	 * For the given <code>olsAndScheds</code> this method iterates the order lines and checks if further {@link OlAndSched} instances need to be added. This is the case if
-	 * <ul>
-	 * <li>the order line's bPartner has a portage-free amount</li>
-	 * <li>the order line's product is not an item</li>
-	 * <li>the order line's product is an item, but the order also has a non-item position</li>
-	 * </ul>
-	 * In both cases the shipment scheduling doesn't only depend on the given line, but on further lines as well.
-	 *
-	 *
-	 * @param olsAndScheds
-	 * @param productsSeen
-	 * @param bPartnersSeen
-	 * @param co
-	 * @param trxName
-	 * @return the number of {@link OlAndSched}s that have been added to <code>olsAndScheds</code>.
-	 */
-	private int inspectOlAndScheds(
-			final Properties ctx,
-			final Collection<OlAndSched> olsAndScheds,
-			final Set<Integer> productsSeen,
-			final Set<Integer> bPartnersSeen,
-			final CachedObjects co,
-			final String trxName)
-	{
-		final List<OlAndSched> newOlAndScheds = new ArrayList<OlAndSched>();
-
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
-			final I_C_OrderLine ol = olAndSched.getOl();
-			if (ol == null)
-			{
-				continue;
-			}
-			final List<OlAndSched> singleOlResult = inspectSingleOl(ctx, ol, productsSeen, bPartnersSeen, co, trxName);
-
-			newOlAndScheds.addAll(singleOlResult);
-		}
-
-		olsAndScheds.addAll(newOlAndScheds);
-		return newOlAndScheds.size();
 	}
 
 	final List<OlAndSched> inspectSingleOl(
@@ -236,9 +138,9 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 	{
 		Check.assume(ol != null, "Param 'ol' is not null");
 
-		final I_C_BPartner bPartner = co.retrieveAndCacheBPartner(ol);
+		final BPartner bpartner = co.retrieveAndCacheBPartner(ol);
 
-		final BigDecimal postageFreeAmt = bPartner.getPostageFreeAmt();
+		final BigDecimal postageFreeAmt = bpartner.getPostageFreeAmt();
 
 		final boolean hasPostageFreeAmt = postageFreeAmt != null && postageFreeAmt.signum() > 0;
 		return hasPostageFreeAmt;
@@ -279,14 +181,5 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 				newOlAndScheds.addAll(allForProduct);
 			}
 		}
-	}
-
-	private CachedObjects mkCoToUse(final CachedObjects co)
-	{
-		if (co == null)
-		{
-			return new CachedObjects();
-		}
-		return co;
 	}
 }

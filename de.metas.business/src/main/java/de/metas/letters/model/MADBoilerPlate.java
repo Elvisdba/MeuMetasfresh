@@ -87,6 +87,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
@@ -797,7 +798,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		if (C_BPartner_ID > 0)
 		{
 			attrs.put(VAR_C_BPartner_ID, C_BPartner_ID);
-			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartner(ctx, C_BPartner_ID);
+			final BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(ctx, C_BPartner_ID);
 			if (email == null)
 			{
 				final I_AD_User contact = getDefaultContactOrFirstWithValidEMail(bp);
@@ -819,7 +820,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		String AD_Language = Env.getAD_Language(ctx);
 		if (C_BPartner_ID > 0)
 		{
-			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartner(ctx, C_BPartner_ID);
+			final BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(ctx, C_BPartner_ID);
 			if (bp != null)
 			{
 				AD_Language = bp.getAD_Language();
@@ -854,11 +855,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return attrs;
 	}
 	
-	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final I_C_BPartner bpartner)
+	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final BPartner bpartner)
 	{
 		I_AD_User firstContact = null;
 		I_AD_User firstValidContact = null;
-		for (final I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(bpartner))
+		for (final I_AD_User contact : bpartner.getContacts())
 		{
 			if(contact.isDefaultContact())
 			{

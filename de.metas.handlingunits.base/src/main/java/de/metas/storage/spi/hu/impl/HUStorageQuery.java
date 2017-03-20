@@ -77,8 +77,8 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 	private final IHUQueryBuilder huQueryBuilder;
 	private Set<Integer> _availableAttributeIds;
 	private final Set<Integer> _productIds = new HashSet<>();
-	private final transient List<I_M_Product> _products = new ArrayList<>(); // needed only for summary info
-	private final transient List<I_C_BPartner> _bpartners = new ArrayList<>(); // needed only for summary info
+	private final transient Set<I_M_Product> _products = new HashSet<>(); // needed only for summary info
+	private final transient List<String> _bpartnerNames = new ArrayList<>(); // needed only for summary info
 	private final transient List<I_M_Warehouse> _warehouses = new ArrayList<>(); // needed only for summary info
 
 	/* package */ HUStorageQuery()
@@ -182,16 +182,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 
 		//
 		// BPartner names
-		final Set<String> bpartnerNames = new HashSet<>();
-		if (!_bpartners.isEmpty())
-		{
-			for (final I_C_BPartner bpartner : _bpartners)
-			{
-				final String bpartnerName = bpartner.getName();
-				bpartnerNames.add(bpartnerName);
-			}
-		}
-		final String bpartnerNamesStr = ListUtils.toString(bpartnerNames, ", ");
+		final String bpartnerNamesStr = ListUtils.toString(_bpartnerNames, ", ");
 		//
 		summary.append("\n");
 		summary.append("@C_BPartner_ID@: ").append(Check.isEmpty(bpartnerNamesStr, true) ? "*" : bpartnerNamesStr);
@@ -322,6 +313,14 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 	}
 
 	@Override
+	public IStorageQuery addPartnerId(final int bpartnerId)
+	{
+		huQueryBuilder.addOnlyInBPartnerId(bpartnerId);
+		_bpartnerNames.add("<" + bpartnerId + ">");
+		return this;
+	}
+
+	@Override
 	public IStorageQuery addPartner(final I_C_BPartner bpartner)
 	{
 		final Integer bpartnerId;
@@ -334,7 +333,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 			bpartnerId = bpartner.getC_BPartner_ID();
 		}
 		huQueryBuilder.addOnlyInBPartnerId(bpartnerId);
-		_bpartners.add(bpartner);
+		_bpartnerNames.add(bpartner.getName());
 		return this;
 	}
 

@@ -36,6 +36,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -64,6 +66,22 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 			return sched.getC_BPartner_Override_ID();
 		}
 	}
+	
+	@Override
+	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
+	{
+		final I_C_BPartner bPartner = sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override();
+		return bPartner;
+	}
+	
+	@Override
+	public BPartner getBPartnerAgg(final I_M_ShipmentSchedule sched)
+	{
+		final int bpartnerId = getC_BPartner_ID(sched);
+		return Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId);
+	}
+
+
 
 	@Override
 	public String getDeliveryRule(final I_M_ShipmentSchedule sched)
@@ -115,16 +133,6 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 			return sched.getQtyToDeliver_Override();
 		}
 		return sched.getQtyToDeliver();
-	}
-
-	@Override
-	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
-	{
-		final I_C_BPartner bPartner =
-				InterfaceWrapperHelper.create(
-						sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
-						I_C_BPartner.class);
-		return bPartner;
 	}
 
 	@Override

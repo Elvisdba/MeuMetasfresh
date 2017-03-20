@@ -43,7 +43,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -54,6 +53,7 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.model.BPartner;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -327,12 +327,12 @@ public class ShipmentScheduleQtyOnHandStorage
 		final CachedObjects co = getCachedObjects();
 		final I_M_Product product = co.retrieveAndCacheProduct(orderLine);
 		final I_M_Warehouse warehouse = warehouseAdvisor.evaluateWarehouse(orderLine);
-		final I_C_BPartner bpartner = co.retrieveAndCacheBPartner(orderLine);
+		final BPartner bpartner = co.retrieveAndCacheBPartner(orderLine);
 
 		storageQuery = storageEngine.newStorageQuery();
 		storageQuery.addWarehouse(warehouse);
 		storageQuery.addProduct(product);
-		storageQuery.addPartner(bpartner);
+		storageQuery.addPartnerId(bpartner.getBPartnerId());
 
 		// Add query attributes
 		final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
@@ -365,12 +365,12 @@ public class ShipmentScheduleQtyOnHandStorage
 		final I_M_Product product = co.retrieveAndCacheProduct(shipmentLine);
 		final I_M_InOut shipment = shipmentLine.getM_InOut();
 		final I_M_Warehouse warehouse = shipment.getM_Warehouse();
-		final I_C_BPartner bpartner = co.retrieveAndCacheBPartner(shipment);
+		final BPartner bpartner = co.retrieveAndCacheBPartner(shipment);
 
 		storageQuery = storageEngine.newStorageQuery();
 		storageQuery.addWarehouse(warehouse);
 		storageQuery.addProduct(product);
-		storageQuery.addPartner(bpartner);
+		storageQuery.addPartnerId(bpartner.getBPartnerId());
 
 		// Add query attributes
 		final I_M_AttributeSetInstance asi = shipmentLine.getM_AttributeSetInstance();

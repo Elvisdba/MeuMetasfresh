@@ -28,6 +28,7 @@ import java.util.Iterator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
@@ -35,6 +36,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 
 import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -54,17 +57,18 @@ public class C_BPartner_ShipmentSchedule
 			ifColumnsChanged = {
 					I_C_BPartner.COLUMNNAME_AllowConsolidateInOut,
 					I_C_BPartner.COLUMNNAME_PostageFreeAmt })
-	public void inValidateScheds(final I_C_BPartner bPartner)
+	public void inValidateScheds(final I_C_BPartner bpartnerData)
 	{
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).toBPartnerAgg(bpartnerData);
+		
 		//
 		// Services
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-
-		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
+		
 
 		// using iterator because there might be a lot of scheds to update
-		final Iterator<? extends I_M_ShipmentSchedule> scheds = shipmentSchedulePA.retrieveForBPartner(bPartner);
+		final Iterator<? extends I_M_ShipmentSchedule> scheds = shipmentSchedulePA.retrieveForBPartner(bpartner.getBPartnerData());
 
 		for (final I_M_ShipmentSchedule sched : IteratorUtils.asIterable(scheds))
 		{
@@ -72,22 +76,22 @@ public class C_BPartner_ShipmentSchedule
 			// value is not set, but we want to get null in that case.
 			final BigDecimal schedPostageFree = sched.getPostageFreeAmt();
 
-			final boolean postageFreeChg = schedPostageFree.compareTo(bPartner.getPostageFreeAmt()) != 0;
+			final boolean postageFreeChg = schedPostageFree.compareTo(bpartner.getPostageFreeAmt()) != 0;
 
 			final boolean isSOTrx = true;
-			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bPartner, isSOTrx);
+			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bpartner, isSOTrx);
 			final boolean allowConsChg = isBPAllowConsolidateInOut != sched.isAllowConsolidateInOut();
 
 			if (postageFreeChg || allowConsChg)
 			{
-				sched.setPostageFreeAmt(bPartner.getPostageFreeAmt());
+				sched.setPostageFreeAmt(bpartner.getPostageFreeAmt());
 				sched.setAllowConsolidateInOut(isBPAllowConsolidateInOut);
 
-				InterfaceWrapperHelper.save(sched, trxName);
+				InterfaceWrapperHelper.save(sched, ITrx.TRXNAME_ThreadInherited);
 			}
 			// if postageFree is unchanged and still zero, then this sched entry
 			// is still valid, even if allow consolidate has changed.
-			final boolean stillValid = !postageFreeChg && (bPartner.getPostageFreeAmt().signum() <= 0 || !allowConsChg);
+			final boolean stillValid = !postageFreeChg && (bpartner.getPostageFreeAmt().signum() <= 0 || !allowConsChg);
 
 			if (!stillValid)
 			{

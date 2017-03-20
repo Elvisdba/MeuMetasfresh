@@ -7,6 +7,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 
+import de.metas.bpartner.model.BPartner;
+
 public interface IBPartnerBL extends ISingletonService
 {
 	/**
@@ -32,7 +34,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param isSOTrx
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
-	boolean isAllowConsolidateInOutEffective(org.compiere.model.I_C_BPartner partner, boolean isSOTrx);
+	boolean isAllowConsolidateInOutEffective(BPartner partner, boolean isSOTrx);
 
 	/**
 	 * Creates BPartner, Location and contact from given template.

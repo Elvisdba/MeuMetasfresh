@@ -31,13 +31,14 @@ import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.model.BPartner;
 import mockit.Expectations;
 import mockit.Mocked;
 
 public class BPartnerBLTests
 {
 	@Mocked
-	I_C_BPartner partner;
+	I_C_BPartner partnerData;
 
 	@Mocked
 	ISysConfigBL sysConfigBL;
@@ -100,7 +101,7 @@ public class BPartnerBLTests
 		sysConfig_AllowConsolidateInOut_ReturnsTrue(sysConfigValue);
 
 		final BPartnerBL testee = new BPartnerBL();
-		assertSame(expectedResult, testee.isAllowConsolidateInOutEffective(partner, isSOTrx));
+		assertSame(expectedResult, testee.isAllowConsolidateInOutEffective(BPartner.strict(partnerData), isSOTrx));
 	}
 
 	private void partnerAllowsConsolidateInOut(final boolean partnerAllowsConsolidateInOut)
@@ -108,7 +109,7 @@ public class BPartnerBLTests
 		// @formatter:off
 		new Expectations()
 		{{
-				partner.isAllowConsolidateInOut();
+				partnerData.isAllowConsolidateInOut();
 				minTimes = 0;
 				result = partnerAllowsConsolidateInOut;
 		}};

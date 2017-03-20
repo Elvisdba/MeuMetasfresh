@@ -77,6 +77,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -211,7 +212,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
-			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the
+			final BPartner bPartner = shipmentScheduleEffectiveBL.getBPartnerAgg(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the
 			// shipment.
 
 			final org.compiere.model.I_M_Product product = ol.getM_Product();
@@ -774,7 +775,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		//
 		// Create the M_InOut header candidate
-		final I_C_BPartner partner = co.retrieveAndCacheBPartner(orderLine);
+		final BPartner partner = co.retrieveAndCacheBPartner(orderLine);
 		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, order.isSOTrx());
 		I_M_InOut candidate = null;
 		final String bPartnerAddress = sched.getBPartnerAddress_Override();
@@ -1170,7 +1171,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), true);
+		final BPartner bpartner = shipmentScheduleEffectiveBL.getBPartnerAgg(sched);
+		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(bpartner, true);
 		if (!bpAllowsConsolidate)
 		{
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");

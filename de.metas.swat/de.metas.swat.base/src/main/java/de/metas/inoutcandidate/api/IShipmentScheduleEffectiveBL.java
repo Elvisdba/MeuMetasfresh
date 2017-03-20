@@ -32,6 +32,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.model.BPartner;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
@@ -64,6 +65,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	BigDecimal getQtyToDeliver(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
+
+	BPartner getBPartnerAgg(I_M_ShipmentSchedule sched);
 
 	int getC_BP_Location_ID(I_M_ShipmentSchedule sched);
 

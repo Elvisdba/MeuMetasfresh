@@ -41,6 +41,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -284,7 +285,7 @@ public class RequisitionPOCreate extends JavaProcess
 	private int 		m_M_Product_ID = 0;
 	private int			m_M_AttributeSetInstance_ID = 0;
 	/** BPartner				*/
-	private I_C_BPartner	m_bpartner = null;
+	private BPartner	m_bpartner = null;
 	
 	/**
 	 * 	Process Line
@@ -340,9 +341,9 @@ public class RequisitionPOCreate extends JavaProcess
 		}
 		
 		//	BPartner
-		if (m_bpartner == null || C_BPartner_ID != m_bpartner.getC_BPartner_ID())
+		if (m_bpartner == null || C_BPartner_ID != m_bpartner.getBPartnerId())
 		{
-			m_bpartner = Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), C_BPartner_ID);
+			m_bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(C_BPartner_ID);
 		}
 		
 		

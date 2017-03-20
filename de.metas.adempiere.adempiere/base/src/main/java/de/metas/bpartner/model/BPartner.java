@@ -1,5 +1,6 @@
 package de.metas.bpartner.model;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPartnerContacts;
@@ -59,6 +61,17 @@ import lombok.ToString;
 @ToString
 public class BPartner
 {
+	/**
+	 * Creates a BPartner which consists only by given bpartnerName.
+	 * Used mainly for testing.
+	 */
+	public static BPartner strict(final I_C_BPartner bpartnerData)
+	{
+		Supplier<BPartnerLocations> bpartnerLocations = () -> new BPartnerLocations(bpartnerData.getC_BPartner_ID(), ImmutableList.of());
+		Supplier<BPartnerContacts> contacts = () -> new BPartnerContacts(bpartnerData.getC_BPartner_ID(), ImmutableList.of());
+		return new BPartner(bpartnerData, bpartnerLocations, contacts);
+	}
+
 	private static final transient Logger logger = LogManager.getLogger(BPartner.class);
 
 	private final I_C_BPartner bpartnerData;
@@ -84,11 +97,20 @@ public class BPartner
 	{
 		return bpartnerData.getC_BPartner_ID();
 	}
+	
+	public String getName()
+	{
+		return getBPartnerData().getName();
+	}
+	
+	public String getAD_Language()
+	{
+		return getBPartnerData().getAD_Language();
+	}
 
 	public Language getLanguage()
 	{
-		final I_C_BPartner bpartnerData = getBPartnerData();
-		final String lang = bpartnerData.getAD_Language();
+		final String lang = getAD_Language();
 		if (!Check.isEmpty(lang, true))
 		{
 			return Language.getLanguage(lang);
@@ -122,7 +144,7 @@ public class BPartner
 	{
 		return contacts.get();
 	}
-	
+
 	public int getSalesRep_ID()
 	{
 		return getBPartnerData().getSalesRep_ID();
@@ -311,15 +333,20 @@ public class BPartner
 			return getBPartnerData().getPO_DeliveryViaRule();
 		}
 	}
-	
+
 	public String getPaymentRule()
 	{
 		return getBPartnerData().getPaymentRule();
 	}
-	
+
 	public String getInvoiceRule()
 	{
 		return getBPartnerData().getInvoiceRule();
+	}
+
+	public BigDecimal getPostageFreeAmt()
+	{
+		return getBPartnerData().getPostageFreeAmt();
 	}
 
 }

@@ -50,18 +50,17 @@ public interface IBPartnerDAO extends ISingletonService
 		return retrieveBPartnerAgg(Env.getCtx(), bpartnerId);
 	}
 
+	/**
+	 * Wraps given bpartner data to BPartner. Locations and Contacts will be lazy loaded.
+	 * 
+	 * IMPORTANT: use it to wrap legacy code only!
+	 * 
+	 * @param bpartnerData
+	 */
+	BPartner toBPartnerAgg(I_C_BPartner bpartnerData);
 
 	/** Saves BPartner aggregate */
 	void save(BPartner bpartner);
-
-	/**
-	 * Retrieves BPartner if it's AD_Client_ID is context's AD_Client_ID.
-	 *
-	 * @param ctx
-	 * @param bpartnerId
-	 * @return bpartner or null
-	 */
-	I_C_BPartner retrieveBPartner(final Properties ctx, final int bpartnerId);
 
 	/**
 	 * Retrieve default BPartner to be used on "anonymous" cash transactions
@@ -93,12 +92,11 @@ public interface IBPartnerDAO extends ISingletonService
 	{
 		return retrieveLocations(ctx, bpartnerId, ITrx.TRXNAME_None);
 	}
-	
+
 	default BPartnerLocations retrieveLocations(final int bpartnerId)
 	{
 		return retrieveLocations(Env.getCtx(), bpartnerId, ITrx.TRXNAME_None);
 	}
-
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending

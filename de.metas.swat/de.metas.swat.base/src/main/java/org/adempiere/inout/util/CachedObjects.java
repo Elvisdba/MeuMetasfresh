@@ -27,8 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.CustomColNames;
-import org.compiere.model.I_C_BPartner;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_InOut;
@@ -37,6 +36,8 @@ import org.compiere.util.CCache;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 
 /**
  * Contains maps to cache objects that are used in die shipment context so they need to be loaded only once from DB. Should be replaced with a generic caching implementation. This framework would need
@@ -48,15 +49,13 @@ import de.metas.adempiere.model.I_M_Product;
  */
 public class CachedObjects
 {
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	
 	/**
 	 * Cache for the orderLine's orders.
 	 */
 	private final Map<Integer, I_C_Order> orderCache = new HashMap<Integer, I_C_Order>();
 
-	/**
-	 * Cache for BPartners' {@link CustomColNames#C_BPartner_ALLOW_CONSOLIDATE_INOUT} values.
-	 */
-	private final Map<Integer, I_C_BPartner> bPartnerCache = new HashMap<Integer, I_C_BPartner>();
 	private final Map<Integer, I_M_Product> productCache = new HashMap<Integer, I_M_Product>();
 	private final Map<Integer, String> mmPolicyCache = new HashMap<Integer, String>();
 
@@ -88,28 +87,14 @@ public class CachedObjects
 		return attributeSetCache;
 	}
 
-	public I_C_BPartner retrieveAndCacheBPartner(final I_C_OrderLine line)
+	public BPartner retrieveAndCacheBPartner(final I_C_OrderLine line)
 	{
-		I_C_BPartner bPartner = bPartnerCache.get(line.getC_BPartner_ID());
-
-		if (bPartner == null)
-		{
-			bPartner = InterfaceWrapperHelper.create(line.getC_BPartner(), I_C_BPartner.class);
-			bPartnerCache.put(line.getC_BPartner_ID(), bPartner);
-		}
-		return bPartner;
+		return bpartnerDAO.retrieveBPartnerAgg(line.getC_BPartner_ID());
 	}
 
-	public I_C_BPartner retrieveAndCacheBPartner(final I_M_InOut inout)
+	public BPartner retrieveAndCacheBPartner(final I_M_InOut inout)
 	{
-		I_C_BPartner bPartner = bPartnerCache.get(inout.getC_BPartner_ID());
-
-		if (bPartner == null)
-		{
-			bPartner = InterfaceWrapperHelper.create(inout.getC_BPartner(), I_C_BPartner.class);
-			bPartnerCache.put(inout.getC_BPartner_ID(), bPartner);
-		}
-		return bPartner;
+		return bpartnerDAO.retrieveBPartnerAgg(inout.getC_BPartner_ID());
 	}
 
 	public I_C_Order retrieveAndCacheOrder(final I_C_OrderLine line, final String trxName)

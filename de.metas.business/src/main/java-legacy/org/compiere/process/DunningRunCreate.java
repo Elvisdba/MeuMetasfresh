@@ -325,7 +325,7 @@ public class DunningRunCreate extends JavaProcess
 		catch (BPartnerNoAddressException e)
 		{
 			final String msg = "@Skip@ @C_Invoice_ID@ " + MInvoice.get(getCtx(), C_Invoice_ID).getDocumentInfo()
-				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), C_BPartner_ID).getName()
+				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
 			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
@@ -447,7 +447,7 @@ public class DunningRunCreate extends JavaProcess
 		} catch (BPartnerNoAddressException e) {
 			MPayment payment = new MPayment(getCtx(), C_Payment_ID, null);
 			String msg = "@Skip@ @C_Payment_ID@ " + payment.getDocumentInfo()
-				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerDAO.class).retrieveBPartner(getCtx(), C_BPartner_ID).getName()
+				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
 			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
