@@ -539,12 +539,12 @@ public class HierarchyChangeTests extends AIntegrationTestDriver
 		final BPartnerHelper bpartnerHelper = getHelper().mkBPartnerHelper();
 		
 		sr1 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_SR1_(*)", I_C_BPartner.class);
-		final I_C_BPartner_Location sr1Location = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(sr1).get(0), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location sr1Location = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveLocations(sr1).first(), I_C_BPartner_Location.class);
 		sr1Location.setIsCommissionTo(true);
 		InterfaceWrapperHelper.save(sr1Location);
 
 		sr2 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_SR2_(*)", I_C_BPartner.class);
-		final I_C_BPartner_Location sr2Location = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(sr2).get(0), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location sr2Location = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveLocations(sr2).first(), I_C_BPartner_Location.class);
 		sr2Location.setIsCommissionTo(true);
 		InterfaceWrapperHelper.save(sr2Location);
 

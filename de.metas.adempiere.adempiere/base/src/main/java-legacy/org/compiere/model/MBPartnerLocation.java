@@ -152,7 +152,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 			final Properties ctx = InterfaceWrapperHelper.getCtx(bpLocation);
 			final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
 			return Services.get(IBPartnerDAO.class)
-					.retrieveBPartnerLocations(ctx, bpLocation.getC_BPartner_ID(), trxName)
+					.retrieveLocations(ctx, bpLocation.getC_BPartner_ID(), trxName)
 					.stream()
 					.sorted(ordering)
 					.collect(ImmutableList.toImmutableList());

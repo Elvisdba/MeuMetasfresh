@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.inout.service.IMTransactionDAO;
@@ -853,7 +852,8 @@ public class MInOut extends X_M_InOut implements DocAction
 
 		// Set Locations
 		{
-			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(getCtx(), bp.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).retrieveLocations(getCtx(), bp.getC_BPartner_ID())
+					.getShipToOrFirst();
 			if (bpLocation != null)
 			{
 				setC_BPartner_Location(bpLocation);

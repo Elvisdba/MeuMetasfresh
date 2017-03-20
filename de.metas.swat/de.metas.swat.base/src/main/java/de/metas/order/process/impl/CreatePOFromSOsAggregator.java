@@ -94,7 +94,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
 
-		final I_C_Order purchaseOrder = createPurchaseOrder(vendor, salesOrder);
+		final I_C_Order purchaseOrder = createPurchaseOrder(vendor.getC_BPartner_ID(), salesOrder);
 
 		final String msg = msgBL.getMsg(context.getCtx(),
 				MSG_PURCHASE_ORDER_CREATED,
@@ -165,8 +165,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		return orderLinesAggregator;
 	}
 
-	private I_C_Order createPurchaseOrder(final I_C_BPartner vendor,
-			final I_C_Order salesOrder)
+	private I_C_Order createPurchaseOrder(final int vendorBPartnerId, final I_C_Order salesOrder)
 	{
 
 		final I_C_Order purchaseOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
@@ -200,7 +199,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		// 08812: Make sure the users are correctly set
 
-		orderBL.setBPartner(purchaseOrder, vendor);
+		orderBL.setBPartner(purchaseOrder, vendorBPartnerId);
 		orderBL.setBill_User_ID(purchaseOrder);
 
 		//

@@ -31,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +43,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -533,8 +531,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 							line.getC_BPartner().getName()));
 
 			// task 08655: also provide the creditor's address
-			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
-			final I_C_BPartner_Location billToLocation = Services.get(IBPartnerDAO.class).retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
+			final I_C_BPartner_Location billToLocation = Services.get(IBPartnerDAO.class).retrieveLocations(line.getC_BPartner_ID())
+					.getBillTo(true);
 			if (billToLocation != null)
 			{
 				cdtr.setPstlAdr(createPstlAdr(line.getC_BP_BankAccount(), billToLocation.getC_Location()));

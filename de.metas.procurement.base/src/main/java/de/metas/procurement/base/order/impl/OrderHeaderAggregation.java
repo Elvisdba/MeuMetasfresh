@@ -6,7 +6,6 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -90,8 +89,6 @@ public class OrderHeaderAggregation
 		final int adOrgId = candidate.getAD_Org_ID();
 		final int warehouseId = candidate.getM_Warehouse_ID();
 
-		final I_C_BPartner bpartner = candidate.getC_BPartner();
-
 		final int pricingSystemId = candidate.getM_PricingSystem_ID();
 
 		// the price is taken from the candidates and C_OrderLine.IsManualPrice is set to 'Y'
@@ -121,7 +118,7 @@ public class OrderHeaderAggregation
 
 		//
 		// BPartner
-		orderBL.setBPartner(order, bpartner);
+		orderBL.setBPartner(order, candidate.getC_BPartner_ID());
 		orderBL.setBill_User_ID(order);
 
 		//

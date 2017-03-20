@@ -114,7 +114,8 @@ public class PMMPricingBL implements IPMMPricingBL
 		}
 
 		// BPartner location -> Country
-		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveBPartnerShipToLocations(bpartner);
+		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveLocations(bpartner)
+				.getShipToLocations();
 		if (shipToLocations.isEmpty())
 		{
 			throw new AdempiereException("@Missing@ @" + org.compiere.model.I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");

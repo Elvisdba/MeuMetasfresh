@@ -24,7 +24,6 @@ package de.metas.adempiere.service.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -61,8 +60,9 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
-import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
+import de.metas.bpartner.model.BPartnerAndLocationAndContact;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -293,21 +293,21 @@ public class OrderBL implements IOrderBL
 			return true;
 		}
 
-		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final BPartner billBPartner = bpartnerDAO.retrieveBPartnerAgg(order.getBill_BPartner_ID());
+		final BPartnerAndLocationAndContact billBPartnerAndAddress = billBPartner.toBPartnerAndLocationAndContact(order.getBill_Location_ID(), order.getBill_User_ID());
 		final I_AD_User billContact;
 		// Case: Bill Location is set, we can use it to retrieve the contact for that location
-		if (order.getBill_Location_ID() > 0)
+		if (billBPartnerAndAddress.isLocationSet())
 		{
-			final I_C_BPartner_Location billLocation = order.getBill_Location();
-			billContact = bpartnerService.retrieveUserForLoc(billLocation);
+			billContact = billBPartnerAndAddress.getLocationContactData().orElse(null);
 		}
 		// Case: Bill Location is NOT set, we search for default bill contact
 		else
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			final String trxName = InterfaceWrapperHelper.getTrxName(order);
-			final int bPartnerId = order.getBill_BPartner_ID();
-			billContact = bpartnerService.retrieveBillContact(ctx, bPartnerId, trxName);
+			billContact = billBPartnerAndAddress.getBpartner()
+					.getBillContactData()
+					.orElse(null);
 		}
 
 		if (billContact == null)
@@ -497,29 +497,32 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setBPartner(final org.compiere.model.I_C_Order order, final I_C_BPartner bp)
+	public void setBPartner(final I_C_Order order, final int bpartnerId)
 	{
-		// FIXME: keep in sync / merge with org.compiere.model.MOrder.setBPartner(MBPartner)
-		if (bp == null)
+		if (bpartnerId <= 0)
 		{
 			return;
 		}
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId);
+		if(bpartner == null)
+		{
+			return;
+		}
+		
+		setBPartner(order, bpartner);
+	}
 
-		order.setC_BPartner(bp);
+	public void setBPartner(final I_C_Order order, final BPartner bpartner)
+	{
+		// FIXME: keep in sync / merge with org.compiere.model.MOrder.setBPartner(MBPartner)
+		
+		order.setC_BPartner_ID(bpartner.getBPartnerId());
 
 		final boolean isSOTrx = order.isSOTrx();
 		//
 		// Defaults Payment Term
 		{
-			final int paymentTermId;
-			if (isSOTrx)
-			{
-				paymentTermId = bp.getC_PaymentTerm_ID();
-			}
-			else
-			{
-				paymentTermId = bp.getPO_PaymentTerm_ID();
-			}
+			final int paymentTermId = bpartner.getC_PaymentTerm_ID(isSOTrx);
 			if (paymentTermId > 0)
 			{
 				order.setC_PaymentTerm_ID(paymentTermId);
@@ -529,7 +532,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Default Price List
 		{
-			final int priceListId = Services.get(IBPartnerBL.class).getM_PriceList_ID(bp, isSOTrx);
+			final int priceListId = bpartner.getM_PriceList_ID(isSOTrx);
 			if (priceListId > 0)
 			{
 				order.setM_PriceList_ID(priceListId);
@@ -538,126 +541,91 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Default Delivery
-		final String deliveryRule = bp.getDeliveryRule();
-		if (deliveryRule != null)
 		{
-			order.setDeliveryRule(deliveryRule);
+			final String deliveryRule = bpartner.getDeliveryRule();
+			if (deliveryRule != null)
+			{
+				order.setDeliveryRule(deliveryRule);
+			}
 		}
 
 		//
 		// Default Delivery Via Rule
-		final String deliveryViaRule;
-		if (isSOTrx)
 		{
-			deliveryViaRule = bp.getDeliveryViaRule();
-		}
-		else
-		{
-			deliveryViaRule = bp.getPO_DeliveryViaRule();
-		}
-		if (deliveryViaRule != null)
-		{
-			order.setDeliveryViaRule(deliveryViaRule);
+			final String deliveryViaRule = bpartner.getDeliveryViaRule(isSOTrx);
+			if (deliveryViaRule != null)
+			{
+				order.setDeliveryViaRule(deliveryViaRule);
+			}
 		}
 
 		//
 		// Default Invoice/Payment Rule
-		final String invoiceRule = bp.getInvoiceRule();
-		if (invoiceRule != null)
 		{
-			order.setInvoiceRule(invoiceRule);
+			final String invoiceRule = bpartner.getBPartnerData().getInvoiceRule();
+			if (invoiceRule != null)
+			{
+				order.setInvoiceRule(invoiceRule);
+			}
 		}
-		final String paymentRule = bp.getPaymentRule();
-		if (paymentRule != null)
 		{
-			order.setPaymentRule(paymentRule);
+			final String paymentRule = bpartner.getBPartnerData().getPaymentRule();
+			if (paymentRule != null)
+			{
+				order.setPaymentRule(paymentRule);
+			}
 		}
 
 		//
 		// Sales Rep
-		final int salesRepId = bp.getSalesRep_ID();
-		if (salesRepId > 0)
 		{
-			order.setSalesRep_ID(salesRepId);
+			final int salesRepId = bpartner.getBPartnerData().getSalesRep_ID();
+			if (salesRepId > 0)
+			{
+				order.setSalesRep_ID(salesRepId);
+			}
 		}
 
-		setBPLocation(order, bp);
+		setShipLocation(order, bpartner);
 
 		// #1056
 		// find if the partner doesn't have a bill relation with another partner. In such a case, that partner will have priority.
 		setBillLocation(order);
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
+		//
 		// Set Contact
-		// final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(bp.getC_BPartner_ID(), false, null);
-		// if (contacts != null && contacts.size() == 1)
-		// {
-		// order.setAD_User_ID(contacts.get(0).getAD_User_ID());
-		// }
-
-		// 08812
-		// set the fit contact
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final int bpartnerId = bp.getC_BPartner_ID();
-
-		// keep the trxName null, as it was before
-		final String trxName = ITrx.TRXNAME_None;
-		final I_AD_User contact = bPartnerDAO.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
-
-		// keep the functionality as it was. Do not set null user
-		if (contact != null)
+		// NOTE: keep the functionality as it was. Do not set null user
+		final int bpContactId = bpartner.getContacts().getDefaultSalesOrPurchase(isSOTrx)
+				.map(I_AD_User::getAD_User_ID)
+				.orElse(-1);
+		if (bpContactId > 0)
 		{
-			order.setAD_User(contact);
+			order.setAD_User_ID(bpContactId);
 		}
 	}
 
 	@Override
-	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
+	public void setShipLocation(final I_C_Order order, final BPartner bpartner)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(bp);
-
-		// Set Locations
-		final List<I_C_BPartner_Location> shipLocations = new ArrayList<I_C_BPartner_Location>();
-		boolean foundLoc = false;
-		for (final I_C_BPartner_Location bpLoc : locations)
+		boolean foundShipToLocation = false;
+		final I_C_BPartner_Location shipLocation = bpartner.getBPartnerLocations().getShipToOrFirst();
+		if(shipLocation != null)
 		{
-			if (bpLoc.isShipTo() && bpLoc.isActive())
+			foundShipToLocation = shipLocation.isShipTo();
+			if(foundShipToLocation)
 			{
-				shipLocations.add(bpLoc);
+				order.setC_BPartner_Location_ID(shipLocation.getC_BPartner_Location_ID());
 			}
-
-			if (bpLoc.isShipToDefault())
+			// If not a ship to location (but first location), set it to order if not already set
+			else if (order.getC_BPartner_Location_ID() <= 0)
 			{
-				order.setC_BPartner_Location_ID(bpLoc.getC_BPartner_Location_ID());
-				foundLoc = true;
+				order.setC_BPartner_Location_ID(shipLocation.getC_BPartner_Location_ID());
 			}
 		}
-
-		// set first ship location if is not set
-		if (!foundLoc)
+		
+		if (!foundShipToLocation)
 		{
-			if (!shipLocations.isEmpty())
-			{
-				order.setC_BPartner_Location_ID(shipLocations.get(0).getC_BPartner_Location_ID());
-			}
-			else if (!locations.isEmpty())
-			{
-				// set to first
-				if (order.getC_BPartner_Location_ID() == 0)
-				{
-					order.setC_BPartner_Location_ID(locations.get(0)
-							.getC_BPartner_Location_ID());
-				}
-			}
-		}
-
-		if (!foundLoc)
-		{
-			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bpartner);
 		}
 	}
 
@@ -669,42 +637,43 @@ public class OrderBL implements IOrderBL
 	@Override
 	public boolean setBillLocation(final I_C_Order order)
 	{
-		if (order.getC_BPartner() == null)
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final BPartner bpartner = bpartnerDAO.retrieveBPartnerAgg(order.getC_BPartner_ID());
+		if (bpartner == null)
 		{
 			return false; // nothing to be done
-		}
-
+		}		
+		
+		return setBillLocation(order, bpartner);
+	}
+	
+	@Override
+	public boolean setBillLocation(final I_C_Order order, final BPartner billBPartner)
+	{
 		//
 		// First, try to set the bill location from the C_BPartner
-		setBillLocation(order, order.getC_BPartner(), null);
+		setBillLocation(order, billBPartner, -1); // defaultBillLocationId=-1
 		if (order.getBill_Location_ID() > 0)
 		{
 			return true; // found it
 		}
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
 		//
 		// Search in relation and try to find an adequate Bill Partner if the bill location could not be found
-		final I_C_BP_Relation billPartnerRelation = bPartnerDAO.retrieveBillBPartnerRelationFirstEncountered(order,
-				order.getC_BPartner(),
-				order.getC_BPartner_Location());
-
-		if (billPartnerRelation == null)
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BP_Relation billPartnerRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		if (billPartnerRelation != null)
 		{
-			return false; // didn't find it
+			final BPartner billBPartnerEffective = bpartnerDAO.retrieveBPartnerAgg(billPartnerRelation.getC_BPartnerRelation_ID());
+			final int defaultBillLocationId = billPartnerRelation.getC_BPartnerRelation_Location_ID();
+			setBillLocation(order, billBPartnerEffective, defaultBillLocationId);
+			return true; // found it
 		}
-
-		final I_C_BPartner partnerToUse = InterfaceWrapperHelper.create(billPartnerRelation.getC_BPartnerRelation(), I_C_BPartner.class);
-		final I_C_BPartner_Location defaultLocation = InterfaceWrapperHelper.create(billPartnerRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
-		setBillLocation(order, partnerToUse, defaultLocation);
-		return true; // found it
+		
+		return false; // could not be set
 	}
 
-	private boolean setBillLocation(
-			final org.compiere.model.I_C_Order order,
-			final org.compiere.model.I_C_BPartner billBPartner,
-			final org.compiere.model.I_C_BPartner_Location defaultBillLocation)
+	private boolean setBillLocation(final I_C_Order order, final BPartner billBPartner, final int defaultBillLocationId)
 	{
 		if (billBPartner == null)
 		{
@@ -714,60 +683,30 @@ public class OrderBL implements IOrderBL
 		int billLocationIdToUse = 0;
 		boolean foundLoc = false;
 
-		if (defaultBillLocation != null && defaultBillLocation.getC_BPartner_Location_ID() > 0)
+		if (defaultBillLocationId > 0)
 		{
-			billLocationIdToUse = defaultBillLocation.getC_BPartner_Location_ID();
+			billLocationIdToUse = defaultBillLocationId;
 			foundLoc = true;
 		}
 
 		if (!foundLoc)
 		{
-			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner);
-
-			// Set Locations
-			final List<I_C_BPartner_Location> invLocations = new ArrayList<>();
-			for (final I_C_BPartner_Location bpLoc : locations)
+			final I_C_BPartner_Location billLocation = billBPartner.getBPartnerLocations().getBillToOrFirstOrNull();
+			if (billLocation != null)
 			{
-				if (foundLoc)
+				foundLoc = billLocation.isBillTo();
+				if(foundLoc)
 				{
-					break;
+					billLocationIdToUse = billLocation.getC_BPartner_Location_ID();
 				}
-
-				if (bpLoc.isBillToDefault())
+				else if (order.getBill_Location_ID() <= 0)
 				{
-					billLocationIdToUse = bpLoc.getC_BPartner_Location_ID();
-					foundLoc = true;
-				}
-
-				if (bpLoc.isBillTo())
-				{
-					invLocations.add(bpLoc);
-				}
-			}
-
-			// set first invoice location if is not set
-			if (!foundLoc)
-			{
-				if (!invLocations.isEmpty())
-				{
-					final I_C_BPartner_Location firstInvLocation = invLocations.get(0);
-
-					billLocationIdToUse = firstInvLocation.getC_BPartner_Location_ID();
-				}
-				else if (!locations.isEmpty())
-				{
-					// set to first
-					if (order.getBill_Location_ID() == 0)
-					{
-						final I_C_BPartner_Location firstRetrievedLocation = locations.get(0);
-						billLocationIdToUse = firstRetrievedLocation.getC_BPartner_Location_ID();
-					}
+					billLocationIdToUse = billLocation.getC_BPartner_Location_ID();
 				}
 			}
 		}
 
-		order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
+		order.setBill_BPartner_ID(billBPartner.getBPartnerId());
 		order.setBill_Location_ID(billLocationIdToUse);
 
 		if (billLocationIdToUse > 0)

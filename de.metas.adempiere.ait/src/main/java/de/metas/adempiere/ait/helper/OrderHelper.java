@@ -477,7 +477,6 @@ public class OrderHelper
 	private void configureOrder()
 	{
 		final Properties ctx = helper.getCtx();
-		final String trxName = helper.getTrxName();
 
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(ctx, getCurrencyCode());
 		final I_M_PricingSystem ps = helper.getM_PricingSystem(pricingSystemValue);
@@ -548,7 +547,7 @@ public class OrderHelper
 			order.setDeliveryRule(deliveryRule.toString());
 		}
 		// Shipper:
-		final I_M_Shipper shipper = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), trxName), I_M_Shipper.class);
+		final I_M_Shipper shipper = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID()), I_M_Shipper.class);
 		if (shipper != null)
 		{
 			order.setM_Shipper_ID(shipper.getM_Shipper_ID());

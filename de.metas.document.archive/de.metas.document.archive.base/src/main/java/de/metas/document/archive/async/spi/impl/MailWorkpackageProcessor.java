@@ -38,7 +38,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
@@ -47,7 +46,8 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -69,7 +69,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
@@ -144,10 +144,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
-		Check.assumeNotNull(partner, "partner not null for {}", log);
+		final BPartner bpartner = bpartnerDAO.retrieveBPartnerAgg(log.getC_BPartner_ID());
+		Check.assumeNotNull(bpartner, "partner not null for {}", log);
 
-		final I_AD_Client client = InterfaceWrapperHelper.create(ctx, partner.getAD_Client_ID(), I_AD_Client.class, trxName);
+		final I_AD_Client client = bpartner.getBPartnerData().getAD_Client();
 
 		final String mailCustomType = null;
 
@@ -184,7 +184,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		// fallback to old logic
 		if (userTo == null)
 		{
-			userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
+			userTo = bpartner.getBillContactData().orElse(null);
 			Check.assumeNotNull(userTo, "userTo not null for {}", log);
 		}
 

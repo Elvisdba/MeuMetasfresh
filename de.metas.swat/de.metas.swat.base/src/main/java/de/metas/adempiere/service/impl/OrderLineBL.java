@@ -264,7 +264,7 @@ public class OrderLineBL implements IOrderLineBL
 				return;
 			}
 
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, null);
+			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID);
 			if (shipper == null)
 			{
 				// task 07034: nothing to do

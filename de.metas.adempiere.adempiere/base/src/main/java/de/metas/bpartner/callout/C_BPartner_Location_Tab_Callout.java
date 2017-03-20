@@ -29,6 +29,7 @@ import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 
+import de.metas.bpartner.BPartnerLocations;
 import de.metas.bpartner.IBPartnerDAO;
 
 // FIXME: i think we shall delete this callout because the only place where it's used is in Cockpit->Addressen which is actually no longer used.
@@ -37,37 +38,39 @@ public class C_BPartner_Location_Tab_Callout extends TabCalloutAdapter
 	@Override
 	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner_Location address = calloutRecord.getModel(I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpLocation = calloutRecord.getModel(I_C_BPartner_Location.class);
+		
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final BPartnerLocations bpLocations = bpartnerDAO.retrieveLocations(bpLocation.getC_BPartner_ID());
 
-		if (!bPartnerPA.existsDefaultAddressInTable(address, null, I_C_BPartner_Location.COLUMNNAME_IsShipToDefault))
+		if (!bpLocations.hasShipToDefault())
 		{
-			address.setIsShipTo(true);
-			address.setIsShipToDefault(true);
+			bpLocation.setIsShipTo(true);
+			bpLocation.setIsShipToDefault(true);
 		}
 		else
 		{
-			address.setIsShipTo(false);
-			address.setIsShipToDefault(false);
+			bpLocation.setIsShipTo(false);
+			bpLocation.setIsShipToDefault(false);
 		}
 
-		if (!bPartnerPA.existsDefaultAddressInTable(address, null, I_C_BPartner_Location.COLUMNNAME_IsBillToDefault))
+		if (!bpLocations.hasBillToDefault())
 		{
-			address.setIsBillTo(true);
-			address.setIsBillToDefault(true);
+			bpLocation.setIsBillTo(true);
+			bpLocation.setIsBillToDefault(true);
 		}
 		else
 		{
-			address.setIsBillTo(false);
-			address.setIsBillToDefault(false);
+			bpLocation.setIsBillTo(false);
+			bpLocation.setIsBillToDefault(false);
 		}
-		if (!bPartnerPA.existsDefaultAddressInTable(address, null, I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation))
+		if (!bpLocations.hasHandOver())
 		{
-			address.setIsHandOverLocation(true);
+			bpLocation.setIsHandOverLocation(true);
 		}
 		else
 		{
-			address.setIsHandOverLocation(false);
+			bpLocation.setIsHandOverLocation(false);
 		}
 		// TODO: needs to be moved into de.metas.contracts project
 		// if (!bPartnerPA.existsDefaultAddressInTable(address, null, I_C_BPartner_Location.COLUMNNAME_IsSubscriptionToDefault))

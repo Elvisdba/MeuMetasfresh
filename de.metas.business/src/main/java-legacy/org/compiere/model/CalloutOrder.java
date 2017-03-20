@@ -36,7 +36,9 @@ import org.compiere.util.Env;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -261,27 +263,27 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-
 		if (order == null)
 		{
 			return NO_ERROR; // nothing to do
 		}
 
-		if (order.getC_BPartner() == null)
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(order.getC_BPartner_ID());
+		if (bpartner == null)
 		{
 			return NO_ERROR; // nothing to do
 		}
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-		if (null == order.getC_BPartner_Location())
+		if(order.getC_BPartner_Location_ID() <= 0)
 		{
-			orderBL.setBPLocation(order, order.getC_BPartner());
+			orderBL.setShipLocation(order, bpartner);
 		}
 
-		if (!orderBL.setBillLocation(order))
+		if (!orderBL.setBillLocation(order, bpartner))
 		{
-			throw new BPartnerNoBillToAddressException(order.getC_BPartner());
+			throw new BPartnerNoBillToAddressException(bpartner.getBPartnerData());
 		}
 
 		return NO_ERROR;

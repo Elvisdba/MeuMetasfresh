@@ -20,6 +20,7 @@ import org.compiere.util.Env;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
 import de.metas.bpartner.IBPartnerStatsDAO;
+import de.metas.bpartner.model.BPartner;
 
 /*
  * #%L
@@ -45,6 +46,12 @@ import de.metas.bpartner.IBPartnerStatsDAO;
 
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
+	@Override
+	public IBPartnerStats retrieveBPartnerStats(final BPartner partner)
+	{
+		return retrieveBPartnerStats(partner.getBPartnerData());
+	}
+	
 	@Override
 	public IBPartnerStats retrieveBPartnerStats(final I_C_BPartner partner)
 	{
@@ -78,9 +85,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		stat.setC_BPartner(partner);
 		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
-		stat.setActualLifeTimeValue(Env.ZERO);
-		stat.setSO_CreditUsed(Env.ZERO);
-		stat.setTotalOpenBalance(Env.ZERO);
+		stat.setActualLifeTimeValue(BigDecimal.ZERO);
+		stat.setSO_CreditUsed(BigDecimal.ZERO);
+		stat.setTotalOpenBalance(BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.save(stat);
 
@@ -248,7 +255,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
-				|| Env.ZERO.compareTo(creditLimit) == 0)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 			return;
 
 		// Above Credit Limit

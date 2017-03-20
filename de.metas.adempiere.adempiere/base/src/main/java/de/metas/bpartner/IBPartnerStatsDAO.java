@@ -6,6 +6,8 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
+import de.metas.bpartner.model.BPartner;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,6 +42,8 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @return the {@link IBPartnerStats} object
 	 */
 	IBPartnerStats retrieveBPartnerStats(I_C_BPartner partner);
+
+	IBPartnerStats retrieveBPartnerStats(BPartner partner);
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql

@@ -330,7 +330,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		//	Contact - Load values
 		final int bpLocationId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_BPartner_Location_ID");
 		m_pLocation = Services.get(IBPartnerDAO.class)
-				.retrieveBPartnerLocations(m_partner)
+				.retrieveLocations(m_partner)
 				.stream()
 				.filter(bpl -> bpl.getC_BPartner_Location_ID() == bpLocationId)
 				.findFirst()

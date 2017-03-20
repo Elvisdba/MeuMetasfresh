@@ -18,18 +18,14 @@ package org.compiere.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.bpartner.IBPartnerBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -141,48 +137,6 @@ public class MWarehousePrice extends X_RV_WarehousePrice
 		MWarehousePrice[] retValue = new MWarehousePrice[list.size()];
 		list.toArray(retValue);
 		return retValue;
-	}	//	find
-
-	/**
-	 * 	Find Products in Warehouse with Price for customer
-	 * 	@param bPartner business partner
-	 *	@param IsSOTrx if true SO
-	 *	@param valid the date the price must be valid
-	 *	@param M_Warehouse_ID mandatory warehouse
-	 *	@param Value optional value
-	 *	@param Name optional name
-	 *	@param UPC optional upc
-	 *	@param SKU optional ski
-	 *	@param trxName transaction
-	 *	@return array of product prices and warehouse availability or null
-	 */
-	public static MWarehousePrice[] find (I_C_BPartner bPartner,
-		final boolean IsSOTrx, Timestamp valid, int M_Warehouse_ID,
-		String Value, String Name, String UPC, String SKU, String trxName)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
-		
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final int M_PriceList_ID = bpartnerBL.getM_PriceList_ID(bPartner, IsSOTrx);
-		MPriceList pl = null;
-		if (M_PriceList_ID == 0)
-			pl = MPriceList.getDefault(ctx, IsSOTrx);
-		else
-			pl = MPriceList.get(ctx, M_PriceList_ID, trxName);
-		if (pl == null)
-		{
-			s_log.error("No PriceList found");
-			return null;
-		}
-		MPriceListVersion plv = pl.getPriceListVersion (valid);
-		if (plv == null)
-		{
-			s_log.error("No PriceListVersion found for M_PriceList_ID=" + pl.getM_PriceList_ID());
-			return null;
-		}
-		//
-		return find (ctx, plv.getM_PriceList_Version_ID(), M_Warehouse_ID,
-			Value, Name, UPC, SKU, trxName);
 	}	//	find
 
 	/**

@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
 import org.compiere.model.MMovement;
@@ -462,8 +461,7 @@ public class ReplenishReport extends JavaProcess
 				order.setIsSOTrx(false);
 				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
 
-				final I_C_BPartner bp = replenish.getC_BPartner();
-				Services.get(IOrderBL.class).setBPartner(order, bp);
+				Services.get(IOrderBL.class).setBPartner(order, replenish.getC_BPartner_ID());
 
 				order.setSalesRep_ID(getAD_User_ID());
 				order.setDescription(Msg.getMsg(getCtx(), "Replenishment"));

@@ -72,7 +72,7 @@ public final class PurchaseCandidate
 		return model.getC_BPartner();
 	}
 
-	private int getC_BPartner_ID()
+	public int getC_BPartner_ID()
 	{
 		return model.getC_BPartner_ID();
 	}

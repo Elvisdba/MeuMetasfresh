@@ -32,8 +32,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import de.metas.bpartner.model.BPartnerAndLocationAndContact;
+
 public interface IBPartnerOrgBL extends ISingletonService
 {
+	BPartnerAndLocationAndContact retrieveLinkedBPartnerAndAddressAndUserInCharge(I_AD_Org org);
+
 	I_C_BPartner retrieveLinkedBPartner(I_AD_Org org);
 
 	/**
@@ -66,5 +70,4 @@ public interface IBPartnerOrgBL extends ISingletonService
 	 * @return
 	 */
 	I_AD_User retrieveUserInChargeOrNull(Properties ctx, int orgId, String trxName);
-
 }

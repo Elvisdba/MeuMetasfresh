@@ -50,7 +50,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 
@@ -1498,7 +1498,7 @@ public final class ProcessInfo implements Serializable
 					final int bpartnerId = parameters.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 					if (bpartnerId > 0)
 					{
-						final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+						final Language lang = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId).getLanguage();
 						if (lang != null)
 						{
 							return lang;
@@ -1546,7 +1546,7 @@ public final class ProcessInfo implements Serializable
 				final int bpartnerId = Env.getContextAsInt(ctx, windowNo, "C_BPartner_ID");
 				if (bpartnerId > 0)
 				{
-					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+					final Language lang = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId).getLanguage();
 					if (lang != null)
 					{
 						return lang;
@@ -1589,7 +1589,7 @@ public final class ProcessInfo implements Serializable
 				final Integer bpartnerId = InterfaceWrapperHelper.getValueOrNull(record, "C_BPartner_ID");
 				if (bpartnerId != null && bpartnerId > 0)
 				{
-					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+					final Language lang = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId).getLanguage();
 					if (lang != null)
 					{
 						return lang;

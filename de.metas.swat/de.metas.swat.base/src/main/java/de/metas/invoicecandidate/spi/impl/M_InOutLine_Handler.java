@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,7 +42,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Order;
@@ -52,8 +50,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 
-import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOut;
@@ -428,44 +426,47 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		Check.assumeNotNull(fromInOutLine, "fromInOutLine not null");
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final I_M_InOut inOut = InterfaceWrapperHelper.create(fromInOutLine.getM_InOut(), I_M_InOut.class);
 
-		final I_C_BPartner billBPartner;
-		final I_C_BPartner_Location billBPLocation;
-		final I_AD_User billBPContact;
+		final BPartner billBPartner;
+		final int billBPLocationId;
+		final int billBPContactId;
 		// The bill related info cannot be changed in the schedule
 		// Therefore, it's safe to set them in the invoice candidate directly from the order (if we have it)
 		final I_C_Order inoutOrder = inOut.getC_Order();
 		if (inoutOrder != null && inoutOrder.getC_Order_ID() > 0)
 		{
-			billBPartner = inoutOrder.getBill_BPartner();
-			billBPLocation = inoutOrder.getBill_Location();
-			billBPContact = inoutOrder.getBill_User();
+			billBPartner = bpartnerDAO.retrieveBPartnerAgg(inoutOrder.getBill_BPartner_ID());
+			billBPLocationId = inoutOrder.getBill_Location_ID();
+			billBPContactId = inoutOrder.getBill_User_ID();
 		}
 		// Otherwise, take it from the inout, but don't use the inout's location and user. They might not be "billto" after all.
 		else
 		{
 			final boolean alsoTryBilltoRelation = true;
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+			
+			final BPartner shipBPartner = bpartnerDAO.retrieveBPartnerAgg(inOut.getC_BPartner_ID());
+			final I_C_BPartner_Location billBPLocation = shipBPartner.getBPartnerLocations().getBillTo(alsoTryBilltoRelation);
 
-			billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
-			billBPartner = billBPLocation.getC_BPartner(); // task 08585: might be different from inOut.getC_BPartner(), because it might be the billTo-relation's BPartner.
-			billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			billBPartner = bpartnerDAO.retrieveBPartnerAgg(billBPLocation.getC_BPartner_ID()); // task 08585: might be different from inOut.getC_BPartner(), because it might be the billTo-relation's BPartner.
+			billBPLocationId = billBPLocation.getC_BPartner_Location_ID();
+			billBPContactId = billBPartner.getBillContactData()
+					.map(I_AD_User::getAD_User_ID)
+					.orElse(-1);
 		}
 
 		Check.assumeNotNull(billBPartner, "billBPartner not null");
-		Check.assumeNotNull(billBPLocation, "billBPLocation not null");
+		Check.assume(billBPLocationId > 0, "billBPLocation not null");
 		// Bill_User_ID isn't mandatory in C_Order, and isn't considered a must in OLHandler either
 		// Check.assumeNotNull(billBPContact, "billBPContact not null");
 
 		//
 		// Set BPartner / Location / Contact
-		ic.setBill_BPartner(billBPartner);
-		ic.setBill_Location(billBPLocation);
-		ic.setBill_User(billBPContact);
+		ic.setBill_BPartner_ID(billBPartner.getBPartnerId());
+		ic.setBill_Location_ID(billBPLocationId);
+		ic.setBill_User_ID(billBPContactId);
 	}
 
 	@Override

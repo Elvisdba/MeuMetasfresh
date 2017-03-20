@@ -29,7 +29,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -72,7 +73,7 @@ public class DefaultModelArchiver
 	private static final Logger logger = LogManager.getLogger(DefaultModelArchiver.class);
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 	private final transient IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
-	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -286,7 +287,8 @@ public class DefaultModelArchiver
 	{
 		final Object record = getRecord();
 		// 09527 get the most suitable language from the po's C_BPartner, if it exists.
-		Language language = bpartnerBL.getLanguageForModel(record);
+		final BPartner bpartner = bpartnerDAO.retrieveBPartnerAggForModel(record);
+		Language language = bpartner == null ? null : bpartner.getLanguage();
 		if (language != null)
 		{
 			logger.debug("Using {} BPartner's language: {}", record, language);

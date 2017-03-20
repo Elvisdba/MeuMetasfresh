@@ -136,7 +136,7 @@ public class OrderFastInput extends CalloutEngine
 		if (order.getC_BPartner_ID() > 0)
 		{
 			// try to set the shipperId using BPartner
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID());
 			if (shipper != null)
 			{
 				order.setM_Shipper(shipper);

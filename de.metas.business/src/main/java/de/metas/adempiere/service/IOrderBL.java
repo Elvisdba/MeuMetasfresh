@@ -14,6 +14,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.bpartner.model.BPartner;
 import de.metas.order.IOrderPA;
 
 public interface IOrderBL extends ISingletonService
@@ -159,9 +160,9 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
 	 *
-	 * @param bp business partner
+	 * @param bpartnerId
 	 */
-	void setBPartner(I_C_Order order, I_C_BPartner bp);
+	void setBPartner(I_C_Order order, int bpartnerId);
 
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner
@@ -172,13 +173,15 @@ public interface IOrderBL extends ISingletonService
 	 */
 	boolean setBillLocation(I_C_Order order);
 
+	boolean setBillLocation(I_C_Order order, BPartner billBPartner);
+
 	/**
 	 * Set C_BPartner_Location in order
 	 *
 	 * @param order
 	 * @param bp
 	 */
-	void setBPLocation(I_C_Order order, I_C_BPartner bp);
+	void setShipLocation(I_C_Order order, BPartner bpartner);
 
 	/**
 	 * Get Currency Precision
@@ -234,5 +237,4 @@ public interface IOrderBL extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
-
 }

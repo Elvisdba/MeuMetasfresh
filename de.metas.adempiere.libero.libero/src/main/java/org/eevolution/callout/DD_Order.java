@@ -8,13 +8,12 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.CalloutInOut;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_Order;
 
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 
@@ -71,16 +70,21 @@ public class DD_Order
 	@CalloutMethod(columnNames = { I_DD_Order.COLUMNNAME_C_BPartner_ID })
 	public void onC_BPartner_ID(final I_DD_Order ddOrder, final ICalloutField calloutField)
 	{
-		final I_C_BPartner bpartner = ddOrder.getC_BPartner();
-		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		final int bpartnerId = ddOrder.getC_BPartner_ID();
+		if (bpartnerId <= 0)
+		{
+			return;
+		}
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId);
+		if(bpartner == null)
 		{
 			return;
 		}
 
 		//
 		// BPartner Location (i.e. ShipTo)
-		final I_C_BPartner_Location shipToLocation = CalloutInOut.suggestShipToLocation(calloutField, bpartner);
-		ddOrder.setC_BPartner_Location(shipToLocation);
+		final int shipToLocationId = CalloutInOut.suggestShipToLocationId(calloutField, bpartner);
+		ddOrder.setC_BPartner_Location_ID(shipToLocationId);
 
 		//
 		// BPartner Contact
@@ -88,13 +92,13 @@ public class DD_Order
 		if (!isSOTrx)
 		{
 			I_AD_User contact = null;
-			if (shipToLocation != null)
+			if (shipToLocationId > 0)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveUserForLoc(shipToLocation);
+				contact = bpartner.getContacts().getByLocationIdOrDefault(shipToLocationId).orElse(null);
 			}
 			if (contact == null)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveShipContact(bpartner);
+				contact = bpartner.getShipContactData().orElse(null);
 			}
 			ddOrder.setAD_User(contact);
 		}

@@ -28,7 +28,6 @@ import static org.compiere.model.I_C_Order.Table_Name;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -39,14 +38,13 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
-
-import de.metas.bpartner.IBPartnerBL;
-import de.metas.bpartner.IBPartnerDAO;
-
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MQuery;
+
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 
 public class BPartnerCockpit extends CalloutEngine
 {
@@ -55,7 +53,6 @@ public class BPartnerCockpit extends CalloutEngine
 	public static final String MSG_MISSING_SHIP_LOC = "BPartnerCockpitMissingShipLoc";
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public String createSO(final Properties ctx, final int WindowNo,
@@ -73,26 +70,26 @@ public class BPartnerCockpit extends CalloutEngine
 		{
 			return "";
 		}
+		
+		final BPartner bpartner = bPartnerDAO.retrieveBPartnerAgg(ctx, bPartnerId);
 
-		final I_C_BPartner_Location shipLoc = bPartnerDAO.retrieveShipToLocation(ctx, bPartnerId, ITrx.TRXNAME_None);
+		final I_C_BPartner_Location shipLoc = bpartner.getBPartnerLocations().getShipToOrFirst();
 		if (shipLoc == null)
 		{
 			ADialog.error(WindowNo, null, MSG_MISSING_SHIP_LOC);
 			return msgBL.getMsg(ctx, MSG_MISSING_SHIP_LOC);
 		}
 
-		final I_C_BPartner_Location billLoc = bPartnerDAO.retrieveBillToLocation(ctx, bPartnerId, 
-				false, // alsoTryBParnterRelation. Calling with 'false' to preserve the old/default behavior 
-				ITrx.TRXNAME_None);
+		final I_C_BPartner_Location billLoc = bpartner.getBPartnerLocations()
+				.getBillTo(false); // alsoTryBParnterRelation. Calling with 'false' to preserve the old/default behavior
 		if (billLoc == null)
 		{
 			ADialog.error(WindowNo, null, MSG_MISSING_BILL_LOC);
 			return msgBL.getMsg(ctx, MSG_MISSING_BILL_LOC);
 		}
 
-		final I_AD_User contact = bPartnerBL.retrieveShipContact(ctx, bPartnerId, ITrx.TRXNAME_None);
-
-		final I_AD_User billContact = bPartnerBL.retrieveBillContact(ctx, bPartnerId, ITrx.TRXNAME_None);
+		final I_AD_User contact = bpartner.getShipContactData().orElse(null);
+		final I_AD_User billContact = bpartner.getBillContactData().orElse(null);
 
 		openSOWindow(bPartnerId, getIDOrNull(shipLoc), getIDOrNull(billLoc), getIDOrNull(contact), getIDOrNull(billContact));
 

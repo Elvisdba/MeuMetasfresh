@@ -34,12 +34,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.SqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
 
 import de.metas.async.api.IWorkPackageQueue;
@@ -47,7 +45,8 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -221,8 +220,8 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 
 		//
 		// Log must have a C_BPartner to send the mail to
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
-		if (partner == null)
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(log.getC_BPartner_ID());
+		if (bpartner == null)
 		{
 			collector.collectException(MSG_EMPTY_C_BPartner_ID, log.getDocumentNo());
 			return false;
@@ -230,10 +229,10 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 
 		//
 		// The partner specified in the log must have a billing contact to which we send the email to
-		final I_AD_User userTo = Services.get(IBPartnerBL.class).retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
+		final I_AD_User userTo = bpartner.getBillContactData().orElse(null);
 		if (userTo == null)
 		{
-			collector.collectException(MSG_EMPTY_AD_User_To_ID, partner.getName());
+			collector.collectException(MSG_EMPTY_AD_User_To_ID, bpartner.getBPartnerData().getName());
 			return false;
 		}
 

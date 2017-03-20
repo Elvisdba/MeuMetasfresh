@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -296,7 +295,8 @@ import de.metas.inout.IInOutBL;
 		}
 
 		final I_C_BPartner bpartner = getC_BPartnerToUse();
-		final I_C_BPartner_Location bpLocation = bpartnerDAO.retrieveShipToLocation(getCtx(), bpartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.retrieveLocations(getCtx(), bpartner.getC_BPartner_ID())
+				.getShipToOrFirst();
 		Check.assumeNotNull(bpLocation, "bpLocation not null");
 		return bpLocation.getC_BPartner_Location_ID();
 	}

@@ -15,19 +15,19 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
 
 import de.metas.bpartner.IBPartnerDAO;
 
@@ -42,17 +42,11 @@ public class AD_User_Tab_Callout extends TabCalloutAdapter
 	{
 		final I_AD_User user = calloutRecord.getModel(I_AD_User.class);
 
-		final IBPartnerDAO partnerPA = Services.get(IBPartnerDAO.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final boolean alreadyHasDefaultContact = bpartnerDAO.retrieveBPartnerAgg(Env.getCtx(), user.getAD_User_ID())
+				.getContacts()
+				.hasDefault();
 
-		// first row: the IsDefaultContact flag must be set on true
-		if (!partnerPA.existsDefaultContactInTable(user, null))
-		{
-			user.setIsDefaultContact(true);
-		}
-		// any other row: the IsDefaultContact flag must be set on false
-		else
-		{
-			user.setIsDefaultContact(false);
-		}
+		user.setIsDefaultContact(!alreadyHasDefaultContact);
 	}
 }

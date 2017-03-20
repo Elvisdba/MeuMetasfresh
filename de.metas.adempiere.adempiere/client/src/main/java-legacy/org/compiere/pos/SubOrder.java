@@ -476,7 +476,7 @@ public class SubOrder extends PosSubPanel
 		Vector<KeyNamePair> locationVector = new Vector<KeyNamePair>();
 		if (m_bpartner != null)
 		{
-			for (final I_C_BPartner_Location bpl : Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(m_bpartner))
+			for (final I_C_BPartner_Location bpl : Services.get(IBPartnerDAO.class).retrieveLocations(m_bpartner))
 				locationVector.add(new KeyNamePair(bpl.getC_BPartner_Location_ID(), bpl.getName()));
 		}
 		DefaultComboBoxModel locationModel = new DefaultComboBoxModel(locationVector); 

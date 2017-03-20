@@ -44,13 +44,15 @@ import org.compiere.util.Msg;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.BPartnerContacts;
+import de.metas.bpartner.BPartnerLocations;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
 import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.model.BPartner;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -491,93 +493,107 @@ public class MOrder extends X_C_Order implements DocAction
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(I_C_BPartner bp)
+	public void setBPartner(final I_C_BPartner bp0)
 	{
 		// FIXME: keep in sync / merge with de.metas.adempiere.service.impl.OrderBL.setBPartner(I_C_Order, I_C_BPartner)
-
-		if (bp == null)
+		
+		if (bp0 == null)
+		{
 			return;
+		}
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bp0.getC_BPartner_ID());
+		if(bpartner == null)
+		{
+			return;
+		}
 
-		setC_BPartner(bp);
+		setC_BPartner_ID(bpartner.getBPartnerId());
+		
 		// Defaults Payment Term
 		{
-			final int paymentTermId;
-			if (isSOTrx())
-				paymentTermId = bp.getC_PaymentTerm_ID();
-			else
-				paymentTermId = bp.getPO_PaymentTerm_ID();
-			if (paymentTermId != 0)
+			final int paymentTermId = bpartner.getC_PaymentTerm_ID(isSOTrx());
+			if (paymentTermId > 0)
+			{
 				setC_PaymentTerm_ID(paymentTermId);
+			}
 		}
 		// Default Price List
 		{
-			final int priceListId = Services.get(IBPartnerBL.class).getM_PriceList_ID(bp, isSOTrx());
+			final int priceListId = bpartner.getM_PriceList_ID(isSOTrx());
 			if (priceListId > 0)
 			{
 				setM_PriceList_ID(priceListId);
 			}
 		}
 		// Default Delivery/Via Rule
-		String ss = bp.getDeliveryRule();
-		if (ss != null)
-			setDeliveryRule(ss);
-		ss = bp.getDeliveryViaRule();
-		if (ss != null)
-			setDeliveryViaRule(ss);
+		{
+			final String deliveryRule = bpartner.getDeliveryRule();
+			if (deliveryRule != null)
+			{
+				setDeliveryRule(deliveryRule);
+			}
+		}
+		{
+			final String deliveryViaRule = bpartner.getDeliveryViaRule(isSOTrx());
+			if (deliveryViaRule != null)
+			{
+				setDeliveryViaRule(deliveryViaRule);
+			}
+		}
 		// Default Invoice/Payment Rule
-		ss = bp.getInvoiceRule();
-		if (ss != null)
-			setInvoiceRule(ss);
-		ss = bp.getPaymentRule();
-		if (ss != null)
-			setPaymentRule(ss);
+		{
+			final String invoiceRule = bpartner.getInvoiceRule();
+			if (invoiceRule != null)
+			{
+				setInvoiceRule(invoiceRule);
+			}
+		}
+		{
+			final String paymentRule = bpartner.getPaymentRule();
+			if (paymentRule != null)
+			{
+				setPaymentRule(paymentRule);
+			}
+		}
 		// Sales Rep
-		final int salesRepId = bp.getSalesRep_ID();
-		if (salesRepId > 0)
-			setSalesRep_ID(salesRepId);
+		{
+			final int salesRepId = bpartner.getSalesRep_ID();
+			if (salesRepId > 0)
+			{
+				setSalesRep_ID(salesRepId);
+			}
+		}
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
+		//
 		// Set Locations
-		final List<I_C_BPartner_Location> locs = InterfaceWrapperHelper.createList(
-				bPartnerDAO.retrieveBPartnerLocations(bp),
-				I_C_BPartner_Location.class);
-
-		for (final I_C_BPartner_Location loc : locs)
+		final BPartnerLocations bpLocations = bpartner.getBPartnerLocations();
+		final I_C_BPartner_Location shipLocation = bpLocations.getShipToOrFirst();
+		if(shipLocation != null)
 		{
-			if (loc.isShipTo())
-			{
-				super.setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID());
-			}
-			if (loc.isBillTo())
-			{
-				setBill_Location_ID(loc.getC_BPartner_Location_ID());
-			}
+			super.setC_BPartner_Location_ID(shipLocation.getC_BPartner_Location_ID());
 		}
-		// set to first
-		if (getC_BPartner_Location_ID() == 0 && !locs.isEmpty())
+		final I_C_BPartner_Location billLocation = bpLocations.getBillToOrFirstOrNull();
+		if(billLocation != null)
 		{
-			super.setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
+			super.setBill_Location_ID(billLocation.getC_BPartner_Location_ID());
 		}
-		if (getBill_Location_ID() == 0 && !locs.isEmpty())
+		//
+		// Validate
+		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBill_Location_ID(locs.get(0).getC_BPartner_Location_ID());
+			throw new BPartnerNoShipToAddressException(bpartner.getBPartnerData());
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getBill_Location_ID() <= 0)
 		{
-			throw new BPartnerNoShipToAddressException(bp);
+			throw new BPartnerNoBillToAddressException(bpartner.getBPartnerData());
 		}
 
-		if (getBill_Location_ID() == 0)
-		{
-			throw new BPartnerNoBillToAddressException(bp);
-		}
-
+		//
 		// Set Contact
-		final List<I_AD_User> contacts = InterfaceWrapperHelper.createList(bPartnerDAO.retrieveContacts(bp), I_AD_User.class);
+		final BPartnerContacts contacts = bpartner.getContacts();
 		if (!contacts.isEmpty())
 		{
-			setAD_User_ID(contacts.get(0).getAD_User_ID());
+			setAD_User_ID(contacts.first().getAD_User_ID());
 		}
 	}	// setBPartner
 

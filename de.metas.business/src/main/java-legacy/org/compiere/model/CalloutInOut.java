@@ -30,10 +30,10 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.product.IProductBL;
@@ -222,31 +222,36 @@ public class CalloutInOut extends CalloutEngine
 	public String bpartner(final ICalloutField calloutField)
 	{
 		final I_M_InOut inout = calloutField.getModel(I_M_InOut.class);
-		final I_C_BPartner bpartner = inout.getC_BPartner();
-		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		final int bpartnerId = inout.getC_BPartner_ID();
+		if (bpartnerId <= 0)
+		{
+			return NO_ERROR;
+		}
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId);
+		if(bpartner == null)
 		{
 			return NO_ERROR;
 		}
 
 		final boolean isSOTrx = inout.isSOTrx();
-
+		
 		//
 		// BPartner Location (i.e. ShipTo)
-		final I_C_BPartner_Location shipToLocation = suggestShipToLocation(calloutField, bpartner);
-		inout.setC_BPartner_Location(shipToLocation);
+		final int shipToLocationId = suggestShipToLocationId(calloutField, bpartner);
+		inout.setC_BPartner_Location_ID(shipToLocationId);
 
 		//
 		// BPartner Contact
 		if (!isSOTrx)
 		{
 			I_AD_User contact = null;
-			if (shipToLocation != null)
+			if (shipToLocationId > 0)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveUserForLoc(shipToLocation);
+				contact = bpartner.getContacts().getByLocationIdOrDefault(shipToLocationId).orElse(null);
 			}
 			if (contact == null)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveShipContact(bpartner);
+				contact = bpartner.getShipContactData().orElse(null);
 			}
 			inout.setAD_User(contact);
 		}
@@ -265,19 +270,20 @@ public class CalloutInOut extends CalloutEngine
 		return NO_ERROR;
 	} // bpartner
 
-	public static I_C_BPartner_Location suggestShipToLocation(final ICalloutField calloutField, final I_C_BPartner bpartner)
+	public static int suggestShipToLocationId(final ICalloutField calloutField, final BPartner bpartner)
 	{
 		final int infoWindow_bpartnerId = calloutField.getTabInfoContextAsInt(CTXNAME_C_BPartner_ID);
 		int infoWindow_bpartnerLocationId = -1;
-		if (bpartner.getC_BPartner_ID() == infoWindow_bpartnerId)
+		if (bpartner.getBPartnerId() == infoWindow_bpartnerId)
 		{
 			infoWindow_bpartnerLocationId = calloutField.getTabInfoContextAsInt(CTXNAME_C_BPartner_Location_ID);
 		}
 
-		final List<I_C_BPartner_Location> shipToLocations = Services.get(IBPartnerDAO.class).retrieveBPartnerShipToLocations(bpartner);
+		final List<I_C_BPartner_Location> shipToLocations = bpartner.getBPartnerLocations().getShipToLocations();
+		
 		if (shipToLocations.isEmpty())
 		{
-			return null;
+			return -1;
 		}
 
 		if (infoWindow_bpartnerLocationId > 0)
@@ -286,13 +292,13 @@ public class CalloutInOut extends CalloutEngine
 			{
 				if (shipToLocation.getC_BPartner_Location_ID() == infoWindow_bpartnerLocationId)
 				{
-					return shipToLocation;
+					return infoWindow_bpartnerLocationId;
 				}
 			}
 		}
 
 		final I_C_BPartner_Location shipToLocation = shipToLocations.get(0);
-		return shipToLocation;
+		return shipToLocation.getC_BPartner_Location_ID();
 	}
 
 	/**

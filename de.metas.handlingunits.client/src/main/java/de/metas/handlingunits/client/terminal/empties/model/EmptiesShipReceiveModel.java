@@ -487,7 +487,8 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		}
 
 		final I_C_BPartner bpartner = getC_BPartner();
-		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveBPartnerShipToLocations(bpartner);
+		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveLocations(bpartner)
+				.getShipToLocations();
 		_bpLocationKeyLayout.createAndSetKeysFromBPartnerLocations(shipToLocations);
 
 		// in case the location was already taken from the order / receipt schedule

@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
@@ -234,7 +234,7 @@ public final class JRClient
 			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 			if (bPartnerID > 0)
 			{
-				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), bPartnerID);
+				lang = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bPartnerID).getLanguage();
 				return lang;
 			}
 		}

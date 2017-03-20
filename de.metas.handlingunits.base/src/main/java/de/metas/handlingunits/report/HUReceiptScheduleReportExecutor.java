@@ -13,7 +13,7 @@ import org.compiere.util.Language;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.ProcessInfo;
 
@@ -112,7 +112,7 @@ public class HUReceiptScheduleReportExecutor
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		final int orderLineId = orderLine.getC_OrderLine_ID();
 		final I_C_Order order = orderLine.getC_Order();
-		final Language bpartnerLaguage = Services.get(IBPartnerBL.class).getLanguage(ctx, order.getC_BPartner_ID());
+		final Language bpartnerLaguage = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(order.getC_BPartner_ID()).getLanguage();
 
 		//
 		// Create ProcessInfo

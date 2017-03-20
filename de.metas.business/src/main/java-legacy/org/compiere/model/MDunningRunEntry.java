@@ -26,6 +26,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerLocations;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsDAO;
@@ -114,17 +115,18 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	{
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 		
-		final List<I_C_BPartner_Location> locations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp);
+		final BPartnerLocations locations = Services.get(IBPartnerDAO.class).retrieveLocations(bp);
 		// Location
 		if (locations.size() == 1)
-			setC_BPartner_Location_ID(locations.get(0).getC_BPartner_Location_ID());
+		{
+			setC_BPartner_Location_ID(locations.first().getC_BPartner_Location_ID());
+		}
 		else
 		{
 			I_C_BPartner_Location firstActive = null;
 			I_C_BPartner_Location firstBillTo = null;
-			for (int i = 0; i < locations.size(); i++)
+			for (final I_C_BPartner_Location location : locations)
 			{
-				final I_C_BPartner_Location location = locations.get(i);
 				if (!location.isActive())
 				{
 					continue;

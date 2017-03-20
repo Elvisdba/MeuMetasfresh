@@ -25,37 +25,53 @@ package de.metas.bpartner;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Env;
 
 import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
+import de.metas.bpartner.model.BPartner;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	BPartner retrieveBPartnerAgg(Properties ctx, int bpartnerId);
+
+	/** Extracts BPartner from given dynamic {@link IBPartnerAware} model */
+	BPartner retrieveBPartnerAggForModel(Object model);
+
+	default BPartner retrieveBPartnerAgg(final int bpartnerId)
+	{
+		return retrieveBPartnerAgg(Env.getCtx(), bpartnerId);
+	}
+
+
+	/** Saves BPartner aggregate */
+	void save(BPartner bpartner);
+
 	/**
 	 * Retrieves BPartner if it's AD_Client_ID is context's AD_Client_ID.
-	 * 
+	 *
 	 * @param ctx
 	 * @param bpartnerId
 	 * @return bpartner or null
 	 */
 	I_C_BPartner retrieveBPartner(final Properties ctx, final int bpartnerId);
-	
+
 	/**
 	 * Retrieve default BPartner to be used on "anonymous" cash transactions
-	 * 
+	 *
 	 * @param ctx
 	 * @param adClientId
 	 * @return bpartner or null
 	 */
 	I_C_BPartner retrieveBPartnerForCacheTrx(Properties ctx, int adClientId);
-	
+
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
@@ -69,9 +85,20 @@ public interface IBPartnerDAO extends ISingletonService
 	// TODO: move it to de.metas.adempiere.service.IBPartnerOrgBL
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
-	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
+	BPartnerLocations retrieveLocations(I_C_BPartner bpartner);
 
-	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
+	BPartnerLocations retrieveLocations(Properties ctx, int bpartnerId, String trxName);
+
+	default BPartnerLocations retrieveLocations(final Properties ctx, final int bpartnerId)
+	{
+		return retrieveLocations(ctx, bpartnerId, ITrx.TRXNAME_None);
+	}
+	
+	default BPartnerLocations retrieveLocations(final int bpartnerId)
+	{
+		return retrieveLocations(Env.getCtx(), bpartnerId, ITrx.TRXNAME_None);
+	}
+
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending
@@ -118,24 +145,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_M_DiscountSchema retrieveDiscountSchemaOrNull(I_C_BPartner partner, boolean soTrx);
 
-	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
+	I_M_Shipper retrieveShipper(int bPartnerId);
 
 	I_M_Shipper retrieveDefaultShipper();
-
-	/**
-	 * @param address
-	 * @param po
-	 * @param columnName
-	 * @return true if an address with the flag columnName on true already exists in the table, false otherwise.
-	 */
-	boolean existsDefaultAddressInTable(I_C_BPartner_Location address, String trxName, String columnName);
-
-	/**
-	 * @param user
-	 * @param trxName
-	 * @return true if a contact with the flag defaultContact on true already exists in the table, false otherwise.
-	 */
-	boolean existsDefaultContactInTable(I_AD_User user, String trxName);
 
 	/**
 	 * Search after the BPartner when the value is given
@@ -149,64 +161,17 @@ public interface IBPartnerDAO extends ISingletonService
 	<T extends I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 
 	I_AD_User retrieveDefaultContactOrNull(int bpartnerId);
-	
-	I_AD_User retrieveDefaultContactOrFirstOrNull(int bpartnerId);
 
+	I_AD_User retrieveDefaultContactOrFirstOrNull(int bpartnerId);
 
 	/**
 	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)
 	 *
-	 * @param contextProvider
-	 * @param partner
-	 * @param location
+	 * @param bpartnerId
+	 * @param bpartnerLocationId optional bpartner location ID
 	 * @return {@link I_C_BP_Relation} first encountered which is used for billing
 	 */
-	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
-
-	/**
-	 * Retrieve default/first ship to location.
-	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param trxName
-	 * @return ship to location or null
-	 */
-	I_C_BPartner_Location retrieveShipToLocation(Properties ctx, int bPartnerId, String trxName);
-	
-	/**
-	 * Retrieve default/first BillTo(if sales) or PayFrom(if purchase) location.
-	 * 
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param isSOTrx
-	 * @return
-	 */
-	I_C_BPartner_Location retrieveBillToLocation(Properties ctx, int bPartnerId, boolean isSOTrx);
-
-	/**
-	 * Retrieve all (active) ship to locations.
-	 *
-	 * NOTE: the default ship to location will be the first.
-	 *
-	 * @param bpartner
-	 * @return all bpartner's ship to locations
-	 */
-	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
-
-	/**
-	 * Retrieve default/first bill to location.
-	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *            that relation's bPartner location.
-	 * @param trxName
-	 * @return bill to location or null
-	 */
-	I_C_BPartner_Location retrieveBillToLocation(Properties ctx,
-			int bPartnerId,
-			boolean alsoTryBilltoRelation,
-			String trxName);
+	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(final int bpartnerId, final int bpartnerLocationId);
 
 	/**
 	 * Get the fit contact for the given partner and isSOTrx. In case of SOTrx, the salesContacts will have priority. Same for POTrx and PurcanseCOntacts In case of 2 entries with equal values in the
@@ -221,4 +186,6 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
 	I_C_BP_Group retrieveDefaultBPGroup(final Properties ctx);
+
+	I_C_BP_Relation retrieveBillToRelation(int bpartnerId);
 }

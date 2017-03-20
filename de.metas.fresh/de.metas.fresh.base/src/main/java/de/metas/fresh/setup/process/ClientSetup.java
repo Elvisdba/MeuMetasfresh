@@ -1,5 +1,6 @@
 package de.metas.fresh.setup.process;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -16,11 +17,8 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MPriceList;
@@ -29,11 +27,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartnerAndLocationAndContact;
 import de.metas.payment.esr.ESRConstants;
 
 /*
@@ -49,11 +47,11 @@ import de.metas.payment.esr.ESRConstants;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,9 +64,9 @@ import de.metas.payment.esr.ESRConstants;
  * <li>save everything: {@link #save()}
  * <li>when a getter is called, it will fetch the value directly from the loaded database record
  * </ul>
- * 
+ *
  * This shall be a short living object.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -87,7 +85,6 @@ class ClientSetup
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IBankingBPBankAccountDAO bankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
-	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
 
 	private static final int AD_Org_ID_Main = 1000000;
 
@@ -97,9 +94,7 @@ class ClientSetup
 	private final I_AD_ClientInfo adClientInfo;
 	private final I_AD_Org adOrg;
 	private final I_AD_OrgInfo adOrgInfo;
-	private final I_C_BPartner orgBPartner;
-	private final I_C_BPartner_Location orgBPartnerLocation;
-	private final I_AD_User orgContact;
+	private final BPartnerAndLocationAndContact orgBPartner;
 	private final I_C_BP_BankAccount orgBankAccount;
 	private final I_C_AcctSchema acctSchema;
 	private final I_M_PriceList priceList_None;
@@ -127,11 +122,9 @@ class ClientSetup
 			//
 			adOrgInfo = orgDAO.retrieveOrgInfo(getCtx(), adOrg.getAD_Org_ID(), ITrx.TRXNAME_ThreadInherited);
 			//
-			orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
-			orgBPartnerLocation = InterfaceWrapperHelper.create(partnerOrgBL.retrieveOrgBPLocation(getCtx(), adOrg.getAD_Org_ID(), ITrx.TRXNAME_ThreadInherited), I_C_BPartner_Location.class);
-			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
-			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
-			orgBankAccount = InterfaceWrapperHelper.create(bankAccountDAO.retrieveDefaultBankAccount(orgBPartner), I_C_BP_BankAccount.class);
+			orgBPartner = partnerOrgBL.retrieveLinkedBPartnerAndAddressAndUserInCharge(adOrg);
+
+			orgBankAccount = InterfaceWrapperHelper.create(bankAccountDAO.retrieveDefaultBankAccount(orgBPartner.getBPartnerData()), I_C_BP_BankAccount.class);
 			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
 			//
 			acctSchema = adClientInfo.getC_AcctSchema1();
@@ -157,24 +150,18 @@ class ClientSetup
 	private final void saveInTrx()
 	{
 		setOtherDefaults();
-		
+
 		InterfaceWrapperHelper.save(adClient, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adClientInfo, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adOrg, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adOrgInfo, ITrx.TRXNAME_ThreadInherited);
-		
-		InterfaceWrapperHelper.save(orgBPartner, ITrx.TRXNAME_ThreadInherited);
 
-		InterfaceWrapperHelper.disableReadOnlyColumnCheck(orgBPartnerLocation); // disable it because AD_Org_ID is not updateable
-		orgBPartnerLocation.setAD_Org(adOrg); // FRESH-211
-		InterfaceWrapperHelper.save(orgBPartnerLocation, ITrx.TRXNAME_ThreadInherited);
-		
-		InterfaceWrapperHelper.save(orgContact, ITrx.TRXNAME_ThreadInherited);
-		
+		bpartnerDAO.save(orgBPartner.getBpartner());
+
 		InterfaceWrapperHelper.save(orgBankAccount, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(acctSchema, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(priceList_None, ITrx.TRXNAME_ThreadInherited);
 	}
 
@@ -186,22 +173,19 @@ class ClientSetup
 
 		//
 		// AD_Org Linked BPartner:
-		{
-			orgBPartner.setIsCustomer(false);
-			orgBPartner.setIsVendor(false);
-			orgBPartner.setIsEmployee(false);
-		}
+		orgBPartner.edit(bpartnerData -> {
+			bpartnerData.setIsCustomer(false);
+			bpartnerData.setIsVendor(false);
+			bpartnerData.setIsEmployee(false);
+		});
 
 		//
 		// AD_Org Linked BPartner Location:
-		{
+		orgBPartner.editLocation(bpLocationData -> {
 			// C_BPartner_Location - EDI
-			{
-				final de.metas.edi.model.I_C_BPartner_Location ediBPartnerLocation = InterfaceWrapperHelper.create(orgBPartnerLocation, de.metas.edi.model.I_C_BPartner_Location.class);
-				ediBPartnerLocation.setGLN(null); // TODO: how to set the GLN?!?
-
-			}
-		}
+			final de.metas.edi.model.I_C_BPartner_Location ediBPartnerLocation = InterfaceWrapperHelper.create(bpLocationData, de.metas.edi.model.I_C_BPartner_Location.class);
+			ediBPartnerLocation.setGLN(null); // TODO: how to set the GLN?!?
+		});
 
 		//
 		// AD_Org Linked Bank Account:
@@ -215,12 +199,13 @@ class ClientSetup
 		//
 		// ESR
 		ESRConstants.setEnabled(getCtx(), false);
-		
+
 		// task FRESH-129
 		// Make sure the org contact is both sales and purchase contact
-		
-		orgContact.setIsSalesContact(true);
-		orgContact.setIsPurchaseContact(true);
+		orgBPartner.editContact(contactData -> {
+			contactData.setIsSalesContact(true);
+			contactData.setIsPurchaseContact(true);
+		});
 	}
 
 	private Properties getCtx()
@@ -228,32 +213,35 @@ class ClientSetup
 		return _ctx;
 	}
 
-	public ClientSetup setCompanyName(String companyName)
+	public ClientSetup setCompanyName(final String companyName)
 	{
 		if (Check.isEmpty(companyName, true))
 		{
 			return this;
 		}
 
-		companyName = companyName.trim();
+		final String companyNameNorm = companyName.trim();
 
-		adClient.setValue(companyName);
-		adClient.setName(companyName);
+		adClient.setValue(companyNameNorm);
+		adClient.setName(companyNameNorm);
 
-		adOrg.setValue(companyName);
-		adOrg.setName(companyName);
+		adOrg.setValue(companyNameNorm);
+		adOrg.setName(companyNameNorm);
 
-		orgBPartner.setValue(companyName);
-		orgBPartner.setName(companyName);
-		orgBPartner.setCompanyName(companyName);
-		orgBPartner.setIsCompany(true);
+		orgBPartner.edit(bpartnerData -> {
+			bpartnerData.setValue(companyNameNorm);
+			bpartnerData.setName(companyNameNorm);
+			bpartnerData.setCompanyName(companyNameNorm);
+			bpartnerData.setIsCompany(true);
+		});
 
 		return this;
 	}
 
 	public String getCompanyName()
 	{
-		return orgBPartner.getCompanyName();
+		return orgBPartner.getBPartnerData()
+				.getCompanyName();
 	}
 
 	public ClientSetup setC_Currency_ID(final int currencyId)
@@ -286,54 +274,33 @@ class ClientSetup
 		}
 
 		adClient.setAD_Language(adLanguage);
-		orgBPartner.setAD_Language(adLanguage); // i.e. Org Language
+
+		orgBPartner.edit(bpartnerData -> bpartnerData.setAD_Language(adLanguage)); // i.e. Org Language
 
 		return this;
 	}
 
 	public String getAD_Language()
 	{
-		return orgBPartner.getAD_Language();
+		return orgBPartner.getBPartnerData()
+				.getAD_Language();
 	}
 
 	public final I_C_Location getCompanyAddress()
 	{
-		final I_C_Location orgLocation = orgBPartnerLocation.getC_Location();
-		if (orgLocation == null || orgLocation.getC_Location_ID() <= 0)
-		{
-			return null;
-		}
-
-		//
-		// Return a copy of org location, to make sure nobody is changing it
-		// NOTE: C_Location shall be handled as a value object!
-		final I_C_Location companyAddress = copy(orgLocation);
-		return companyAddress;
+		return getCompanyAddressIfExists().orElse(null);
 	}
 
-	private final I_C_Location copy(final I_C_Location location)
+	private final Optional<I_C_Location> getCompanyAddressIfExists()
 	{
-		if (location == null)
-		{
-			return null;
-		}
-
-		return locationBL.duplicate(location);
+		return orgBPartner.getAddressByIdIfExists();
 	}
 
 	public final int getCompanyAddressLocationId()
 	{
-		final I_C_Location companyAddress = getCompanyAddress();
-		if (companyAddress == null)
-		{
-			return 0;
-		}
-		final int locationId = companyAddress.getC_Location_ID();
-		if (locationId <= 0)
-		{
-			return 0;
-		}
-		return locationId;
+		return getCompanyAddressIfExists()
+				.map(address -> address.getC_Location_ID())
+				.orElse(0);
 	}
 
 	public ClientSetup setCompanyAddress(final I_C_Location companyAddress)
@@ -343,14 +310,16 @@ class ClientSetup
 			return this;
 		}
 
-		// C_Location
-		final I_C_Location orgLocation = orgBPartnerLocation.getC_Location();
-		InterfaceWrapperHelper.copyValues(companyAddress, orgLocation);
-		InterfaceWrapperHelper.save(orgLocation);
+		orgBPartner.editLocation(bpLocationData -> {
+			// C_Location
+			final I_C_Location orgLocation = bpLocationData.getC_Location();
+			InterfaceWrapperHelper.copyValues(companyAddress, orgLocation);
+			InterfaceWrapperHelper.save(orgLocation);
 
-		// C_BPartner_Location
-		orgBPartnerLocation.setName(orgLocation.getCity()); // To be updated on save...
-		bpartnerBL.setAddress(orgBPartnerLocation); // update Address string
+			// C_BPartner_Location
+			bpLocationData.setName(orgLocation.getCity()); // To be updated on save...
+			bpartnerBL.setAddress(bpLocationData); // update Address string
+		});
 
 		return this;
 	}
@@ -379,7 +348,7 @@ class ClientSetup
 
 		adOrgInfo.setLogo_ID(companyLogo.getAD_Image_ID());
 
-		orgBPartner.setLogo_ID(companyLogo.getAD_Image_ID());
+		orgBPartner.edit(bpData -> bpData.setLogo_ID(companyLogo.getAD_Image_ID()));
 
 		return this;
 	}
@@ -397,7 +366,7 @@ class ClientSetup
 
 	public final I_AD_Image getCompanyLogo()
 	{
-		final I_AD_Image logo = orgBPartner.getLogo();
+		final I_AD_Image logo = orgBPartner.getBPartnerData().getLogo();
 		if (logo == null || logo.getAD_Image_ID() <= 0)
 		{
 			return null;
@@ -419,48 +388,48 @@ class ClientSetup
 		return logo.getAD_Image_ID();
 	}
 
-	public ClientSetup setCompanyTaxID(String companyTaxID)
+	public ClientSetup setCompanyTaxID(final String companyTaxID)
 	{
 		if (Check.isEmpty(companyTaxID, true))
 		{
 			return this;
 		}
 
-		companyTaxID = companyTaxID.trim();
-		orgBPartner.setVATaxID(companyTaxID);
+		final String companyTaxID_Norm = companyTaxID.trim();
+		orgBPartner.edit(bpData -> bpData.setVATaxID(companyTaxID_Norm));
 
 		return this;
 	}
 
 	public final String getCompanyTaxID()
 	{
-		return orgBPartner.getVATaxID();
+		return orgBPartner.getBPartnerData().getVATaxID();
 	}
 
 	public String getContactFirstName()
 	{
-		return orgContact.getFirstname();
+		return orgBPartner.getContactData().getFirstname();
 	}
 
 	public ClientSetup setContactFirstName(final String contactFirstName)
 	{
 		if (!Check.isEmpty(contactFirstName, true))
 		{
-			orgContact.setFirstname(contactFirstName.trim());
+			orgBPartner.editContact(contactData -> contactData.setFirstname(contactFirstName.trim()));
 		}
 		return this;
 	}
 
 	public String getContactLastName()
 	{
-		return orgContact.getLastname();
+		return orgBPartner.getContactData().getLastname();
 	}
 
 	public ClientSetup setContactLastName(final String contactLastName)
 	{
 		if (!Check.isEmpty(contactLastName, true))
 		{
-			orgContact.setLastname(contactLastName.trim());
+			orgBPartner.editContact(contactData -> contactData.setLastname(contactLastName.trim()));
 		}
 		return this;
 	}
@@ -512,7 +481,7 @@ class ClientSetup
 		if (!Check.isEmpty(phone, true))
 		{
 			// NOTE: we are not setting the Phone, Fax, EMail on C_BPartner_Location because those fields are hidden in BPartner window
-			orgContact.setPhone(phone.trim());
+			orgBPartner.editContact(contactData -> contactData.setPhone(phone.trim()));
 		}
 
 		return this;
@@ -520,7 +489,7 @@ class ClientSetup
 
 	public final String getPhone()
 	{
-		return orgContact.getPhone();
+		return orgBPartner.getContactData().getPhone();
 	}
 
 	public ClientSetup setFax(final String fax)
@@ -528,14 +497,14 @@ class ClientSetup
 		if (!Check.isEmpty(fax, true))
 		{
 			// NOTE: we are not setting the Phone, Fax, EMail on C_BPartner_Location because those fields are hidden in BPartner window
-			orgContact.setFax(fax.trim());
+			orgBPartner.editContact(contactData -> contactData.setFax(fax.trim()));
 		}
 		return this;
 	}
 
 	public final String getFax()
 	{
-		return orgContact.getFax();
+		return orgBPartner.getContactData().getFax();
 	}
 
 	public ClientSetup setEMail(final String email)
@@ -543,14 +512,14 @@ class ClientSetup
 		if (!Check.isEmpty(email, true))
 		{
 			// NOTE: we are not setting the Phone, Fax, EMail on C_BPartner_Location because those fields are hidden in BPartner window
-			orgContact.setEMail(email.trim());
+			orgBPartner.editContact(contactData -> contactData.setEMail(email.trim()));
 		}
 		return this;
 	}
 
 	public final String getEMail()
 	{
-		return orgContact.getEMail();
+		return orgBPartner.getContactData().getEMail();
 	}
 
 	public ClientSetup setBPartnerDescription(final String bpartnerDescription)
@@ -560,12 +529,13 @@ class ClientSetup
 			return this;
 		}
 
-		orgBPartner.setDescription(bpartnerDescription.trim());
+		orgBPartner.edit(bpData -> bpData.setDescription(bpartnerDescription.trim()));
+
 		return this;
 	}
 
 	public String getBPartnerDescription()
 	{
-		return orgBPartner.getDescription();
+		return orgBPartner.getBPartnerData().getDescription();
 	}
 }

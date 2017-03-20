@@ -44,8 +44,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.letters.api.ITextTemplateBL;
@@ -131,18 +131,25 @@ public final class TextTemplateBL implements ITextTemplateBL
 	@Override
 	public void setLocationContactAndOrg(I_C_Letter letter)
 	{
+		final BPartner bpartner = bPartnerDAO.retrieveBPartnerAgg(letter.getC_BPartner_ID());
+		if(bpartner == null)
+		{
+			throw new FillMandatoryException(I_C_Letter.COLUMNNAME_C_BPartner_ID);
+		}
+		
 		//
 		// Check/Set BP Location
-		I_C_BPartner_Location bpl = letter.getC_BPartner_Location();
-		if (bpl == null)
+//		I_C_BPartner_Location bpl = letter.getC_BPartner_Location();
+		int bpLocationId = letter.getC_BPartner_Location_ID();
+		if (bpLocationId <= 0)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
-			final String trxName = InterfaceWrapperHelper.getTrxName(letter);
 			
-			bpl = bPartnerDAO.retrieveShipToLocation(ctx, letter.getC_BPartner_ID(), trxName);
-			letter.setC_BPartner_Location(bpl);
+			final I_C_BPartner_Location bpLocation = bpartner.getBPartnerLocations().getShipToOrFirst();
+			bpLocationId = bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID();
+			letter.setC_BPartner_Location_ID(bpLocationId);
 		}
-		if (bpl == null)
+		if (bpLocationId <= 0)
 		{
 			throw new FillMandatoryException(I_C_Letter.COLUMNNAME_C_BPartner_Location_ID);
 		}
@@ -154,16 +161,20 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 		//
 		// Check/Set BP Contact
-		if (letter.getC_BP_Contact_ID() <= 0)
+		int bpContactId = letter.getC_BP_Contact_ID();
+		if (bpContactId <= 0)
 		{
-			final I_AD_User bpContact = Services.get(IBPartnerBL.class).retrieveUserForLoc(bpl);
-			letter.setC_BP_Contact(bpContact);
+			bpContactId = bpartner.getContacts().getByLocationIdOrDefault(bpLocationId)
+					.map(I_AD_User::getAD_User_ID)
+					.orElse(-1);
+			letter.setC_BP_Contact_ID(bpContactId);
 		}
 
 		//
 		// Set Letter's AD_Org_ID from BP Location
 		// see http://dewiki908/mediawiki/index.php/02617:_Textvorlagen_und_Schreiben_%282012032710000082%29#User_Stories , 120 Data on Letter
-		letter.setAD_Org_ID(bpl.getAD_Org_ID());
+		final int bpLocationOrgId = bpartner.getBPartnerLocations().getById(bpLocationId).getAD_Org_ID();
+		letter.setAD_Org_ID(bpLocationOrgId);
 	}
 
 	@Override

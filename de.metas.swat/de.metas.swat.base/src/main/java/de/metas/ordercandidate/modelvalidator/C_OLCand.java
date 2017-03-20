@@ -182,9 +182,9 @@ public class C_OLCand
 			return;
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
-		final I_C_BPartner_Location shipToLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, bpartnerOverride.getC_BPartner_ID(), trxName);
+		final I_C_BPartner_Location shipToLocation = Services.get(IBPartnerDAO.class).retrieveLocations(ctx, bpartnerOverride.getC_BPartner_ID())
+				.getShipToOrFirst();
 
 		if (shipToLocation == null)
 		{
@@ -209,9 +209,9 @@ public class C_OLCand
 			return;
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
-		final I_C_BPartner_Location dropShipLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, dropShipPartnerOverride.getC_BPartner_ID(), trxName);
+		final I_C_BPartner_Location dropShipLocation = Services.get(IBPartnerDAO.class).retrieveLocations(ctx, dropShipPartnerOverride.getC_BPartner_ID())
+				.getShipToOrFirst();
 
 		if (dropShipLocation == null)
 		{

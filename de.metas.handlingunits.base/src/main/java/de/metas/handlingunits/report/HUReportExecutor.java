@@ -19,7 +19,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
-import de.metas.bpartner.IBPartnerBL;
+import de.metas.bpartner.IBPartnerDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.ProcessInfo;
 
@@ -133,7 +133,7 @@ public class HUReportExecutor
 		if (huBPartnerIds.size() == 1)
 		{
 			final int bpartnerId = huBPartnerIds.iterator().next();
-			reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+			reportLanguage = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bpartnerId).getLanguage();
 		}
 		else
 		{

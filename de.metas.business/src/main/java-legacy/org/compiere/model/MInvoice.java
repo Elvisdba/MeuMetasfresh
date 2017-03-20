@@ -55,13 +55,13 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.IBPartnerBL;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.IBPartnerStats;
 import de.metas.bpartner.IBPartnerStatsBL;
 import de.metas.bpartner.IBPartnerStatsDAO;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
+import de.metas.bpartner.model.BPartner;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -387,26 +387,23 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(I_C_BPartner bp)
+	public void setBPartner(I_C_BPartner bp0)
 	{
-		if (bp == null)
+		if (bp0 == null)
+		{
+			return;
+		}
+		final BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(bp0.getC_BPartner_ID());
+		if(bpartner == null)
 		{
 			return;
 		}
 
-		setC_BPartner(bp);
+		setC_BPartner_ID(bpartner.getBPartnerId());
 		
 		// Set Defaults
 		{
-			final int paymentTermId;
-			if (isSOTrx())
-			{
-				paymentTermId = bp.getC_PaymentTerm_ID();
-			}
-			else
-			{
-				paymentTermId = bp.getPO_PaymentTerm_ID();
-			}
+			final int paymentTermId = bpartner.getC_PaymentTerm_ID(isSOTrx());
 			if (paymentTermId != 0)
 			{
 				setC_PaymentTerm_ID(paymentTermId);
@@ -414,38 +411,38 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 		//
 		{
-			final int priceListId = Services.get(IBPartnerBL.class).getM_PriceList_ID(bp, isSOTrx());
+			final int priceListId = bpartner.getM_PriceList_ID(isSOTrx());
 			if (priceListId > 0)
 			{
 				setM_PriceList_ID(priceListId);
 			}
 		}
 		//
-		String ss = bp.getPaymentRule();
-		if (ss != null)
 		{
-			setPaymentRule(ss);
+			final String paymentRule = bpartner.getPaymentRule();
+			if (paymentRule != null)
+			{
+				setPaymentRule(paymentRule);
+			}
 		}
 
 		// Set Locations
 		{
-			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).retrieveBillToLocation(getCtx(), bp.getC_BPartner_ID(), isSOTrx());
+			final I_C_BPartner_Location bpLocation = bpartner.getBPartnerLocations().getBillToBySOTrx(isSOTrx());
 			if (bpLocation != null)
 			{
-				setC_BPartner_Location(bpLocation);
+				setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 			}
 			else
 			{
-				log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
+				log.error(new BPartnerNoAddressException(bpartner.getBPartnerData()).getLocalizedMessage()); // TODO: throw exception?
 			}
 		}
 
 		// Set Contact
-		final I_AD_User contact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrFirstOrNull(bp.getC_BPartner_ID());
-		if (contact != null)
-		{
-			setAD_User(contact);
-		}
+		bpartner.getContacts()
+				.getDefaultOrFirst()
+				.ifPresent(contact -> setAD_User_ID(contact.getAD_User_ID()));
 	}	// setBPartner
 
 	/**

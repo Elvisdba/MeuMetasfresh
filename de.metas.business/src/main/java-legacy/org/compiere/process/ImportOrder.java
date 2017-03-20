@@ -551,7 +551,7 @@ public class ImportOrder extends JavaProcess
 				
 				//	BP Location
 				I_C_BPartner_Location bpl = null; 
-				for (final I_C_BPartner_Location currentLoc : Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp))
+				for (final I_C_BPartner_Location currentLoc : Services.get(IBPartnerDAO.class).retrieveLocations(bp))
 				{
 					if (imp.getC_BPartner_Location_ID() == currentLoc.getC_BPartner_Location_ID())
 						bpl = currentLoc;

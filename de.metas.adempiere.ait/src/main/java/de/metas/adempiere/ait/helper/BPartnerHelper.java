@@ -133,7 +133,7 @@ public class BPartnerHelper
 				.firstOnly(I_C_BPartner.class);
 		Check.assumeNotNull(bp, "Parameter bpPO is not null");
 
-		if (Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(bp).isEmpty())
+		if (Services.get(IBPartnerDAO.class).retrieveLocations(bp).isEmpty())
 		{
 			createBPLocation(bp, "Main");
 		}

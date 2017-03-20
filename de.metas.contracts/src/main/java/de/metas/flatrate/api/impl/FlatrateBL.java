@@ -1653,9 +1653,8 @@ public class FlatrateBL implements IFlatrateBL
 			dontCreateTerm = true;
 		}
 
-		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBillToLocation(ctx, bPartner.getC_BPartner_ID(),
-				true,            // alsoTryBPartnerRelation
-				trxName);
+		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveLocations(bPartner.getC_BPartner_ID())
+				.getBillTo(true); // alsoTryBPartnerRelation=true
 		if (billPartnerLocation == null)
 		{
 			notCreatedReason.append(" has no billTo location;");

@@ -25,9 +25,7 @@ package de.metas.adempiere.service.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
@@ -44,9 +42,30 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.IBPartnerDAO;
 import de.metas.bpartner.exceptions.OrgHasNoBPartnerLinkException;
+import de.metas.bpartner.model.BPartner;
+import de.metas.bpartner.model.BPartnerAndLocationAndContact;
 
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {
+	@Override
+	public BPartnerAndLocationAndContact retrieveLinkedBPartnerAndAddressAndUserInCharge(final I_AD_Org org)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
+		final String trxName = InterfaceWrapperHelper.getTrxName(org);
+		final int adOrgId = org.getAD_Org_ID();
+		final int bpartnerId = retrieveLinkedBPartner(ctx, adOrgId, trxName).getC_BPartner_ID();
+		
+		final BPartner bpartnerAgg = Services.get(IBPartnerDAO.class).retrieveBPartnerAgg(ctx, bpartnerId);
+		
+		final I_C_BPartner_Location orgBPLocation = retrieveOrgBPLocation(ctx, adOrgId, trxName);
+		final int orgBPLocationId = orgBPLocation == null ? -1 : orgBPLocation.getC_BPartner_Location_ID();
+		
+		final I_AD_User orgBPContact = retrieveUserInChargeOrNull(ctx, adOrgId, trxName);
+		final int orgBPContactId = orgBPContact == null ? -1 : orgBPContact.getAD_User_ID();
+		
+		return new BPartnerAndLocationAndContact(bpartnerAgg, orgBPLocationId, orgBPContactId);
+	}
+	
 	@Override
 	public I_C_BPartner retrieveLinkedBPartner(final I_AD_Org org)
 	{
@@ -55,18 +74,16 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		final int adOrgId = org.getAD_Org_ID();
 		return retrieveLinkedBPartner(ctx, adOrgId, trxName);
 	}
-
+	
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#By#AD_OrgBP_ID")
 	/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_C_BPartner> filters = queryBuilder.getFilters();
-		filters.addOnlyActiveRecordsFilter();
-		filters.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, adOrgId);
-
-		return queryBuilder.create()
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, adOrgId)
+				//
+				.create()
 				.firstOnly(I_C_BPartner.class);
 	}
 
@@ -85,21 +102,19 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	public I_C_BPartner_Location retrieveOrgBPLocation(Properties ctx, int orgId, String trxName)
 	{
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(
-					orgDAO.retrieveOrgInfo(ctx, orgId, trxName),
-					I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(orgDAO.retrieveOrgInfo(ctx, orgId, trxName), I_AD_OrgInfo.class);
 		return orgInfo.getOrgBP_Location();
 	}
 
 	@Override
 	public I_AD_User retrieveUserInChargeOrNull(final Properties ctx, final int orgId, final String trxName)
 	{
-		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		I_AD_User defaultContact;
 		try
 		{
-			final I_C_BPartner orgBPartner = bPartnerPA.retrieveOrgBPartner(ctx, orgId, I_C_BPartner.class, trxName);
-			defaultContact = bPartnerPA.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
+			final I_C_BPartner orgBPartner = bpartnerDAO.retrieveOrgBPartner(ctx, orgId, I_C_BPartner.class, trxName);
+			defaultContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 		}
 		catch (OrgHasNoBPartnerLinkException e)
 		{
