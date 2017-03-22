@@ -349,4 +349,9 @@ public class BPartner
 		return getBPartnerData().getPostageFreeAmt();
 	}
 
+	public int getAD_Org_ID()
+	{
+		return getBPartnerData().getAD_Org_ID();
+	}
+
 }

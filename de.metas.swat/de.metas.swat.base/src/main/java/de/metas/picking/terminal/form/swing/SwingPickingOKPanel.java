@@ -250,7 +250,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 			}
 
-			int bp_id = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), value).getC_BPartner_ID();
+			int bp_id = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), value).getBPartnerId();
 			final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bp_id, warehouseDestId, qtyToDeliver);
 
 			PackingStates state = PackingStates.unpacked;

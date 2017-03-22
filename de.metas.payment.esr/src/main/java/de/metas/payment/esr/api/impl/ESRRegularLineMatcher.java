@@ -46,6 +46,7 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.service.IPeriodBL;
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -369,7 +370,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 				.setFailOnError(false)
 				.build();
 
-		I_C_BPartner bPartner = null;
+		BPartner bPartner = null;
 		if (!Check.isEmpty(formattedBPValue, true))
 		{
 			bPartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(ctx, formattedBPValue);
@@ -392,8 +393,8 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 			}
 			else
 			{
-				bPartnerId = bPartner.getC_BPartner_ID();
-				importLine.setC_BPartner(bPartner);
+				bPartnerId = bPartner.getBPartnerId();
+				importLine.setC_BPartner_ID(bPartnerId);
 				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 			}
 		}

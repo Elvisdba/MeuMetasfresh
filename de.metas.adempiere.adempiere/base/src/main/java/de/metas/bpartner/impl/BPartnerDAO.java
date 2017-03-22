@@ -314,7 +314,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public I_C_BPartner retrieveBPartnerByValue(final Properties ctx, final String value)
+	public BPartner retrieveBPartnerByValue(final Properties ctx, final String value)
 	{
 		if (value == null)
 		{
@@ -323,7 +323,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		final String valueFixed = value.trim();
 
-		return Services.get(IQueryBL.class)
+		final I_C_BPartner bpartnerData = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, valueFixed)
 				.addOnlyContextClient(ctx)
@@ -331,6 +331,12 @@ public class BPartnerDAO implements IBPartnerDAO
 				//
 				.create()
 				.firstOnly(I_C_BPartner.class);
+		if(bpartnerData == null)
+		{
+			return null;
+		}
+		
+		return toBPartnerAgg(bpartnerData);
 	}
 
 	@Override

@@ -15,13 +15,13 @@ import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.bpartner.IBPartnerDAO;
+import de.metas.bpartner.model.BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 
 /*
@@ -92,9 +92,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
-		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		final BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
 
-		final I_C_Order purchaseOrder = createPurchaseOrder(vendor.getC_BPartner_ID(), salesOrder);
+		final I_C_Order purchaseOrder = createPurchaseOrder(vendor.getBPartnerId(), salesOrder);
 
 		final String msg = msgBL.getMsg(context.getCtx(),
 				MSG_PURCHASE_ORDER_CREATED,

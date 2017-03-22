@@ -154,7 +154,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param value
 	 * @return C_BPartner object or null
 	 */
-	I_C_BPartner retrieveBPartnerByValue(Properties ctx, String value);
+	BPartner retrieveBPartnerByValue(Properties ctx, String value);
 
 	<T extends I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 

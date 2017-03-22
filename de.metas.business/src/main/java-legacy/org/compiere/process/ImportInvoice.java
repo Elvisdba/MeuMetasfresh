@@ -525,7 +525,7 @@ public class ImportInvoice extends JavaProcess
 						imp.setName (imp.getBPartnerValue ());
 				}
 				//	BPartner
-				I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue());
+				I_C_BPartner bp = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue()).getBPartnerData();
 				if (bp == null)
 				{
 					bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, imp);
