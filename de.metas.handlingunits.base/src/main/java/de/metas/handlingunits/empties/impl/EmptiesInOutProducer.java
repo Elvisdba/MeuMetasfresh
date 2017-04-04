@@ -28,7 +28,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
