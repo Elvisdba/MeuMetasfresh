@@ -1,9 +1,11 @@
 package org.adempiere.mm.attributes.util;
 
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -216,6 +218,7 @@ public final class ASIEditingInfo
 		return _isSOTrx;
 	}
 
+	@Nullable
 	public I_M_AttributeSet getM_AttributeSet()
 	{
 		return _attributeSet;
@@ -317,25 +320,44 @@ public final class ASIEditingInfo
 	public boolean isExcludedAttributeSet()
 	{
 		final I_M_AttributeSet attributeSet = getM_AttributeSet();
-		if (attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0)
+		final boolean attributeSetExists = attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0;
+		
+		//
+		// Exclude if it was configured to be excluded
+		if (attributeSetExists)
 		{
 			final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
 			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getCallerColumnId(), isSOTrx());
 			final boolean exclude = asExclude != null && excludeBL.isFullExclude(asExclude);
-			return exclude;
+			if(exclude)
+			{
+				return true; // exclude
+			}
 		}
-
-		// NOTE: at this point attributeSet is null or ID=0
+		
+		//
+		// If no attributeSet, find out a default per each window type
+		if(!attributeSetExists)
+		{
+			// Product window requires a valid attributeSet.
+			final WindowType type = getWindowType();
+			if (type == WindowType.ProductWindow)
+			{
+				return true; // exclude
+			}
+			else if(type == WindowType.Regular)
+			{
+				final boolean asiExists = getM_AttributeSetInstance_ID() > 0;
+				if(!asiExists)
+				{
+					return true; // exclude
+				}
+			}
+		}
 
 		//
-		// Regular window or product window requires a valid attributeSet
-		final WindowType type = getWindowType();
-		if (type == WindowType.Regular || type == WindowType.ProductWindow)
-		{
-			return true;
-		}
-
-		return false;
+		// Fallback
+		return false; // don't exclude
 	}
 
 	public List<MAttribute> getAvailableAttributes()
@@ -367,7 +389,6 @@ public final class ASIEditingInfo
 		{
 			case Regular:
 			{
-				Check.assumeNotNull(attributeSet, "Parameter attributeSet is not null");
 				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID())
 						.stream();
 				break;
@@ -431,14 +452,18 @@ public final class ASIEditingInfo
 	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
-	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(final MAttributeSet attributeSet, final int attributeSetInstanceId)
+	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(@Nullable final MAttributeSet attributeSet, final int attributeSetInstanceId)
 	{
+		final LinkedHashMap<Integer, MAttribute> attributes = new LinkedHashMap<>(); // preserve the order
+
 		//
 		// Retrieve attribute set's instance attributes,
 		// and index them by M_Attribute_ID
-		final Map<Integer, MAttribute> attributes = Stream.of(attributeSet.getMAttributes(true))
-				.map(attribute -> GuavaCollectors.entry(attribute.getM_Attribute_ID(), attribute))
-				.collect(GuavaCollectors.toLinkedHashMap()); // preserve the order
+		if (attributeSet != null)
+		{
+			Stream.of(attributeSet.getMAttributes(true))
+					.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
+		}
 
 		//
 		// If we have an ASI then fetch the attributes from ASI which are missing in attributeSet
@@ -446,7 +471,7 @@ public final class ASIEditingInfo
 		if (attributeSetInstanceId > 0)
 		{
 			Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_AttributeInstance.class, attributeSet)
+					.createQueryBuilder(I_M_AttributeInstance.class, Env.getCtx(), ITrx.TRXNAME_None)
 					.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
 					//
 					.andCollect(I_M_AttributeInstance.COLUMN_M_Attribute_ID)

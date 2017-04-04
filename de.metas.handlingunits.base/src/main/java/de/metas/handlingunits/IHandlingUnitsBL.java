@@ -181,7 +181,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Additionally, this method does:
 	 * <ul>
 	 * <li>destroys any of it's HU children which have empty storage
-	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursivelly to the top).
+	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursively to the top).
 	 * </ul>
 	 *
 	 * @param huContext
@@ -234,7 +234,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Determines if the handling unit is a loading unit (type {@link X_M_HU_PI_Version#HU_UNITTYPE_LoadLogistiqueUnit} )
 	 *
-	 * @param hu
+	 * @param hu maybe be {@code null}. In that case, {@code false} is returned.
 	 * @return true if loading unit (LU)
 	 */
 	boolean isLoadingUnit(I_M_HU hu);

@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,6 +36,9 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUContext;
@@ -77,7 +79,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		return new HUListAllocationSourceDestination(sourceHUs);
 	}
 
-	
 	// Services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
@@ -93,23 +94,20 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	private boolean createHUSnapshots = false; // by default, don't create
 	private String snapshotId = null;
 
+	/** see {@link #setStoreCUQtyBeforeProcessing(boolean)} */
 	private boolean storeCUQtyBeforeProcessing = true;
 
 	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
 	{
-		// NOTE: we don't need contextProvider because we are creating nothing
-		// when needed HUContext from Request will be used
-		// this.contextProvider = contextProvider;
-
-		this.sourceHUs = new ArrayList<I_M_HU>(sourceHUs);
+		this.sourceHUs = new ArrayList<>(sourceHUs);
 		lastIndex = sourceHUs.size() - 1;
 	}
 
 	private HUListAllocationSourceDestination(final I_M_HU sourceHU)
 	{
-		this(Collections.singletonList(sourceHU));
-
-		Check.assumeNotNull(sourceHU, "sourceHU not null");
+		this(ImmutableList.of(
+				Preconditions.checkNotNull(
+						sourceHU, "Param 'sourceHU' may not be null")));
 	}
 
 	public boolean isDestroyEmptyHUs()
@@ -129,10 +127,10 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	/**
 	 * Shall we create snapshots of all {@link I_M_HU}s (recursivelly), before touching them.
-	 * 
+	 *
 	 * In case it's activated, a full snapshots will be taken before touching any of the underlying HUs.
 	 * The snapshot ID will be accessible by {@link #getSnapshotId()}.
-	 * 
+	 *
 	 * @param createHUSnapshots
 	 */
 	public void setCreateHUSnapshots(final boolean createHUSnapshots)
@@ -145,7 +143,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * <p>
 	 * This information (if stored by this instance) can later be used by {@link AggregateHUTrxListener} to adjust the {@code HA} item's {@code Qty} or split off a partial TU.
 	 * If you don't want this behavior (e.g. gh #943: because we are adjusting the HU's storage from the net weight), then just call this method with {@code false}. If you don't use this setter, the default will be {@code true}.
-	 * 
+	 *
 	 * @param storeCUQtyBeforeProcessing
 	 */
 	public void setStoreCUQtyBeforeProcessing(final boolean storeCUQtyBeforeProcessing)
@@ -182,6 +180,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	{
 		if (storeCUQtyBeforeProcessing)
 		{
+			// store the CU qtys in memory, so at the end of the load we can check if they changed.
 			sourceHUs.forEach(hu -> {
 				storeAggregateItemCuQty(request, hu);
 			});
@@ -214,19 +213,17 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			{
 				currentHU = null;
 			}
-
 		}
-
 		return result;
 	}
 
 	/**
 	 * See {@link #setStoreCUQtyBeforeProcessing(boolean)}.
-	 * 
+	 *
 	 * @param request
 	 * @param hu
 	 */
-	private void storeAggregateItemCuQty(final IAllocationRequest request, I_M_HU hu)
+	private void storeAggregateItemCuQty(final IAllocationRequest request, final I_M_HU hu)
 	{
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
@@ -243,10 +240,15 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 				final IHUStorage storage = request.getHUContext().getHUStorageFactory().getStorage(hu);
 				final BigDecimal storageQty = storage == null ? BigDecimal.ZERO : storage.getQtyForProductStorages();
 
-				cuQty = storageQty.divide(aggregateHUQty, 2, RoundingMode.HALF_UP); // scale=2 or more because we want to assert that it's a "round" number
-				Check.errorIf(cuQty.stripTrailingZeros().scale() > 0,
-						"cuQty={} needs to be a natural number; storageQty={}, aggregateHUQty={}, haItem={}",
-						cuQty, storageQty, aggregateHUQty, haItem);
+				// gh #1237: cuQty does *not* have to be a an "integer" number.
+				// If the overall HU's storage is not always integer and given that the aggregate's TU qty is always an integer, cuQty can't be an integer at any times either
+				final I_C_UOM storageUOM = storage.getC_UOMOrNull();
+				Check.errorIf(storageUOM == null, "The storage of M_HU_ID={} (an aggregate HU) has a null UOM (i.e. contains substorages with incompatible UOMs)", hu.getM_HU_ID()); // can't be null, because in aggregate-HU country, storages are uniform and therefore all have the same UOM
+
+				final int scale = storageUOM.getStdPrecision();
+				cuQty = storageQty.divide(aggregateHUQty,
+						scale * 3, // dividing with a bigger scale to try and avoid rounding issues which tbh i can't really name.
+						RoundingMode.HALF_UP);
 			}
 			request.getHUContext().setProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);
 		}
@@ -290,7 +292,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	{
 		createHUSnapshotsIfRequired(huContext);
 
-		final List<IPair<IAllocationRequest, IAllocationResult>> result = new ArrayList<IPair<IAllocationRequest, IAllocationResult>>();
+		final List<IPair<IAllocationRequest, IAllocationResult>> result = new ArrayList<>();
 
 		while (true)
 		{
@@ -314,7 +316,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	private List<IPair<IAllocationRequest, IAllocationResult>> unloadAll(final IHUContext huContext, final I_M_HU hu)
 	{
-		final List<IPair<IAllocationRequest, IAllocationResult>> result = new ArrayList<IPair<IAllocationRequest, IAllocationResult>>();
+		final List<IPair<IAllocationRequest, IAllocationResult>> result = new ArrayList<>();
 
 		final HUIteratorListenerAdapter huIteratorListener = new HUIteratorListenerAdapter()
 		{
@@ -409,7 +411,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	/**
 	 * Gets the snapshot ID in case {@link #setCreateHUSnapshots(boolean)} was activated.
-	 * 
+	 *
 	 * @return
 	 *         <ul>
 	 *         <li>Snapshot ID
@@ -435,7 +437,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			throw new IllegalStateException("Snapshot was already created: " + snapshotId);
 		}
 
-		this.snapshotId = Services.get(IHUSnapshotDAO.class)
+		snapshotId = Services.get(IHUSnapshotDAO.class)
 				.createSnapshot()
 				.setContext(huContext)
 				.addModels(sourceHUs)

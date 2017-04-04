@@ -61,6 +61,7 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -100,7 +101,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	public HandlingUnitsDAO()
 	{
-		super();
 		defaultHUAndItemsDAO = new CachedIfInTransactionHUAndItemsDAO();
 	}
 
@@ -275,10 +275,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final I_M_HU_Item existingItem = getHUAndItemsDAO().retrieveItem(hu, piItem);
+		final I_M_HU_Item existingItem = getHUAndItemsDAO()
+				.retrieveItem(
+						Preconditions.checkNotNull(hu, "Param 'hu' may not be null"),
+						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"));
 
 		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
+			// item existed
 			return ImmutablePair.of(existingItem, false);
 		}
 
@@ -315,7 +319,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			final String itemType = handlingUnitsBL.getItemType(huItem);
 			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
 			{
-				continue;
+				continue; // 'hu' has to have at least one item with type "PackingMaterial"
 			}
 
 			// if 'hu'is an aggregate VHU, then it represents not one, but as many HU as its parent item's Qty sais.

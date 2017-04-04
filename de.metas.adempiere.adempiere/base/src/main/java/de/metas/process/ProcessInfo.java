@@ -11,12 +11,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -45,6 +49,7 @@ import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
@@ -54,7 +59,7 @@ import de.metas.logging.LogManager;
 /**
  * Process Instance informations.
  * 
- * NOTE to developers: when changing this class, please keep in mind that it always shall be fully restorable from AD_PInstance_ID. 
+ * NOTE to developers: when changing this class, please keep in mind that it always shall be fully restorable from AD_PInstance_ID.
  *
  * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
  * @author metas-dev <dev@metasfresh.com>
@@ -71,7 +76,6 @@ public final class ProcessInfo implements Serializable
 
 	private ProcessInfo(final Properties ctx, final ProcessInfoBuilder builder)
 	{
-		super();
 		this.ctx = ctx;
 
 		adProcessId = builder.getAD_Process_ID();
@@ -113,8 +117,8 @@ public final class ProcessInfo implements Serializable
 		}
 		else
 		{
-		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
-		this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
+			final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
+			this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
 
 			this.parametersOverride = null;
 		}
@@ -123,7 +127,7 @@ public final class ProcessInfo implements Serializable
 		result.setAD_PInstance_ID(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
-	
+
 	private final Properties ctx;
 
 	/** Title of the Process/Report */
@@ -153,8 +157,7 @@ public final class ProcessInfo implements Serializable
 	/** Process Instance ID */
 	private int adPInstanceId;
 
-	/** Batch */
-	private final boolean batch = false;
+	private Boolean async = null;
 
 	/** Parameters */
 	private List<ProcessInfoParameter> parameters = null; // lazy loaded
@@ -203,14 +206,25 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
-	 * Batch - i.e. UI not blocked
+	 * Advise if we want business logic to be executed asynchronously further down the road, or not.
 	 *
 	 * @return boolean
 	 */
-	public boolean isBatch()
+	public boolean isAsync()
 	{
-		return batch;
+		return async;
 	}	// isBatch
+
+	/**
+	 * Shall only be called once. Intended to be called by {@link ProcessExecutor} only.
+	 * 
+	 * @param async
+	 */
+	/* package */ void setAsync(final boolean async)
+	{
+		Preconditions.checkState(this.async == null, "The async property shall be set only once");
+		this.async = async;
+	}
 
 	/**
 	 * Method getAD_PInstance_ID
@@ -252,26 +266,27 @@ public final class ProcessInfo implements Serializable
 	{
 		return className.orElse(null);
 	}
-	
+
 	/**
 	 * Creates a new instance of {@link #getClassName()}.
 	 * If the classname is empty, null will be returned.
+	 * 
 	 * @return new instance or null
 	 */
 	public final IProcess newProcessClassInstanceOrNull()
 	{
 		final String classname = getClassName();
-		if(Check.isEmpty(classname, true))
+		if (Check.isEmpty(classname, true))
 		{
 			return null;
 		}
-		
+
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader == null)
 		{
 			classLoader = getClass().getClassLoader();
 		}
-		
+
 		try
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
@@ -280,7 +295,7 @@ public final class ProcessInfo implements Serializable
 			{
 				((JavaProcess)processClassInstance).init(this);
 			}
-			
+
 			return processClassInstance;
 		}
 		catch (final Throwable e)
@@ -307,7 +322,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return sqlStatement;
 	}
-	
+
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
@@ -403,7 +418,7 @@ public final class ProcessInfo implements Serializable
 
 		return record;
 	}
-	
+
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
@@ -439,7 +454,7 @@ public final class ProcessInfo implements Serializable
 
 		return Optional.of(record);
 	}
-	
+
 	/**
 	 * @return process title/name
 	 */
@@ -655,7 +670,7 @@ public final class ProcessInfo implements Serializable
 		 * please do a text search and check the code which is actually relying on this list.
 		 */
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
-		private static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
 		private int adPInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -685,7 +700,6 @@ public final class ProcessInfo implements Serializable
 
 		private ProcessInfoBuilder()
 		{
-			super();
 		}
 
 		public ProcessInfo build()
@@ -726,6 +740,13 @@ public final class ProcessInfo implements Serializable
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
+			//
+			final MFSession mfSession = Services.get(ISessionBL.class).getCurrentSession(ctx);
+			if(mfSession != null)
+			{
+				mfSession.updateContext(processCtx);
+			}
+			
 			//
 			// AD_Client, AD_Language
 			final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -1443,14 +1464,12 @@ public final class ProcessInfo implements Serializable
 		private Language findReportingLanguage()
 		{
 			final Properties ctx = getCtx();
-			final int windowNo = getWindowNo();
-			final boolean runningFromRegularWindow = Env.isRegularWindowNo(windowNo);
+			final TableRecordReference recordRef = getRecordOrNull(); // NOTE: loaded here because recordRef is caching the model so we will have to load it once
 
 			//
 			// Get status of the InOut Document, if any, to have de_CH in case that document in DR or IP (03614)
-			if (runningFromRegularWindow)
 			{
-				final Language lang = extractLanguageFromDraftInOut();
+				final Language lang = extractLanguageFromDraftInOut(ctx, recordRef);
 				if (lang != null)
 				{
 					return lang;
@@ -1458,34 +1477,28 @@ public final class ProcessInfo implements Serializable
 			}
 
 			//
-			// Get Language directly from window context, if any (08966)
-			if (runningFromRegularWindow)
+			// Extract Language directly from window context, if any (08966)
 			{
-				// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
-				final String languageString = Env.getContext(ctx, windowNo, "AD_Language", true);
-				if (!Env.isPropertyValueNull("AD_Language", languageString))
+				final Language lang = extractLanguageFromWindowContext(ctx, getWindowNo());
+				if (lang != null)
 				{
-					return Language.getLanguage(languageString);
+					return lang;
 				}
 			}
 
 			//
-			// Get Language from the BPartner set in window context, if any (03040)
-			if (runningFromRegularWindow)
+			// Extract Language directly from record, if any
 			{
-				final int bpartnerId = Env.getContextAsInt(ctx, windowNo, "C_BPartner_ID");
-				if (bpartnerId > 0)
+				final Language lang = extractLanguageFromRecordRef(ctx, recordRef);
+				if (lang != null)
 				{
-					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
-					if (lang != null)
-					{
-						return lang;
-					}
+					return lang;
 				}
 			}
 
-			// task 09740
-			// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner
+			//
+			// Extract Language from process parameters
+			// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner (task 09740)
 			{
 				final List<ProcessInfoParameter> parametersList = getParametersOrNull();
 				if (parametersList != null && !parametersList.isEmpty())
@@ -1518,20 +1531,97 @@ public final class ProcessInfo implements Serializable
 			return Env.getLanguage(ctx);
 		}
 
+		private static final Language extractLanguageFromWindowContext(final Properties ctx, final int windowNo)
+		{
+			if (!Env.isRegularWindowNo(windowNo))
+			{
+				return null;
+			}
+
+			//
+			// Get Language directly from window context, if any (08966)
+			{
+				// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
+				final String languageString = Env.getContext(ctx, windowNo, "AD_Language", true);
+				if (!Env.isPropertyValueNull("AD_Language", languageString))
+				{
+					return Language.getLanguage(languageString);
+				}
+			}
+
+			//
+			// Get Language from the BPartner set in window context, if any (03040)
+			{
+				final int bpartnerId = Env.getContextAsInt(ctx, windowNo, "C_BPartner_ID");
+				if (bpartnerId > 0)
+				{
+					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+					if (lang != null)
+					{
+						return lang;
+					}
+				}
+			}
+
+			return null;
+		}
+
+		private static final Language extractLanguageFromRecordRef(final Properties ctx, @Nullable final TableRecordReference recordRef)
+		{
+			Check.assumeNotNull(ctx, "Parameter ctx is not null");
+
+			if (recordRef == null)
+			{
+				return null;
+			}
+
+			final Object record = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(ctx));
+			if (record == null)
+			{
+				return null;
+			}
+
+			//
+			// Get Language directly from AD_Language field, if any
+			{
+				// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
+				final String languageString = InterfaceWrapperHelper.getValueOrNull(record, "AD_Language");
+				if (!Check.isEmpty(languageString, true))
+				{
+					return Language.getLanguage(languageString);
+				}
+			}
+
+			//
+			// Get Language from the C_BPartner_ID, if any
+			{
+				final Integer bpartnerId = InterfaceWrapperHelper.getValueOrNull(record, "C_BPartner_ID");
+				if (bpartnerId != null && bpartnerId > 0)
+				{
+					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+					if (lang != null)
+					{
+						return lang;
+					}
+				}
+			}
+
+			return null;
+		}
+
 		/**
 		 * Method to extract the language from login in case of drafted documents with docType {@link X_C_DocType#DOCBASETYPE_MaterialDelivery}.
 		 * <p>
 		 * TODO: extract some sort of language-provider-SPI
 		 *
-		 * @param ctx
-		 * @param pi
 		 * @return the login language if conditions fulfilled, null otherwise.
 		 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 		 */
-		private final Language extractLanguageFromDraftInOut()
+		private static final Language extractLanguageFromDraftInOut(final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
+			Check.assumeNotNull(ctx, "Parameter ctx is not null");
 
-			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JasperLanguage, true);
+			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UseLoginLanguageForDraftDocuments, true);
 
 			// in case the sys config is not set, there is no need to continue
 			if (!isUseLoginLanguage)
@@ -1539,7 +1629,6 @@ public final class ProcessInfo implements Serializable
 				return null;
 			}
 
-			final TableRecordReference recordRef = getRecordOrNull();
 			if (recordRef == null)
 			{
 				return null;
@@ -1554,7 +1643,6 @@ public final class ProcessInfo implements Serializable
 				return null;
 			}
 
-			final Properties ctx = getCtx();
 			final Object document = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(ctx));
 			if (document == null)
 			{
@@ -1594,5 +1682,4 @@ public final class ProcessInfo implements Serializable
 			return Language.getLanguage(languageString);
 		}
 	} // ProcessInfoBuilder
-
 }   // ProcessInfo

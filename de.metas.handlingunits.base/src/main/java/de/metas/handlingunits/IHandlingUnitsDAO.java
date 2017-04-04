@@ -23,16 +23,25 @@ package de.metas.handlingunits;
  */
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
@@ -46,6 +55,27 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
+	final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
+			.createQueryOrderByBuilder(I_M_HU_Item.class)
+			.addColumn(I_M_HU_Item.COLUMN_M_HU_Item_ID, Direction.Ascending, Nulls.Last)
+			.createQueryOrderBy();;
+
+	final Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
+			X_M_HU_Item.ITEMTYPE_Material, 1,
+			X_M_HU_Item.ITEMTYPE_HandlingUnit, 2,
+			X_M_HU_Item.ITEMTYPE_HUAggregate, 3,
+			X_M_HU_Item.ITEMTYPE_PackingMaterial, 4);
+
+	/**
+	 * Specifies that material items shall be first, followed by HU-items, HU--aggregate-items and finally packing material items.
+	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
+	 */
+	final Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
+			.<I_M_HU_Item, Integer> comparing(
+					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
+			.thenComparing(
+					queryOrderBy.getComparator(I_M_HU_Item.class));
+
 	/**
 	 * Save the given {@code hu}
 	 * 
@@ -90,11 +120,17 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Gets parent {@link I_M_HU}
 	 *
-	 * @param hu
+	 * @param hu may not be {@code null}
 	 * @return parent HU or null
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
+	/**
+	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
+	 * 
+	 * @param hu
+	 * @return
+	 */
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 
 	void setParentItem(I_M_HU hu, I_M_HU_Item parentItem);
@@ -117,6 +153,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
 
+	/**
+	 * Retrieve items that reference the given {@code hu}, ordered by {@link #HU_ITEMS_COMPARATOR}.
+	 * 
+	 * @param hu
+	 * @return
+	 */
 	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
 
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -180,7 +222,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * @param huPI
-	 * @param huUnitType
+	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
 	 * @param bpartner
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
@@ -297,7 +339,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
 
 	/**
-	 * 
+	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
 	 * @param hu
 	 * @param piItem
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.

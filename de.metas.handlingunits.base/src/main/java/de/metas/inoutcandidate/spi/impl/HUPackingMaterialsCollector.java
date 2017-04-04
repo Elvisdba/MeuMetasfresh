@@ -243,27 +243,35 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		//
-		// Update counters
+		// Extract the TUs
 		final String huUnitTypeToUse = huUnitTypeOverride == null ? handlingUnitsBL.getHU_UnitType(hu) : huUnitTypeOverride;
-		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
+		final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
+		final int countTUsAbs;
+		if(aggregateHU)
 		{
-			// 'hu' is a TU; count it
-			
-			final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
-			
-			final int countTUsAbs = aggregateHU
-					? hu.getM_HU_Item_Parent().getQty().intValueExact() // gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
-					: 1; // 'hu' represents one TU
-			
-			if (remove)
-			{
-				countTUs -= countTUsAbs;
-			}
-			else
-			{
-				countTUs += countTUsAbs;
-			}
+			// gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
+			countTUsAbs = handlingUnitsDAO.retrieveParentItem(hu).getQty().intValueExact();
 		}
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
+		{
+			countTUsAbs = 1; // pure TU.. that counts ONE
+		}
+		else
+		{
+			countTUsAbs = 0;
+		}
+		
+		//
+		// Update the TUs counter
+		if (remove)
+		{
+			countTUs -= countTUsAbs;
+		}
+		else
+		{
+			countTUs += countTUsAbs;
+		}
+
 
 		return true;
 	}
@@ -501,30 +509,29 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			return;
 		}
-
+//handlingUnitsBL.isAggregateHU(hu);
 		final int huId = hu.getM_HU_ID();
 		if (huId <= 0)
 		{
 			return;
 		}
 
-		final HUIterator huIterator = new HUIterator();
-		huIterator.setCtx(InterfaceWrapperHelper.getCtx(hu));
-		huIterator.setEnableStorageIteration(false);
-		huIterator.setListener(new HUIteratorListenerAdapter()
-		{
-			@Override
-			public Result afterHU(final I_M_HU hu)
-			{
-				final String huUnitTypeOverride = null; // use the actual HU's UnitType
-				addOrRemoveHU(remove, hu, huUnitTypeOverride, source);
+		new HUIterator()
+				.setEnableStorageIteration(false)
+				.setCtx(InterfaceWrapperHelper.getCtx(hu))
+				.setListener(new HUIteratorListenerAdapter()
+				{
+					@Override
+					public Result afterHU(final I_M_HU hu)
+					{
+						final String huUnitTypeOverride = null; // use the actual HU's UnitType
+						addOrRemoveHU(remove, hu, huUnitTypeOverride, source);
 
-				return Result.CONTINUE;
-			}
+						return Result.CONTINUE;
+					}
 
-		});
-
-		huIterator.iterate(hu);
+				})
+				.iterate(hu);
 	}
 
 	/**

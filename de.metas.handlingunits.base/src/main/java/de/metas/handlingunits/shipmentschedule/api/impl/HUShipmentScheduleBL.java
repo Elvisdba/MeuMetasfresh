@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -56,8 +56,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.Env;
-
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -249,7 +247,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule()
 	{
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts = true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class)
+				.createInOutGenerateResult(true); // storeReceipts = true
+		
 		return new InOutProducerFromShipmentScheduleWithHU(result);
 	}
 
@@ -691,8 +691,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			// safe because only applied when M_HU_PI_Item_Product_Effective is not null
 			if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(piItemProduct_Effective.getM_HU_PI_Item().getM_HU_PI_Version().getHU_UnitType()))
 			{
-				qtyTU_Effective = Env.ONE;
-				shipmentSchedule.setQtyTU_Override(Env.ONE);
+				qtyTU_Effective = BigDecimal.ONE;
+				shipmentSchedule.setQtyTU_Override(BigDecimal.ONE);
 			}
 		}
 
