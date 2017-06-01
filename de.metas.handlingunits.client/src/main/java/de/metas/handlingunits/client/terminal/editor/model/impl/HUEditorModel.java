@@ -39,21 +39,22 @@ import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
@@ -82,11 +83,11 @@ import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HU
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplitModel;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.logging.LogManager;
 
 public class HUEditorModel implements IDisposable
@@ -144,7 +145,7 @@ public class HUEditorModel implements IDisposable
 		@Override
 		public boolean evaluate(final IHUKey huKey)
 		{
-			// guard agaist null
+			// guard against null
 			if (huKey == null)
 			{
 				return false;
@@ -1151,7 +1152,7 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * Save changes (if any) to database. This methods starts by calling {@link #saveHUProperties()}.
 	 */
-	public void save()
+	public final void save()
 	{
 		saveHUProperties();
 
@@ -1247,87 +1248,78 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * Create vendor return inout
 	 */
-	public void createVendorReturn(final I_M_Warehouse warehouseFrom)
+	public void createVendorReturn()
 	{
+		// services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
-		// the resulting vendor return inout
-		final I_M_InOut[] result = new I_M_InOut[] { null };
-
-		trxManager.run(new TrxRunnable2()
+		try
 		{
+			// Extract the selected HUs to return back to vendor
+			final List<I_M_HU> husToReturn = getSelectedHUKeys().stream()
+					.map(HUKey::getM_HU)
+					.filter(hu -> !handlingUnitsBL.isPureVirtual(hu)) // Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+					.collect(GuavaCollectors.toImmutableList());
 
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				result[0] = createVendorReturn0(warehouseFrom, localTrxName);
+			final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
 
-			}
-
-			@Override
-			public boolean doCatch(final Throwable e) throws Throwable
-			{
-				throw new TerminalException(e.getLocalizedMessage(), e);
-			}
-
-			@Override
-			public void doFinally()
-			{
-				// nothing
-			}
-		});
-
-		//
-		// Open window with return document if it was created successfully
-		final I_M_InOut inOut = result[0];
-		if (inOut != null)
-		{
-			//
-			// Refresh the HUKeys
-			{
-				// Remove huKeys from their parents
-				for (final HUKey huKey : getSelectedHUKeys())
-				{
-					removeHUKeyFromParentRecursivelly(huKey);
-				}
-
-				// Move back to Root HU Key
-				setRootHUKey(getRootHUKey());
-
-				//
-				// Clear (attribute) cache (because it could be that we changed the attributes too)
-				clearCache();
-			}
+			final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(husToReturn, movementDate);
 
 			//
-			// Send notifications
-			ReturnInOutProcessedEventBus.newInstance()
-					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
-					.notify(inOut);
-			
-			// not needed TODO
-			// // zoom into the created vendor return (return to customer not implemented yet)
-			// AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
+			// Refresh the HUKeys if something changed (i.e. at least one vendor return was created)
+			if (!returnInOuts.isEmpty())
+			{
+				refreshSelectedHUKeys();
+			}
+
+		}
+		catch (Exception ex)
+		{
+			throw TerminalException.wrapIfNeeded(ex);
 		}
 	}
 
-	public void refreshSelectedHUKeys()
+	/**
+	 * Move products from the warehouse to garbage (waste disposal)
+	 * After this process an internal use inventory is created.
+	 * 
+	 * @param warehouseFrom
+	 */
+	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
 	{
+		final Set<I_M_HU> selectedHUs = getSelectedHUs();
+		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
+
+		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(selectedHUs, movementDate);
+
 		//
 		// Refresh the HUKeys
+		if (!inventories.isEmpty())
 		{
-			// Remove huKeys from their parents
-			for (final HUKey huKey : getSelectedHUKeys())
-			{
-				removeHUKeyFromParentRecursivelly(huKey);
-			}
-
-			// Move back to Root HU Key
-			setRootHUKey(getRootHUKey());
-
-			//
-			// Clear (attribute) cache (because it could be that we changed the attributes too)
-			clearCache();
+			refreshSelectedHUKeys();
 		}
+	}
+
+	/**
+	 * Refresh selected hu keys
+	 */
+	public void refreshSelectedHUKeys()
+	{
+
+		// Remove huKeys from their parents
+		for (final HUKey huKey : getSelectedHUKeys())
+		{
+			removeHUKeyFromParentRecursivelly(huKey);
+		}
+
+		// Move back to Root HU Key
+		setRootHUKey(getRootHUKey());
+
+		//
+		// Clear (attribute) cache (because it could be that we changed the attributes too)
+		clearCache();
 	}
 
 	protected final void removeHUKeyFromParentRecursivelly(final IHUKey huKey)
@@ -1368,85 +1360,60 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * 
 	 * Create vendor returns based on the selected hus
-	 * 
-	 * @param trxName
-	 * @return
 	 */
-	public I_M_InOut createVendorReturn0(final I_M_Warehouse warehousefrom, final String trxName)
+	public List<I_M_InOut> createVendorReturn0()
 	{
-
 		// services
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
-		//
-		// Get selected HUs
-		final Set<HUKey> huKeys = new HashSet<>(getSelectedHUKeys());
-		for (final Iterator<HUKey> huKeysIterator = huKeys.iterator(); huKeysIterator.hasNext();)
-		{
-			final HUKey huKey = huKeysIterator.next();
-			final I_M_HU hu = huKey.getM_HU();
+		final List<I_M_HU> husToReturn = getSelectedHUKeys().stream()
+				.map(HUKey::getM_HU)
+				.filter(hu -> !handlingUnitsBL.isPureVirtual(hu)) // Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+				.collect(GuavaCollectors.toImmutableList());
 
-			// Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
-			if (handlingUnitsBL.isPureVirtual(hu))
-			{
-				huKeysIterator.remove();
-				continue;
-			}
-		}
-		if (Check.isEmpty(huKeys))
+		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
+
+		final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(husToReturn, movementDate);
+
+		return returnInOuts;
+	}
+
+	public List<I_M_Movement> doMoveToQualityWarehouse(Predicate<ReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
+	{
+		Check.assumeNotNull(editorCallback, "editorCallback not null");
+
+		final List<I_M_HU> hus = new ArrayList<>();
+		hus.addAll(getSelectedHUs());
+
+		if (Check.isEmpty(hus))
 		{
 			throw new TerminalException("@NoSelection@");
 		}
 
-		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
-		for (final HUKey huKey : huKeys)
-		{
-			final I_M_HU hu = huKey.getM_HU();
-			hus.add(hu);
-		}
-
-		// warehouse of inout
-		// final I_M_Warehouse warehouse = getc
-
-		// movement date for inout
-		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
-
-		final I_M_InOut returnInOut = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
-
-		return returnInOut;
-	}
-
-
-	public void doSelectWarehouse(Predicate<ReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
-	{
-		Check.assumeNotNull(editorCallback, "editorCallback not null");
-		
-		final List<I_M_HU> hus = new ArrayList<>();
-		hus.addAll(getSelectedHUs());
-		
 		final de.metas.handlingunits.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(warehouseFrom, de.metas.handlingunits.model.I_M_Warehouse.class);
-		final ReturnsWarehouseModel returnsWarehouseModel = new ReturnsWarehouseModel(_terminalContext, warehouse, hus );
+		final ReturnsWarehouseModel returnsWarehouseModel = new ReturnsWarehouseModel(_terminalContext, warehouse, hus);
 
 		//
 		// Do nothing & keep selection if the user cancelled
 		final boolean edited = editorCallback.evaluate(returnsWarehouseModel);
 		if (!edited)
 		{
-			return;
+			return Collections.emptyList();
 		}
 
+		final List<I_M_Movement> movementsToQualityWarehouse = returnsWarehouseModel.getMovements();
 		//
-		// Remove previous selection
-		clearSelectedKeyIds();
+		// Refresh the HUKeys
+		if (!movementsToQualityWarehouse.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
 
-		//
-		// Navigate back to root
-		setCurrentHUKey(getRootHUKey());
-		
+		return returnsWarehouseModel.getMovements();
+
 	}
 
-	
 	@Override
 	public String toString()
 	{
@@ -1473,6 +1440,5 @@ public class HUEditorModel implements IDisposable
 
 		return stringBuilder.toString();
 	}
-
 
 }

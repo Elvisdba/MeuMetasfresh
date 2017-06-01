@@ -501,7 +501,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						msgBL.getMsg(ctx,
 								InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
 								new Object[] {
-										adReferenceDAO.retriveListName(ctx, X_C_Order.DOCSTATUS_AD_Reference_ID,
+										adReferenceDAO.retrieveListNameTrl(X_C_Order.DOCSTATUS_AD_Reference_ID,
 												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
 								}));
 
@@ -1277,7 +1277,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (creditMemo && invoiceExt.getRef_CreditMemo_ID() > 0)
 		{
 			final org.compiere.model.I_C_Invoice originalInvoice = invoiceExt.getRef_CreditMemo();
-			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
+			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isDocumentStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
 		}
 		else
 		{
@@ -1536,7 +1536,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			int nonReversedIlas = 0;
 			for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
 			{
-				if (!docActionBL.isStatusOneOf(ila.getDocStatus(),
+				if (!docActionBL.isStatusStrOneOf(ila.getDocStatus(),
 						X_C_Invoice_Line_Alloc.DOCSTATUS_Reversed))
 				{
 					nonReversedIlas++;
@@ -1592,7 +1592,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setError(final I_C_Invoice_Candidate ic, final Exception e)
+	public void setError(final I_C_Invoice_Candidate ic, final Throwable e)
 	{
 		Check.assumeNotNull(e, "e not null");
 
@@ -1774,7 +1774,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 		final MutableQtyAndQuality qtys = new MutableQtyAndQuality();
-		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
 		for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 		{
 			final org.compiere.model.I_M_InOutLine inoutLine = iciol.getM_InOutLine();

@@ -13,8 +13,9 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -45,7 +46,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -54,6 +54,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -579,7 +581,7 @@ public final class ProcessInfo implements Serializable
 	// metas end
 
 	/**
-	 * @return the m_whereClause
+	 * @return the whereClause <b>but without org restrictions</b>
 	 * @deprecated please use {@link #getQueryFilter()} instead
 	 */
 	@Deprecated
@@ -590,7 +592,9 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 *
-	 * @return a query filter for the current {@code m_whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the whereclause is empty.
+	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
+	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
+	 * 
 	 * @task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
@@ -607,11 +611,35 @@ public final class ProcessInfo implements Serializable
 	 */
 	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
 	{
+		final IQueryFilter<T> whereFilter;
 		if (Check.isEmpty(whereClause, true))
 		{
-			return defaultQueryFilter;
+			whereFilter = defaultQueryFilter;
 		}
-		return new TypedSqlQueryFilter<>(whereClause);
+		else
+		{
+			whereFilter = TypedSqlQueryFilter.of(whereClause);
+		}
+
+		// https://github.com/metasfresh/metasfresh/issues/1348
+		// also restrict to the client(s) and org(s) the user shall see with its current role.
+		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
+
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
+		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
+
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name in this case
+		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
+
+		compositeFilter.addFilter(whereFilter)
+				.addFilter(clientFilter)
+				.addFilter(orgFilter);
+
+		return compositeFilter;
 	}
 
 	/**
@@ -742,11 +770,11 @@ public final class ProcessInfo implements Serializable
 
 			//
 			final MFSession mfSession = Services.get(ISessionBL.class).getCurrentSession(ctx);
-			if(mfSession != null)
+			if (mfSession != null)
 			{
 				mfSession.updateContext(processCtx);
 			}
-			
+
 			//
 			// AD_Client, AD_Language
 			final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -1671,7 +1699,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			// Nothing to do if the document is not a draft or in progress.
-			if (!docActionBL.isStatusDraftedOrInProgress(document))
+			if (!docActionBL.issDocumentDraftedOrInProgress(document))
 			{
 				return null;
 			}

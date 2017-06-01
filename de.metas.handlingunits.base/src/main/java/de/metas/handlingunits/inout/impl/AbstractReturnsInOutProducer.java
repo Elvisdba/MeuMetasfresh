@@ -39,7 +39,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -48,18 +47,17 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.inout.IInOutBL;
+import lombok.NonNull;
 
 public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProducer
 {
 	//
 	// Services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private Properties _ctx;
+	protected final Properties _ctx;
 	protected boolean executed = false;
 
 	protected I_C_BPartner _bpartner = null;
@@ -75,17 +73,17 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	/** InOut header reference. It will be created just when it is needed. */
 	protected final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
 
-	public void setCtx(final Properties ctx)
+	protected AbstractReturnsInOutProducer(@NonNull final Properties ctx)
 	{
 		this._ctx = ctx;
 	}
 
-	private final Properties getCtx()
+	protected final Properties getCtx()
 	{
 		return _ctx;
 	}
 
-	private IContextAware getContextProvider()
+	protected IContextAware getContextProvider()
 	{
 		final Properties ctx = getCtx();
 
@@ -97,6 +95,12 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 
 	@Override
 	public I_M_InOut create()
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(this::createInTrx);
+	}
+
+	private I_M_InOut createInTrx()
 	{
 		Check.assume(!executed, "inout not already created");
 		executed = true;
@@ -110,6 +114,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			// Create document lines
 			// NOTE: as a side effect the document header will be created, if there was at least one line
 			createLines();
+
 			if (!inoutRef.isInitialized())
 			{
 				// nothing created
@@ -123,6 +128,8 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			}
 
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			
+			afterInOutProcessed(inout);
 
 			return inout;
 		}
@@ -136,12 +143,34 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			return inout;
 		}
 	}
+	
+	protected void afterInOutProcessed(final I_M_InOut inout)
+	{
+		// nothing at this level
+	}
+
+	@Override
+	public final void fillReturnsInOutHeader(final I_M_InOut returnsInOut)
+	{
+		ReturnsInOutHeaderFiller.newInstance()
+				.setMovementDate(getMovementDateToUse())
+				.setMovementType(getMovementTypeToUse())
+				.setReturnsDocTypeIdProvider(this::getReturnsDocTypeId)
+				//
+				.setBPartnerId(getC_BPartner_ID_ToUse())
+				.setBPartnerLocationId(getC_BPartner_Location_ID_ToUse())
+				.setWarehouseId(getM_Warehouse_ID_ToUse())
+				//
+				.setOrder(getC_Order())
+				//
+				.fill(returnsInOut);
+	}
 
 	protected abstract void createLines();
 
 	@Override
 	public abstract boolean isEmpty();
-	
+
 	@Override
 	public abstract IReturnsInOutProducer addPackingMaterial(I_M_HU_PackingMaterial packingMaterial, int qty);
 
@@ -153,83 +182,19 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	 * @return true if empty.
 	 */
 
-	private I_M_InOut createInOutHeader()
+	protected I_M_InOut createInOutHeader()
 	{
 		final IContextAware contextProvider = getContextProvider();
 
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class, contextProvider);
-
-		//
-		// Document Type
-		{
-			final String movementType = getMovementTypeToUse();
-			final boolean isSOTrx = inOutBL.getSOTrxFromMovementType(movementType);
-			// isSOTrx = 'Y' means packing material coming back from the customer -> incoming -> Receipt
-			// isSOTrx = 'N' means packing material is returned to the vendor -> outgoing -> Delivery
-			final String docBaseType = isSOTrx ?  X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
-
-			inout.setMovementType(movementType);
-			inout.setIsSOTrx(isSOTrx);
-
-			final int docTypeId = getReturnsDocTypeId(contextProvider, isSOTrx, inout, docBaseType);
-
-			inout.setC_DocType_ID(docTypeId);
-		}
-
-		//
-		// BPartner, Location & Contact
-		{
-			final I_C_BPartner bpartner = getC_BPartnerToUse();
-
-			inout.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-
-			final int bpartnerLocationId = getC_BPartner_Location_ID_ToUse();
-			inout.setC_BPartner_Location_ID(bpartnerLocationId);
-
-			// inout.setAD_User_ID(bpartnerContactId); // TODO
-		}
-
-		//
-		// Document Dates
-		{
-			final Timestamp movementDate = getMovementDateToUse();
-			inout.setDateOrdered(movementDate);
-			inout.setMovementDate(movementDate);
-			inout.setDateAcct(movementDate);
-		}
-
-		//
-		// Warehouse
-		{
-			final I_M_Warehouse warehouse = getM_WarehouseToUse();
-			inout.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		}
-
-		//
-		// task #643: Add order related details
-		{
-			final I_C_Order order = getC_Order();
-
-			if (order == null)
-			{
-				// nothing to do. The order was not selected
-			}
-			else
-			{
-				// if the order was selected, set its poreference to the inout
-				final String poReference = order.getPOReference();
-
-				inout.setPOReference(poReference);
-				inout.setC_Order(order);
-			}
-		}
+		final I_M_InOut emptiesInOut = InterfaceWrapperHelper.newInstance(I_M_InOut.class, contextProvider);
+		fillReturnsInOutHeader(emptiesInOut);
 
 		// NOTE: don't save it. it will be saved later by "inoutLinesBuilder"
 		// InterfaceWrapperHelper.save(inout);
-		return inout;
+		return emptiesInOut;
 	}
 
-	protected abstract int getReturnsDocTypeId(IContextAware contextProvider, boolean isSOTrx, I_M_InOut inout, String docBaseType);
+	protected abstract int getReturnsDocTypeId(String docBaseType, boolean isSOTrx, int adClientId, int adOrgId);
 
 	/**
 	 * Asserts this producer is in configuration stage (nothing produced yet)
@@ -248,10 +213,13 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return this;
 	}
 
-	private I_C_BPartner getC_BPartnerToUse()
+	private int getC_BPartner_ID_ToUse()
 	{
-		Check.assumeNotNull(_bpartner, "bpartner not null");
-		return _bpartner;
+		if (_bpartner != null)
+		{
+			return _bpartner.getC_BPartner_ID();
+		}
+		return -1;
 	}
 
 	@Override
@@ -270,10 +238,17 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			return _bpartnerLocationId;
 		}
 
-		final I_C_BPartner bpartner = getC_BPartnerToUse();
-		final I_C_BPartner_Location bpLocation = bpartnerDAO.retrieveShipToLocation(getCtx(), bpartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
-		Check.assumeNotNull(bpLocation, "bpLocation not null");
-		return bpLocation.getC_BPartner_Location_ID();
+		final I_C_BPartner bpartner = _bpartner;
+		if (bpartner != null)
+		{
+			final I_C_BPartner_Location bpLocation = bpartnerDAO.retrieveShipToLocation(getCtx(), bpartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			if (bpLocation != null)
+			{
+				return bpLocation.getC_BPartner_Location_ID();
+			}
+		}
+
+		return -1;
 	}
 
 	@Override
@@ -300,10 +275,13 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return this;
 	}
 
-	private final I_M_Warehouse getM_WarehouseToUse()
+	private final int getM_Warehouse_ID_ToUse()
 	{
-		Check.assumeNotNull(_warehouse, "warehouse not null");
-		return _warehouse;
+		if (_warehouse != null)
+		{
+			return _warehouse.getM_Warehouse_ID();
+		}
+		return -1;
 	}
 
 	@Override
@@ -351,4 +329,3 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return _complete;
 	}
 }
-

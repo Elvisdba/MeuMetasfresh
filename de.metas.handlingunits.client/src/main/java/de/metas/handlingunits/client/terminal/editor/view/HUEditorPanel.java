@@ -176,13 +176,18 @@ public class HUEditorPanel
 	 * button for moving HUs to quality Warehouse (task #1065)
 	 */
 	protected ITerminalButton bMoveToQualityWarehouse;
-	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; // TODO: Translate
+	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; 
 
 	/**
 	 * button to create Vendor Return inout (task #1062)
 	 */
 	protected ITerminalButton bCreateVendorReturn;
-	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; // TODO: Translate
+	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; 
+	/**
+	 * boton to move HUs + products to garbage (task #1064)
+	 */
+	protected ITerminalButton bMoveToGarbage;
+	private static final String ACTION_MoveToGarbage = "MoveToGarbage"; 
 
 	/**
 	 * Barcode search field
@@ -422,6 +427,27 @@ public class HUEditorPanel
 
 			}
 
+			// task #1064
+			// Create MoveToGarbage button
+			{
+				this.bMoveToGarbage = factory.createButton(ACTION_MoveToGarbage);
+
+				this.bMoveToGarbage.setTextAndTranslate(ACTION_MoveToGarbage);
+				bMoveToGarbage.setEnabled(true);
+				bMoveToGarbage.setVisible(true);
+				bMoveToGarbage.addListener(new UIPropertyChangeListener(factory, bMoveToGarbage)
+				{
+
+					@Override
+					protected void propertyChangeEx(PropertyChangeEvent evt)
+					{
+						doMoveToGarbage();
+
+					}
+				});
+
+			}
+
 			modelListener = new PropertyChangeListener()
 			{
 				@Override
@@ -444,9 +470,32 @@ public class HUEditorPanel
 		}
 	}
 
+	/**
+	 * task #1062
+	 * Create vendor return for the selected HUs
+	 */
+	private void doCreateVendorReturn()
+	{
+		getHUEditorModel().createVendorReturn();
+
+	}
+
+	/**
+	 * #1064
+	 * Move products to garbage (waste disposal). Internal use M_Inventory will be created
+	 */
+	protected void doMoveToGarbage()
+	{
+		getHUEditorModel().doMoveToGarbage(getCurrentWarehouse());
+	}
+
+	/**
+	 * #1065
+	 * Move the HUs to a quality warehouse
+	 */
 	protected void doMoveToQualityWarehouse()
 	{
-		model.doSelectWarehouse(new Predicate<ReturnsWarehouseModel>()
+		model.doMoveToQualityWarehouse(new Predicate<ReturnsWarehouseModel>()
 		{
 			@Override
 			public boolean evaluate(final ReturnsWarehouseModel returnWarehouseModel)
@@ -469,29 +518,8 @@ public class HUEditorPanel
 				final boolean edited = !selectWarehouseDialog.isCanceled();
 				return edited;
 			}
-		}, 
-		getCurrentWarehouse());
-
-		load(); // refresh window (i.e toggle select) after operation
-		
-//		//
-//		// Inform the user about which movement was created
-//		final ITerminalFactory terminalFactory = getTerminalFactory();
-//		final Properties ctx = getTerminalContext().getCtx();
-//		
-//	
-//		final String message = Services.get(IMsgBL.class).parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
-//		terminalFactory.showInfo(getTerminalContext().get"Created", message);
-
-	}
-
-	/**
-	 * task #1062
-	 * Create vendor return for the selected HUs
-	 */
-	private void doCreateVendorReturn()
-	{
-		getHUEditorModel().createVendorReturn(getCurrentWarehouse());
+		},
+				getCurrentWarehouse());
 
 	}
 
@@ -1034,6 +1062,7 @@ public class HUEditorPanel
 	 *
 	 * @param dialog
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
 	{
 		if (!model.hasSelectedKeys())
@@ -1095,14 +1124,7 @@ public class HUEditorPanel
 	{
 		// NOTE: we are doing it in a long operation because it could take a while
 		// and we want to prevent user from clicking other things or user to believe the interface is frozen
-		getTerminalFactory().executeLongOperation(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				model.save();
-			}
-		});
+		getTerminalFactory().executeLongOperation(this, model::save);
 	}
 
 	@Override

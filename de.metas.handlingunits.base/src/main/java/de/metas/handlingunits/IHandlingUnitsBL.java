@@ -262,6 +262,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isTransportUnitOrVirtual(I_M_HU hu);
 
 	/**
+	 * @return true if the HU is a TU or an aggregated TU
+	 */
+	boolean isTransportUnitOrAggregate(I_M_HU hu);
+
+	/**
 	 * Checks if given handling unit is top level (i.e. it has no parents)
 	 *
 	 * @param hu
@@ -352,12 +357,21 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
 	 *
+	 * NOTE: this method is not saving the HU.
+	 * 
 	 * @param huContext
 	 * @param hu
 	 * @param huStatus
 	 * @param forceFetchPackingMaterial
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
+	
+	/**
+	 * Activate the HU (assuming it was Planning)
+	 * 
+	 * @param hus
+	 */
+	void setHUStatusActive(Collection<I_M_HU> hus);
 
 	/**
 	 * Marks the hu as destroyed, but doesn't handle the storages
@@ -391,4 +405,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI_Version getEffectivePIVersion(I_M_HU hu);
+
+	/**
+	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
+	 * Otherwise, return the given {@code hu}'s own/direct PI.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_PI getEffectivePI(I_M_HU hu);
 }

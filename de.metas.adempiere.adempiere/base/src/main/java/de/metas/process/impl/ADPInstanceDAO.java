@@ -49,13 +49,13 @@ import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
@@ -302,7 +302,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Check which type of Parameter we have, and if the instPara value differs from the piPara value
 		// apply the piPara Value to the instPara value and save. If not, do nothing.
 
-		if (value instanceof java.util.Date
+		if(value == null && valueTo == null)
+		{
+			hasChanges = true;
+		}
+		else if (value instanceof java.util.Date
 				&& (!value.equals(adPInstanceParam.getP_Date()) || !Objects.equals(valueTo, adPInstanceParam.getP_Date_To())) // value changed
 		)
 		{

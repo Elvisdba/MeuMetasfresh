@@ -25,9 +25,13 @@ package de.metas.handlingunits;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
@@ -39,7 +43,6 @@ import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 
 /**
@@ -67,18 +70,6 @@ public interface IHUTrxBL extends ISingletonService
 	 * @param request
 	 */
 	void transfer(IHUContext huContext, IAllocationSource source, IAllocationDestination destination, IAllocationRequest request);
-
-	/**
-	 * Extracts (or maybe "detaches", makes into "stand-alone" HUs) the given qty of HU items that match the given definition form the given source HU(s). One or more source HUs are modified in the
-	 * process. The method also creates a {@link I_M_HU_Trx_Hdr} to document from source items (of <code>sourceHU</code>) were extracted into "standalone" HUs. That trx-hdr has one line for every
-	 * {@link de.metas.handlingunits.model.I_M_HU_Item} that was extracted from the source HU(s) and one line for every {@link I_M_HU} that is now a "stand-alone" HU.
-	 *
-	 * @param sourceHUs
-	 * @param huQty of HUs to be extracted
-	 * @param destinationHuPI the definition of the HUs that shall be extracted
-	 * @return the HUs that are now "standalone"
-	 */
-	List<I_M_HU> extractIncludedHUs(List<I_M_HU> sourceHUs, int huQty, I_M_HU_PI destinationHuPI);
 
 	/**
 	 * Create and <b>process</b> transaction lines for the candidates (i.e. {@link IHUTransaction}s) included in the given {@code result}.
@@ -149,9 +140,43 @@ public interface IHUTrxBL extends ISingletonService
 	 */
 	void setParentHU(IHUContext huContext, I_M_HU_Item parentHUItem, I_M_HU hu);
 
+	/**
+	 * Take out the given HU from it's parent (if it's not already a top level HU)
+	 *
+	 * @param hu
+	 */
+	void extractHUFromParentIfNeeded(I_M_HU hu);
+
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IHUContext huContext);
 
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IContextAware context);
+
+	/** @return executor which will run using current environment and thread inherited trx */
+	default IHUContextProcessorExecutor createHUContextProcessorExecutor()
+	{
+		return createHUContextProcessorExecutor(PlainContextAware.newWithThreadInheritedTrx());
+	}
+
+	/**
+	 * Convenient method to process using current env and thread inherited trx.
+	 * 
+	 * @param processor
+	 */
+	default void process(final Consumer<IHUContext> processor)
+	{
+		createHUContextProcessorExecutor().run(processor);
+	}
+
+	default <R> R process(final Function<IHUContext, R> procesor)
+	{
+		final Mutable<R> resultHolder = new Mutable<>();
+		createHUContextProcessorExecutor().run(huContext -> {
+			final R result = procesor.apply(huContext);
+			resultHolder.setValue(result);
+		});
+
+		return resultHolder.getValue();
+	}
 
 	/**
 	 * Iterate the {@link IHUTransaction}s that were added so far and aggregate those that only differ in their quantity.

@@ -43,20 +43,18 @@ import org.compiere.process.DocAction;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
-import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.exceptions.LiberoException;
-import org.eevolution.exceptions.NoPlantForWarehouseException;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.exception.NoPlantForWarehouseException;
 
 public class DDOrderBL implements IDDOrderBL
 {
@@ -143,12 +141,12 @@ public class DDOrderBL implements IDDOrderBL
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
 	{
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		if (docActionBL.isStatusDraftedOrInProgress(ddOrder))
+		if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
 		{
 			docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 		}
 
-		if (!docActionBL.isStatusCompleted(ddOrder))
+		if (!docActionBL.isDocumentCompleted(ddOrder))
 		{
 			throw new LiberoException("@Invalid@ @DocStatus@=" + ddOrder.getDocStatus() + " (" + ddOrder + ")");
 		}
@@ -166,12 +164,12 @@ public class DDOrderBL implements IDDOrderBL
 
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
-			if (docActionBL.isStatusDraftedOrInProgress(ddOrder))
+			if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
 			{
 				docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 			}
 
-			if (!docActionBL.isStatusCompleted(ddOrder))
+			if (!docActionBL.isDocumentCompleted(ddOrder))
 			{
 				throw new LiberoException("@Invalid@ @DocStatus@=" + ddOrder.getDocStatus() + " (" + ddOrder + ")");
 			}

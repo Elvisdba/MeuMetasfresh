@@ -24,50 +24,55 @@ package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_M_Transaction;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.flatrate.interfaces.I_C_BPartner;
+import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.empties.impl.EmptiesInOutProducer;
+import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.quantity.Quantity;
 
 public class HUInOutBL implements IHUInOutBL
 {
+	private final IDocumentLUTUConfigurationHandler<I_M_InOutLine> lutuConfigurationHandler = CustomerReturnLUTUConfigurationHandler.instance;
+	private final IDocumentLUTUConfigurationHandler<List<I_M_InOutLine>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
+
 	private static final transient Logger logger = LogManager.getLogger(HUInOutBL.class);
 
 	@Override
@@ -104,7 +109,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void recreatePackingMaterialLines(final I_M_InOut inout)
+	public void recreatePackingMaterialLines(final org.compiere.model.I_M_InOut inout)
 	{
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = createHUShipmentPackingMaterialLinesBuilder(inout);
 
@@ -114,7 +119,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void createPackingMaterialLines(final I_M_InOut inout)
+	public void createPackingMaterialLines(final org.compiere.model.I_M_InOut inout)
 	{
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = createHUShipmentPackingMaterialLinesBuilder(inout);
 		packingMaterialLinesBuilder.setOverrideExistingPackingMaterialLines(false);
@@ -122,7 +127,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public final HUShipmentPackingMaterialLinesBuilder createHUShipmentPackingMaterialLinesBuilder(final I_M_InOut shipment)
+	public final HUShipmentPackingMaterialLinesBuilder createHUShipmentPackingMaterialLinesBuilder(final org.compiere.model.I_M_InOut shipment)
 	{
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = new HUShipmentPackingMaterialLinesBuilder();
 		packingMaterialLinesBuilder.setM_InOut(shipment);
@@ -169,7 +174,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void destroyHUs(final I_M_InOut inout)
+	public void destroyHUs(final org.compiere.model.I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, "inout not null");
 
@@ -237,98 +242,135 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public IReturnsInOutProducer createQualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU> hus)
+	public List<I_M_InOut> createVendorReturnInOutForHUs(final List<I_M_HU> hus, final Timestamp movementDate)
 	{
-		return new QualityReturnsInOutProducer(ctx, hus);
+		return MultiVendorHUReturnsInOutProducer.newInstance()
+				.setMovementDate(movementDate)
+				.addHUsToReturn(hus)
+				.create();
+	}
+	
+	@Override
+	public List<I_M_InOut> createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
+	{
+		return MultiCustomerHUReturnsInOutProducer.newInstance()
+				.addHUsToReturn(hus)
+				.create();
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_InOut createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines)
 	{
-
-		// services
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final Map<Integer, List<I_M_HU>> partnerstoHUs = new HashMap<>();
-
-		// inoutline table id
-		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class);
-
-		for (final I_M_HU hu : hus)
+		Check.assumeNotEmpty(inOutLines, "inOutLines not empty");
+		if (inOutLines.size() == 1)
 		{
-			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-
-			final List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
-
-			// search for the bpartner (vendor) based on the hu assignments of the receipt
-			for (final I_M_HU_Assignment assignment : inOutLineHUAssignments)
-			{
-				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(ctxAware.getCtx(), assignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
-
-				final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
-
-				final int bpartnerID = inOut.getC_BPartner_ID();
-
-				List<I_M_HU> husForPartner = partnerstoHUs.get(bpartnerID);
-
-				if (husForPartner == null)
-				{
-					husForPartner = new ArrayList<I_M_HU>();
-					partnerstoHUs.put(bpartnerID, husForPartner);
-				}
-				
-				husForPartner.add(hu);
-			}
+			final I_M_InOutLine inOutLine = inOutLines.get(0);
+			return createLUTUConfigurationManager(inOutLine);
 		}
-
-		// there will be as many return inouts as there are partners
-
-		Set<Integer> keySet = partnerstoHUs.keySet();
-
-		I_M_InOut inOut = null;
-
-		for (final int partnerId : keySet)
+		else
 		{
-			inOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUs.get(partnerId), warehouse, movementDate);
+			return new DocumentLUTUConfigurationManager<>(inOutLines, lutuConfigurationListHandler);
 		}
-
-		// return the last inout that was created
-		de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(inOut, de.metas.handlingunits.model.I_M_InOut.class);
-
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(huInOut, hus, ITrx.TRXNAME_ThreadInherited);
-
-		return huInOut;
 	}
 
-	/**
-	 * Create vendor return producer, set the details and use it to create the vendor return inout.
-	 * 
-	 * @param partnerId
-	 * @param hus
-	 * @return
-	 */
-	private I_M_InOut createInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	@Override
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_InOutLine inOutLine)
 	{
-		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		return new DocumentLUTUConfigurationManager<>(inOutLine, lutuConfigurationHandler);
+	}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(ctx, hus);
-		producer.setC_BPartner(partner);
+	@Override
+	public boolean isCustomerReturn(final org.compiere.model.I_M_InOut inOut)
+	{
 
-		final I_C_BPartner_Location shipToLocation = bpartnerDAO.retrieveShipToLocation(ctx, partnerId, ITrx.TRXNAME_None);
-		producer.setC_BPartner_Location(shipToLocation);
+		// in the case of returns the docSubType is null
+		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
 
-		final String movementType = X_M_Transaction.MOVEMENTTYPE_VendorReturns;
+		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
+				.getDocTypeOrNullForSOTrx(
+						Env.getCtx() // ctx
+						, X_C_DocType.DOCBASETYPE_MaterialReceipt // doc basetype
+						, docSubType // doc subtype
+						, true // isSOTrx
+						, inOut.getAD_Client_ID() // client
+						, inOut.getAD_Org_ID() // org
+						, ITrx.TRXNAME_None); // trx
 
-		producer.setMovementType(movementType);
-		producer.setM_Warehouse(warehouse);
+		if (returnsDocType == null)
+		{
+			// there is no customer return doc type defined in the project. Return false by default
+			return false;
+		}
 
-		producer.setMovementDate(movementDate);
+		if (returnsDocType.getC_DocType_ID() != inOut.getC_DocType_ID())
+		{
+			// the inout is not a customer return
+			return false;
+		}
+
+		// the inout is a customer return
+		return true;
+	}
+
+	@Override
+	public void createHUsForCustomerReturn(final I_M_InOutLine customerReturnLine)
+	{
+		final org.compiere.model.I_M_InOut customerReturn = customerReturnLine.getM_InOut();
+
+		Check.assume(isCustomerReturn(customerReturn), "Inout {} is not a customer return ", customerReturn);
+
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(customerReturn);
 
 		//
-		// Create Shipment document and return it
-		final I_M_InOut inOut = producer.create();
-		return inOut;
+		// Create HU generator
+		final CustomerReturnLineHUGenerator huGenerator = CustomerReturnLineHUGenerator.newInstance(ctxAware)
+				.addM_InOutLine(customerReturnLine);
+
+		//
+		// Get/Create and Edit LU/TU configuration
+		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
+		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.getCreateLUTUConfiguration();
+
+		//
+		// No configuration => user cancelled => don't open editor
+		if (lutuConfigurationEffective == null)
+		{
+			return;
+		}
+
+		InterfaceWrapperHelper.save(lutuConfigurationEffective, ITrx.TRXNAME_None);
+		customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
+
+		// huGenerator.generateAllPlanningHUs_InChunks();
+
+		// //lutuConfigurationEffective.setQtyLU(BigDecimal.ONE);
+		// InterfaceWrapperHelper.save(lutuConfigurationEffective);
+		// customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
+		//
+		// Calculate the target CUs that we want to allocate
+		final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
+		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
+		if (qtyCUsTotal.isInfinite())
+		{
+			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
+		}
+		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+
+		//
+		// Generate the HUs
+		final List<I_M_HU> hus = huGenerator.generate();
+		Services.get(IHandlingUnitsBL.class).setHUStatusActive(hus);
+		for (final I_M_HU hu : hus)
+		{
+
+			Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
+		}
 	}
 
+	@Override
+	public void createHUsForCustomerReturn(org.compiere.model.I_M_InOut customerReturn)
+	{
+		// TODO Auto-generated method stub
+
+	}
 }

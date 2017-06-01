@@ -31,30 +31,25 @@ import de.metas.event.Type;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 {
-	//TODO
-	// OPEN THE RIGHT RETURN WINDOW!!!!!!!!!
-
-	/**
-	 * M_InOut SO
-	 */
-	private static final int WINDOW_CUSTOMER_RETURN = 53097; // FIXME: HARDCODED
 
 	/**
 	 * M_InOut PO
 	 */
 	private static final int WINDOW_RETURN_TO_VENDOR = 53098; // FIXME: HARDCODED
 	
+	private static final int WINDOW_RETURN_FROM_CUSTOMER = 53097; // FIXME: HARDCODED
+
 	public static final ReturnInOutProcessedEventBus newInstance()
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
@@ -63,16 +58,16 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.inout.InOut.ProcessedEvents")
+			.setName("de.metas.inout.ReturnInOut.ProcessedEvents")
 			.setType(Type.REMOTE)
 			.build();
-	
+
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
-	private static final String MSG_Event_CUSTOMER_RETURN_Generated = "Event_CustomerReturn_Generated";
+	private static final String MSG_Event_RETURN_FROM_CUSTOMER_Generated = "Event_CustomerReturn_Generated";
 	private static final String MSG_Event_RETURN_TO_VENDOR_Generated = "Event_ReturnToVendor_Generated";
-	
+
 	private ReturnInOutProcessedEventBus(final IEventBus delegate)
 	{
 		super(delegate);
@@ -91,7 +86,7 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 		super.queueEventsUntilTrxCommit(trxName);
 		return this;
 	}
-	
+
 	@Override
 	public ReturnInOutProcessedEventBus queueEventsUntilCurrentTrxCommit()
 	{
@@ -153,29 +148,35 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId)
 				.setRecord(TableRecordReference.of(inout))
+				.setSuggestedWindowId(getWindowID(inout))
 				.build();
 		return event;
 	}
-	
+
+	private int getWindowID(I_M_InOut inout)
+	{
+		return inout.isSOTrx() ? WINDOW_RETURN_FROM_CUSTOMER : WINDOW_RETURN_TO_VENDOR;
+	}
+
 	private final String getNotificationAD_Message(final I_M_InOut inout)
 	{
-		
-			return inout.isSOTrx() ? MSG_Event_CUSTOMER_RETURN_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;
-	
+
+		return inout.isSOTrx() ? MSG_Event_RETURN_FROM_CUSTOMER_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;
+
 	}
-	
+
 	private final int getNotificationRecipientUserId(final I_M_InOut inout)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if(docActionBL.isStatusReversedOrVoided(inout))
+		if (docActionBL.isDocumentReversedOrVoided(inout))
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
-			if(currentUserId > 0)
+			if (currentUserId > 0)
 			{
 				return currentUserId;
 			}
-			
+
 			return inout.getUpdatedBy(); // last updated
 		}
 		//

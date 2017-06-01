@@ -1,7 +1,6 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -10,10 +9,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_M_Movement;
 import org.compiere.util.TrxRunnable2;
 
-import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -25,9 +23,6 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inout.event.InOutProcessedEventBus;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
-import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementProcessedEventBus;
 
 /*
@@ -55,9 +50,10 @@ import de.metas.movement.event.MovementProcessedEventBus;
 public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 {
 
-	private I_M_Warehouse warehouseFrom;
-	private I_M_Warehouse warehouseTo;
+	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
+	
 	private List<I_M_HU> hus;
+	private List<I_M_Movement> movements;
 
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -74,7 +70,6 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 	{
 		super(terminalContext);
 
-		this.warehouseFrom = warehouseFrom;
 		this.hus = hus;
 		//
 		// Configure Warehouse Key Layout
@@ -104,7 +99,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
 
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
-		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found. Check your POS profile.");
+		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
 
 	}
@@ -149,19 +144,28 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 	}
 
 	/**
-	 * task #1065
 	 * Move the selected HUs to the quality returns warehouse
+	 * task #1065
 	 */
 	private List<I_M_Movement> doMoveToQualityWarehouse()
 	{
-		// Move from the selected warehouse
-		final I_M_Warehouse warehouseFrom = getM_WarehouseFrom(); // shall not be null
-		final I_M_Warehouse warehouseTo = getM_WarehouseTo();
+		final I_M_Warehouse qualityReturnsWarehouse = getM_WarehouseTo();
 		final List<I_M_HU> hus = getHUs();
-		final List<I_M_Movement> movements = huMovementBL.moveToQualityWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
+		movements = huMovementBL.moveHUsToWarehouse(hus, qualityReturnsWarehouse)
+				.getMovements();
 
 		return movements;
 
+	}
+
+	public List<I_M_Movement> getMovements()
+	{
+		return movements;
+	}
+
+	public void setMovements(List<I_M_Movement> movements)
+	{
+		this.movements = movements;
 	}
 
 	@Override
@@ -196,6 +200,11 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		});
 	}
 
+	/**
+	 * Warehouse that was selected to move the quality HUs to
+	 * 
+	 * @return
+	 */
 	@OverridingMethodsMustInvokeSuper
 	public I_M_Warehouse getM_WarehouseTo()
 	{
@@ -209,11 +218,6 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		final I_M_Warehouse warehouseTo = InterfaceWrapperHelper.create(getCtx(), warehouseID, I_M_Warehouse.class, ITrx.TRXNAME_None);
 
 		return warehouseTo;
-	}
-
-	public I_M_Warehouse getM_WarehouseFrom()
-	{
-		return warehouseFrom;
 	}
 
 	public List<I_M_HU> getHUs()

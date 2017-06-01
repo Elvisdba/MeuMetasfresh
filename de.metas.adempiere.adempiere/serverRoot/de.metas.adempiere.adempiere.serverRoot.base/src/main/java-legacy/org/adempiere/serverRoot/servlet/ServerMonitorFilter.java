@@ -34,6 +34,9 @@ import javax.xml.bind.DatatypeConverter;
 import org.compiere.model.MUser;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+
+import de.metas.ServerBoot;
 import de.metas.logging.LogManager;
 
 /**
@@ -43,7 +46,8 @@ import de.metas.logging.LogManager;
  * @author Michael Judd BF [ 2736817 ] - remove deprecated BASE64Encoder classes
  * @author tsa
  */
-@WebFilter("/serverMonitor/*")
+@WebFilter({ "/serverMonitor/*", "/test/*" })
+@Profile(ServerBoot.PROFILE)
 public class ServerMonitorFilter implements Filter
 {
 	public ServerMonitorFilter()
