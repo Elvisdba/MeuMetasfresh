@@ -154,6 +154,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_PP_Product_BOMLine bomLine)
 	{
+		orderBOMLine.setPP_Product_BOMLine(bomLine);
 		orderBOMLine.setM_ChangeNotice_ID(bomLine.getM_ChangeNotice_ID());
 		orderBOMLine.setDescription(bomLine.getDescription());
 		orderBOMLine.setHelp(bomLine.getHelp());
