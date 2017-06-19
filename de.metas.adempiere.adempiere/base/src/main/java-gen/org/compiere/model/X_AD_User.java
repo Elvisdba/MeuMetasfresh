@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1440417804L;
+	private static final long serialVersionUID = -704716307L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -1371,5 +1371,39 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+	}
+
+//	@Override
+//	public de.metas.ui.web.base.model.I_WEBUI_Dashboard getWEBUI_Dashboard() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_WEBUI_Dashboard_ID, de.metas.ui.web.base.model.I_WEBUI_Dashboard.class);
+//	}
+//
+//	@Override
+//	public void setWEBUI_Dashboard(de.metas.ui.web.base.model.I_WEBUI_Dashboard WEBUI_Dashboard)
+//	{
+//		set_ValueFromPO(COLUMNNAME_WEBUI_Dashboard_ID, de.metas.ui.web.base.model.I_WEBUI_Dashboard.class, WEBUI_Dashboard);
+//	}
+
+	/** Set Dashboard.
+		@param WEBUI_Dashboard_ID Dashboard	  */
+	@Override
+	public void setWEBUI_Dashboard_ID (int WEBUI_Dashboard_ID)
+	{
+		if (WEBUI_Dashboard_ID < 1) 
+			set_Value (COLUMNNAME_WEBUI_Dashboard_ID, null);
+		else 
+			set_Value (COLUMNNAME_WEBUI_Dashboard_ID, Integer.valueOf(WEBUI_Dashboard_ID));
+	}
+
+	/** Get Dashboard.
+		@return Dashboard	  */
+	@Override
+	public int getWEBUI_Dashboard_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_Dashboard_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

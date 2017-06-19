@@ -1571,4 +1571,31 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Dashboard.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_Dashboard_ID (int WEBUI_Dashboard_ID);
+
+	/**
+	 * Get Dashboard.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getWEBUI_Dashboard_ID();
+
+//	public de.metas.ui.web.base.model.I_WEBUI_Dashboard getWEBUI_Dashboard();
+//
+//	public void setWEBUI_Dashboard(de.metas.ui.web.base.model.I_WEBUI_Dashboard WEBUI_Dashboard);
+//
+//    /** Column definition for WEBUI_Dashboard_ID */
+//    public static final org.adempiere.model.ModelColumn<I_AD_User, de.metas.ui.web.base.model.I_WEBUI_Dashboard> COLUMN_WEBUI_Dashboard_ID = new org.adempiere.model.ModelColumn<I_AD_User, de.metas.ui.web.base.model.I_WEBUI_Dashboard>(I_AD_User.class, "WEBUI_Dashboard_ID", de.metas.ui.web.base.model.I_WEBUI_Dashboard.class);
+    /** Column name WEBUI_Dashboard_ID */
+    public static final String COLUMNNAME_WEBUI_Dashboard_ID = "WEBUI_Dashboard_ID";
 }
