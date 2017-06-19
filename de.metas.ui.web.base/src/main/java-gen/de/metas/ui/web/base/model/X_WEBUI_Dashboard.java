@@ -14,7 +14,7 @@ public class X_WEBUI_Dashboard extends org.compiere.model.PO implements I_WEBUI_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1322904955L;
+	private static final long serialVersionUID = -1184232503L;
 
     /** Standard Constructor */
     public X_WEBUI_Dashboard (Properties ctx, int WEBUI_Dashboard_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_WEBUI_Dashboard extends org.compiere.model.PO implements I_WEBUI_
       /** if (WEBUI_Dashboard_ID == 0)
         {
 			setIsDefault (false); // N
+			setIsUserDashboard (false); // N
 			setName (null);
 			setWEBUI_Dashboard_ID (0);
         } */
@@ -43,6 +44,22 @@ public class X_WEBUI_Dashboard extends org.compiere.model.PO implements I_WEBUI_
       return poi;
     }
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
 	/** Set Standard.
 		@param IsDefault 
 		Default value
@@ -60,6 +77,29 @@ public class X_WEBUI_Dashboard extends org.compiere.model.PO implements I_WEBUI_
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set User dashboard.
+		@param IsUserDashboard User dashboard	  */
+	@Override
+	public void setIsUserDashboard (boolean IsUserDashboard)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsUserDashboard, Boolean.valueOf(IsUserDashboard));
+	}
+
+	/** Get User dashboard.
+		@return User dashboard	  */
+	@Override
+	public boolean isUserDashboard () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsUserDashboard);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

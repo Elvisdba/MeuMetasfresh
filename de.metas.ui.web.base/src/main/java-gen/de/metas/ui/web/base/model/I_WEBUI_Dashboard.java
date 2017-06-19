@@ -99,6 +99,29 @@ public interface I_WEBUI_Dashboard
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object>(I_WEBUI_Dashboard.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -147,6 +170,29 @@ public interface I_WEBUI_Dashboard
     public static final org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object>(I_WEBUI_Dashboard.class, "IsDefault", null);
     /** Column name IsDefault */
     public static final String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set User dashboard.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsUserDashboard (boolean IsUserDashboard);
+
+	/**
+	 * Get User dashboard.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isUserDashboard();
+
+    /** Column definition for IsUserDashboard */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object> COLUMN_IsUserDashboard = new org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object>(I_WEBUI_Dashboard.class, "IsUserDashboard", null);
+    /** Column name IsUserDashboard */
+    public static final String COLUMNNAME_IsUserDashboard = "IsUserDashboard";
 
 	/**
 	 * Set Name.
