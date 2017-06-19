@@ -1,6 +1,8 @@
 package org.adempiere.ad.security.permissions;
 
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -12,23 +14,24 @@ import java.util.Objects;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
 import org.adempiere.util.Check;
+
+import com.google.common.collect.ImmutableSet;
 
 @Immutable
 public final class ElementPermissions extends AbstractPermissions<ElementPermission>
@@ -39,11 +42,19 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 	}
 
 	private final String elementTableName;
+	private final ElementPermission defaultPermission;
 
 	public ElementPermissions(final Builder builder)
 	{
 		super(builder);
-		this.elementTableName = builder.getElementTableName();
+		elementTableName = builder.getElementTableName();
+		defaultPermission = builder.getDefaultPermission();
+	}
+
+	@Override
+	protected final ElementPermission noPermission()
+	{
+		return defaultPermission;
 	}
 
 	public Builder asNewBuilder()
@@ -53,7 +64,7 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 		builder.addPermissions(this, CollisionPolicy.Override);
 		return builder;
 	}
-	
+
 	/** @return element permissions; never return null */
 	public ElementPermission getPermission(final int elementId)
 	{
@@ -64,12 +75,13 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 
 	/**
 	 * Gets {@link Access#READ}/{@link Access#WRITE} access of a given element, as Boolean.
-	 * 
+	 *
 	 * @param elementId
-	 * @return <ul>
-	 *         <li> <code>true</code> if read-write permission
-	 *         <li> <code>false</code> if read-only permission
-	 *         <li> <code>null</code> if there is no such permission at all
+	 * @return
+	 *         <ul>
+	 *         <li><code>true</code> if read-write permission
+	 *         <li><code>false</code> if read-only permission
+	 *         <li><code>null</code> if there is no such permission at all
 	 *         </ul>
 	 */
 	public Boolean getReadWritePermission(final int elementId)
@@ -95,9 +107,31 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 		}
 	}
 
+	public final boolean hasAccess(final int elementId, final Access access)
+	{
+		final ElementResource resource = ElementResource.of(elementTableName, elementId);
+		return getPermissionOrDefault(resource).hasAccess(access);
+	}
+
+	public final <X extends Throwable> void assertAccess(final int elementId, final Access access, final Supplier<? extends X> exceptionSupplier) throws X
+	{
+		final ElementResource resource = ElementResource.of(elementTableName, elementId);
+		assertAccess(resource, access, exceptionSupplier);
+	}
+
+	public Set<Integer> getElementIds()
+	{
+		return getPermissionsList()
+				.stream()
+				.map(ElementPermission::getResource)
+				.map(ElementResource::getElementId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public static class Builder extends PermissionsBuilder<ElementPermission, ElementPermissions>
 	{
 		private String elementTableName;
+		private ElementPermission defaultPermission;
 
 		@Override
 		protected ElementPermissions createPermissionsInstance()
@@ -105,7 +139,7 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 			return new ElementPermissions(this);
 		}
 
-		public Builder setElementTableName(String elementTableName)
+		public Builder setElementTableName(final String elementTableName)
 		{
 			this.elementTableName = elementTableName;
 			return this;
@@ -115,6 +149,22 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 		{
 			Check.assumeNotEmpty(elementTableName, "elementTableName not empty");
 			return elementTableName;
+		}
+
+		/**
+		 * Sets default permissions to be returned in case a given resource has no permissions configured.
+		 * 
+		 * @param defaultPermission
+		 */
+		public Builder setDefaultPermission(ElementPermission defaultPermission)
+		{
+			this.defaultPermission = defaultPermission;
+			return this;
+		}
+
+		private ElementPermission getDefaultPermission()
+		{
+			return defaultPermission;
 		}
 
 		@Override

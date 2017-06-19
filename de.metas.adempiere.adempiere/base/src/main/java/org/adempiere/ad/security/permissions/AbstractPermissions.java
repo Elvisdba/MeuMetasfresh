@@ -13,18 +13,19 @@ package org.adempiere.ad.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collection;
+import java.util.function.Supplier;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -143,4 +144,28 @@ public abstract class AbstractPermissions<PermissionType extends Permission> imp
 		return getPermissionOrDefault(resource).hasAccess(access);
 	}
 
+	/**
+	 * Asserts given resource has given access.
+	 * In case it does not, an exception is thrown. The exception is created by <code>exceptionSupplier</code>.
+	 * 
+	 * @param resource
+	 * @param access
+	 * @param exceptionSupplier
+	 * @throws X
+	 */
+	public final <X extends Throwable> void assertAccess(final Resource resource, final Access access, final Supplier<? extends X> exceptionSupplier) throws X
+	{
+		if (!getPermissionOrDefault(resource).hasAccess(access))
+		{
+			final X exception = exceptionSupplier.get();
+			if (exception instanceof AdempiereException)
+			{
+				final AdempiereException metasfreshException = (AdempiereException)exception;
+				metasfreshException.setParameter("resource", resource);
+				metasfreshException.setParameter("access", access);
+			}
+
+			throw exception;
+		}
+	}
 }
