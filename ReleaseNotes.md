@@ -10,14 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.15 (2017-26)
+
+**upcoming release for week 2017-26**
+
+
 # metasfresh 5.14 (2017-25)
 
 **upcoming release for week 2017-25**
 
 ## Features
 * metasfresh-backend
-  * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
   * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
+    * Different Enhancements in the Vendor Returns Functionality.
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
   * [#1816](https://github.com/metasfresh/metasfresh/issues/1816) Fix the webui layout for Vendor returns (Lieferanten Rücklieferung) window
@@ -30,33 +35,81 @@ Here come the actual release notes:
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
     * New Window to allow the recording of Request for Quotations in WebUI.
+  * [#1825](https://github.com/metasfresh/metasfresh/issues/1825) Disable Quickstart, Admin and System Administrator Roles for WebUI
+    * Housekeeping Issue, restricting less default roles for usage in WebUI.
   * [#1829](https://github.com/metasfresh/metasfresh/issues/1829) Different RFQ Windows in WebUI
     * New Indows in WebUI that allow REF recording and Response maintenance.
   * [#1830](https://github.com/metasfresh/metasfresh/issues/1830) Add filter for HU status in handling unit editor
     * Additional Default Filters for the new Handling Unit Editor.
   * [#1836](https://github.com/metasfresh/metasfresh/issues/1836) Adjustments for Empties Receive Window WebUI
     * Further Layout adjustments for the Empties Receive Window in WebUI.
+  * [#1839](https://github.com/metasfresh/metasfresh/issues/1839) New Window for Period & Period Control in WebUI
+    * New WIndow for Period and Period Control maintenance in Accounting
+  * [#1840](https://github.com/metasfresh/metasfresh/issues/1840) internal: refactor and improve PO translation code
+    * Enhancement of the Multi-Language Translation Functionality.
   * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
     * Layout Adjustments to Customer Return Window in WebUI.
   * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
     * Application dictionary cleanup on metasfresh instalations where it's needed
+  * [#1852](https://github.com/metasfresh/metasfresh/issues/1852) intern: discover interceptors which were annotated with @Component
+    * Internal Housekeeping Issue about annotations in Spring context.
+  * [#1857](https://github.com/metasfresh/metasfresh/issues/1857) Translation de_DE for static UI components in WebUI
+    * New base language Translation for the static elements in ad_messages in WebUI.
+  * [#1859](https://github.com/metasfresh/metasfresh/issues/1859) Export all webui AD_Messages from w101
+    * Exporting the whole webui ad_messages for migration purpose.
+
+* metasfresh-webui-api
+  * [#443](https://github.com/metasfresh/metasfresh-webui-api/issues/443) Make remaining UI components translatable
+    * Endpoints Implementation in metasfresh API for the new Translation Feature of static Elements in Frontend.
+  * [#458](https://github.com/metasfresh/metasfresh-webui-api/issues/458) Debug endpoint to track websocket outbound events
+    * Implementation of Debug Endpoints to be able to test the behavior of websockets.
+  * [#462](https://github.com/metasfresh/metasfresh-webui-api/issues/462) Dashboard editing API prototype
+    * This is the API Prototype for the new Features required for the User Dashboard.
+
 
 * metasfresh-webui-frontend
-  * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
-    * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
+  * [#861](https://github.com/metasfresh/metasfresh-webui-frontend/issues/861) Make remaining UI components translatable
+    * Implementation for translations of static Elements. Now it's able to translate the whole User Interface of metasfresh WebUI.
   * [#885](https://github.com/metasfresh/metasfresh-webui-frontend/issues/885) Change the Bookmark Subtab Group Functionality
     * Changes the Bookmark Grouping Functionality and now shows a flat and compressed representation of the sitemap in shortcut/ bookmark menu.
   * [#886](https://github.com/metasfresh/metasfresh-webui-frontend/issues/886) Optimize Browse-whole-tree Navigation Link
     * Moves the 'Browse whole tree' to more prominent place above the Bookmark menu. This allows teh user to quickly open the sitemap if needed.
+  * [#895](https://github.com/metasfresh/metasfresh-webui-frontend/issues/895) Modal view: when user presses Done the server shall be notified
+    * Enhancement in WebUI for Done Actions. The Frontend is now callong a new Endpoint so the API is aware about that the action was triggered.
+  * [#897](https://github.com/metasfresh/metasfresh-webui-frontend/issues/897) Clicking the search icon should open partner list
+    * New Feature in Lookup Fields. When pressing the magnifying Glass item, the user receives a list of possible entries.
+  * [#898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/898) Lookup Field Dropdowns automatism
+    * Enhancements of the Lookup Fields behavior when result seletions entries
+  * [#907](https://github.com/metasfresh/metasfresh-webui-frontend/issues/907) Margin missing in Advanced Edit when Scrollbar visible
+    * Minor Design adjustment in Modal Overlays, adding a larger bottom Margin.
 
 ## Fixes
 
 * metasfresh-backend
   * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
+    * Enhancement for the Host-Key Functionality needed in async- and batch-printing. Now showing the Host-Key in Swing Client seetings.
+  * [#1808](https://github.com/metasfresh/metasfresh/issues/1808) Sometimes i get empty window when i zoom to related sales invoices of a given sales order
+    * Fixes an issue in the Zoom-To related Documents Feature, leaving the destination windows empty in minor cases.
+  * [#1843](https://github.com/metasfresh/metasfresh/issues/1843) Error Table M_Product does not have a simple primary key
+    * Adding a simple primary key to M_Product database table.
+  * [#1855](https://github.com/metasfresh/metasfresh/issues/1855) error with order that has just packaging lines
+    * Fixes an error in Orders which don't have products in their lines, but only Packaging Material.
+
+* metasfresh-webui-api
+  * [#454](https://github.com/metasfresh/metasfresh-webui-api/issues/454) Can not add attribute to attribute set
+    * Fixes an issue when adding a new Attribute to an Attribute set, for mandatory fields.
 
 * metasfresh-webui-frontend
+  * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
+    * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
   * [#877](https://github.com/metasfresh/metasfresh-webui-frontend/issues/877) n instead of none in dropdowns
     * Fixes a minor Bug with the description of the emptyvalues in fields.
+  * [#893](https://github.com/metasfresh/metasfresh-webui-frontend/issues/893) Navigation Menu keyboard usage broken
+    * Adjustments in the Sitemap screen, now allowing the user to navigate smoothly via keyboard.
+  * [#900](https://github.com/metasfresh/metasfresh-webui-frontend/issues/900) Handling Unit Window does not open in some cases
+    * Fixes a Bug that prevented to open the Handling Unit Editor in minor cases.
+  * [#904](https://github.com/metasfresh/metasfresh-webui-frontend/issues/904) Navigation Menu vs. Sitemap entries w/ linebreak
+    * Adjustments of the sitemap screen, now showing the manu entries without a linebreak in case there is enough horizontal space.
 
 # metasfresh 5.13 (2017-24)
 
