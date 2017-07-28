@@ -38,12 +38,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 
@@ -617,11 +617,11 @@ public class GridFieldVO implements Serializable
 	/**	Mandatory (in database/model) */
 	private boolean IsMandatoryDB = false;
 	/**	Read Only		*/
-	public boolean      IsReadOnly = false;
+	private boolean      IsReadOnly = false;
 	/**	Updateable		*/
-	public boolean      IsUpdateable = false;
+	private boolean      IsUpdateable = false;
 	/**	Always Updateable	*/
-	public boolean      IsAlwaysUpdateable = false;
+	private boolean      IsAlwaysUpdateable = false;
 	/**	Heading Only	*/
 	private boolean      IsHeading = false;
 	/**	Field Only		*/
@@ -648,7 +648,7 @@ public class GridFieldVO implements Serializable
 	/**	PK				*/
 	public boolean      IsKey = false;
 	/**	FK				*/
-	public boolean      IsParent = false;
+	private boolean      IsParent = false;
 	/**	Process			*/
 	public int          AD_Process_ID = 0;
 	/**	Description		*/
@@ -897,6 +897,11 @@ public class GridFieldVO implements Serializable
 				.add("ColumnName", ColumnName)
 				.add("AD_Column_ID", AD_Column_ID)
 				.toString();
+	}
+	
+	public boolean isParentLink()
+	{
+		return IsParent;
 	}
 	
 	public int getTabNo()
@@ -1328,6 +1333,11 @@ public class GridFieldVO implements Serializable
 	public boolean isUpdateable()
 	{
 		return IsUpdateable;
+	}
+	
+	public void setIsUpdateable(boolean updateable)
+	{
+		IsUpdateable = updateable;
 	}
 	
 	public boolean isAlwaysUpdateable()

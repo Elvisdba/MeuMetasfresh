@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -96,7 +95,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 
 		//
 		// Contexts
-		contextGlobal = new PlainContextAware(huTestHelper.getCtx(), ITrx.TRXNAME_None);
+		contextGlobal = PlainContextAware.newOutOfTrxAllowThreadInherited(huTestHelper.getCtx());
 
 		//
 		// Product/UOM

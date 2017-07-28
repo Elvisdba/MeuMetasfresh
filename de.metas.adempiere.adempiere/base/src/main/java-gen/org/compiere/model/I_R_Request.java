@@ -214,6 +214,33 @@ public interface I_R_Request
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Zulieferant.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Vendor_ID (int C_BP_Vendor_ID);
+
+	/**
+	 * Get Zulieferant.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Vendor_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BP_Vendor();
+
+	public void setC_BP_Vendor(org.compiere.model.I_C_BPartner C_BP_Vendor);
+
+    /** Column definition for C_BP_Vendor_ID */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner> COLUMN_C_BP_Vendor_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner>(I_R_Request.class, "C_BP_Vendor_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BP_Vendor_ID */
+    public static final String COLUMNNAME_C_BP_Vendor_ID = "C_BP_Vendor_ID";
+
+	/**
 	 * Set Business Partner .
 	 * Identifies a Business Partner
 	 *
@@ -330,81 +357,6 @@ public interface I_R_Request
     public static final String COLUMNNAME_C_InvoiceRequest_ID = "C_InvoiceRequest_ID";
 
 	/**
-	 * Set Close Date.
-	 * Close Date
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCloseDate (java.sql.Timestamp CloseDate);
-
-	/**
-	 * Get Close Date.
-	 * Close Date
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCloseDate();
-
-    /** Column definition for CloseDate */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_CloseDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "CloseDate", null);
-    /** Column name CloseDate */
-    public static final String COLUMNNAME_CloseDate = "CloseDate";
-
-	/**
-	 * Set Confidentiality.
-	 * Type of Confidentiality
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setConfidentialType (java.lang.String ConfidentialType);
-
-	/**
-	 * Get Confidentiality.
-	 * Type of Confidentiality
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getConfidentialType();
-
-    /** Column definition for ConfidentialType */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialType", null);
-    /** Column name ConfidentialType */
-    public static final String COLUMNNAME_ConfidentialType = "ConfidentialType";
-
-	/**
-	 * Set Entry Confidentiality.
-	 * Confidentiality of the individual entry
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setConfidentialTypeEntry (java.lang.String ConfidentialTypeEntry);
-
-	/**
-	 * Get Entry Confidentiality.
-	 * Confidentiality of the individual entry
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getConfidentialTypeEntry();
-
-    /** Column definition for ConfidentialTypeEntry */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialTypeEntry = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialTypeEntry", null);
-    /** Column name ConfidentialTypeEntry */
-    public static final String COLUMNNAME_ConfidentialTypeEntry = "ConfidentialTypeEntry";
-
-	/**
 	 * Set Auftrag.
 	 * Order
 	 *
@@ -490,6 +442,81 @@ public interface I_R_Request
     public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Project>(I_R_Request.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Close Date.
+	 * Close Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCloseDate (java.sql.Timestamp CloseDate);
+
+	/**
+	 * Get Close Date.
+	 * Close Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCloseDate();
+
+    /** Column definition for CloseDate */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_CloseDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "CloseDate", null);
+    /** Column name CloseDate */
+    public static final String COLUMNNAME_CloseDate = "CloseDate";
+
+	/**
+	 * Set Confidentiality.
+	 * Type of Confidentiality
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setConfidentialType (java.lang.String ConfidentialType);
+
+	/**
+	 * Get Confidentiality.
+	 * Type of Confidentiality
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getConfidentialType();
+
+    /** Column definition for ConfidentialType */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialType", null);
+    /** Column name ConfidentialType */
+    public static final String COLUMNNAME_ConfidentialType = "ConfidentialType";
+
+	/**
+	 * Set Entry Confidentiality.
+	 * Confidentiality of the individual entry
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setConfidentialTypeEntry (java.lang.String ConfidentialTypeEntry);
+
+	/**
+	 * Get Entry Confidentiality.
+	 * Confidentiality of the individual entry
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getConfidentialTypeEntry();
+
+    /** Column definition for ConfidentialTypeEntry */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialTypeEntry = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialTypeEntry", null);
+    /** Column name ConfidentialTypeEntry */
+    public static final String COLUMNNAME_ConfidentialTypeEntry = "ConfidentialTypeEntry";
 
 	/**
 	 * Get Created.
@@ -697,7 +724,7 @@ public interface I_R_Request
     public static final String COLUMNNAME_DueType = "DueType";
 
 	/**
-	 * Set End Time.
+	 * Set Enddatum.
 	 * End of the time span
 	 *
 	 * <br>Type: DateTime
@@ -707,7 +734,7 @@ public interface I_R_Request
 	public void setEndTime (java.sql.Timestamp EndTime);
 
 	/**
-	 * Get End Time.
+	 * Get Enddatum.
 	 * End of the time span
 	 *
 	 * <br>Type: DateTime
@@ -1225,104 +1252,6 @@ public interface I_R_Request
     public static final String COLUMNNAME_R_Category_ID = "R_Category_ID";
 
 	/**
-	 * Set Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRecord_ID (int Record_ID);
-
-	/**
-	 * Get Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRecord_ID();
-
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
-
-	/**
-	 * Set Request Amount.
-	 * Amount associated with this request
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setRequestAmt (java.math.BigDecimal RequestAmt);
-
-	/**
-	 * Get Request Amount.
-	 * Amount associated with this request
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getRequestAmt();
-
-    /** Column definition for RequestAmt */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_RequestAmt = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "RequestAmt", null);
-    /** Column name RequestAmt */
-    public static final String COLUMNNAME_RequestAmt = "RequestAmt";
-
-	/**
-	 * Set Request_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRequest_includedTab (java.lang.String Request_includedTab);
-
-	/**
-	 * Get Request_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getRequest_includedTab();
-
-    /** Column definition for Request_includedTab */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Request_includedTab = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Request_includedTab", null);
-    /** Column name Request_includedTab */
-    public static final String COLUMNNAME_Request_includedTab = "Request_includedTab";
-
-	/**
-	 * Set Ergebnis.
-	 * Result of the action taken
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setResult (java.lang.String Result);
-
-	/**
-	 * Get Ergebnis.
-	 * Result of the action taken
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getResult();
-
-    /** Column definition for Result */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Result = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Result", null);
-    /** Column name Result */
-    public static final String COLUMNNAME_Result = "Result";
-
-	/**
 	 * Set Group.
 	 * Request Group
 	 *
@@ -1574,8 +1503,128 @@ public interface I_R_Request
     public static final String COLUMNNAME_R_Status_ID = "R_Status_ID";
 
 	/**
-	 * Set Sales Representative.
-	 * Sales Representative or Company Agent
+	 * Set Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRecord_ID();
+
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Record_ID", null);
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Wiedervorlage Datum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReminderDate (java.sql.Timestamp ReminderDate);
+
+	/**
+	 * Get Wiedervorlage Datum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getReminderDate();
+
+    /** Column definition for ReminderDate */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ReminderDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ReminderDate", null);
+    /** Column name ReminderDate */
+    public static final String COLUMNNAME_ReminderDate = "ReminderDate";
+
+	/**
+	 * Set Request_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRequest_includedTab (java.lang.String Request_includedTab);
+
+	/**
+	 * Get Request_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRequest_includedTab();
+
+    /** Column definition for Request_includedTab */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Request_includedTab = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Request_includedTab", null);
+    /** Column name Request_includedTab */
+    public static final String COLUMNNAME_Request_includedTab = "Request_includedTab";
+
+	/**
+	 * Set Request Amount.
+	 * Amount associated with this request
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setRequestAmt (java.math.BigDecimal RequestAmt);
+
+	/**
+	 * Get Request Amount.
+	 * Amount associated with this request
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getRequestAmt();
+
+    /** Column definition for RequestAmt */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_RequestAmt = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "RequestAmt", null);
+    /** Column name RequestAmt */
+    public static final String COLUMNNAME_RequestAmt = "RequestAmt";
+
+	/**
+	 * Set Ergebnis.
+	 * Result of the action taken
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setResult (java.lang.String Result);
+
+	/**
+	 * Get Ergebnis.
+	 * Result of the action taken
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getResult();
+
+    /** Column definition for Result */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Result = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Result", null);
+    /** Column name Result */
+    public static final String COLUMNNAME_Result = "Result";
+
+	/**
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1584,8 +1633,7 @@ public interface I_R_Request
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Sales Representative.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1628,8 +1676,7 @@ public interface I_R_Request
     public static final String COLUMNNAME_StartDate = "StartDate";
 
 	/**
-	 * Set Start Time.
-	 * Time started
+	 * Set Startdatum.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1638,8 +1685,7 @@ public interface I_R_Request
 	public void setStartTime (java.sql.Timestamp StartTime);
 
 	/**
-	 * Get Start Time.
-	 * Time started
+	 * Get Startdatum.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

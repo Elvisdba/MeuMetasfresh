@@ -41,7 +41,6 @@ import javax.swing.event.ListSelectionEvent;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
@@ -54,6 +53,7 @@ import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
@@ -61,6 +61,7 @@ import org.compiere.util.KeyNamePair;
 import org.eevolution.form.VMRPDetailed;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.i18n.IMsgBL;
 
 /**
  * This is about the MRP <b>Product</b> Info window.
@@ -259,7 +260,7 @@ public class MRPInfoWindow extends InfoSimple
 			final Timestamp datePromised = getDatePromisedParameter();
 
 			final MQuery query = new MQuery(I_Fresh_QtyOnHand.Table_Name);
-			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, MQuery.EQUAL, datePromised);
+			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, Operator.EQUAL, datePromised);
 			query.setRecordCount(1);
 			final int AD_WindowNo = getAD_Window_ID(I_Fresh_QtyOnHand.Table_Name, true);
 			zoom(AD_WindowNo, query);

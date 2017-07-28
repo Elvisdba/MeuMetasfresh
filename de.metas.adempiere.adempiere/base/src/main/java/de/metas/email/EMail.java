@@ -53,11 +53,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.sun.mail.smtp.SMTPMessage;
 
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
+import lombok.NonNull;
 
 /**
  * EMail builder and sender.
@@ -330,7 +332,7 @@ public final class EMail implements Serializable
 			logger.debug("Success - MessageID={}", messageId);
 
 			//
-			if (LogManager.isLevelFinest())
+			if (logger.isTraceEnabled())
 			{
 				dumpMessage(msg);
 			}
@@ -470,7 +472,7 @@ public final class EMail implements Serializable
 			final Enumeration e = msg.getAllHeaderLines();
 			while (e.hasMoreElements())
 			{
-				logger.debug("- " + e.nextElement());
+				logger.trace("- " + e.nextElement());
 			}
 		}
 		catch (final MessagingException ex)
@@ -880,7 +882,7 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(filename, content));
 	}
 
-	private final void addAttachment(final EMailAttachment emailAttachment)
+	public final void addAttachment(@NonNull final EMailAttachment emailAttachment)
 	{
 		_attachments.add(emailAttachment);
 	}
@@ -1119,5 +1121,15 @@ public final class EMail implements Serializable
 				.add("attachments", _attachments.isEmpty() ? null : _attachments)
 				.add("mailbox", _mailbox)
 				.toString();
+	}
+	
+	public static List<String> toEMailsList(final String emailsListStr)
+	{
+		if (Check.isEmpty(emailsListStr, true))
+		{
+			return ImmutableList.of();
+		}
+
+		return Splitter.on(";").trimResults().omitEmptyStrings().splitToList(emailsListStr);
 	}
 }	// EMail

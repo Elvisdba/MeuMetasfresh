@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,17 +35,17 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
-import de.metas.handlingunits.IDocumentCollector;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import lombok.NonNull;
 
 /* package */class MutableHUContext implements IMutableHUContext
 {
@@ -59,7 +59,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	private IAttributeStorageFactory _attributesStorageFactory = null;
 	private boolean _attributesStorageFactoryInitialized = false;
 	private Date date = null;
-	private IDocumentCollector _documentsCollector = NullDocumentCollector.instance;
 	private CompositeHUTrxListener _trxListeners = null;
 
 	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
@@ -139,8 +138,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 		huContextCopy.setHUStorageFactory(getHUStorageFactory());
 		huContextCopy.setHUAttributeStorageFactory(getHUAttributeStorageFactory());
 		huContextCopy.setDate(getDate());
-		huContextCopy.setDocumentCollector(getDocumentCollector());
-		huContextCopy._destroyedHUPackingMaterialsCollector = _destroyedHUPackingMaterialsCollector;
+		huContextCopy.setHUPackingMaterialsCollector(_destroyedHUPackingMaterialsCollector);
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
 
 		return huContextCopy;
@@ -182,7 +180,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	{
 		if (huStorageFactory == null)
 		{
-			// FIXME: this one is not OK in case we use this context as an immutable context
 			huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 
 			//
@@ -228,7 +225,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
 		if (_attributesStorageFactory == null)
 		{
-			// FIXME: this one is not OK in case we use this context as an immutable context
 			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
 		}
 
@@ -248,23 +244,17 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	}
 
 	@Override
-	public final IDocumentCollector getDocumentCollector()
-	{
-		return _documentsCollector;
-	}
-
-	@Override
-	public final void setDocumentCollector(final IDocumentCollector documentCollector)
-	{
-		Check.assumeNotNull(documentCollector, "documentCollector not null");
-		_documentsCollector = documentCollector;
-	}
-
-	@Override
-	public IHUPackingMaterialsCollector<I_M_InOutLine> getDestroyedHUPackingMaterialsCollector()
+	public IHUPackingMaterialsCollector<I_M_InOutLine> getHUPackingMaterialsCollector()
 	{
 
 		return _destroyedHUPackingMaterialsCollector;
+	}
+
+	@Override
+	public IMutableHUContext setHUPackingMaterialsCollector(@NonNull final IHUPackingMaterialsCollector<I_M_InOutLine> huPackingMaterialsCollector)
+	{
+		this._destroyedHUPackingMaterialsCollector = huPackingMaterialsCollector;
+		return this;
 	}
 
 	@Override

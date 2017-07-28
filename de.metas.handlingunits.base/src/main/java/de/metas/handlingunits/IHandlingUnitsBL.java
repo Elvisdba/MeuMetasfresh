@@ -1,29 +1,5 @@
 package de.metas.handlingunits;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -34,7 +10,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -42,10 +17,10 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Status;
-import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public interface IHandlingUnitsBL extends ISingletonService
@@ -118,6 +93,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
+	
+	/**
+	 * @param hu
+	 * @return true if HU was shipped
+	 */
+	boolean isShipped(I_M_HU hu);
 
 	/**
 	 * Refresh HU first before checking if it's destroyed
@@ -151,7 +132,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 *
 	 * @param huItem
-	 * @return true if this is a virtual HU Item
+	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
 	 */
 	boolean isVirtual(I_M_HU_Item huItem);
 
@@ -161,13 +142,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * A HU is considered pure virtual when:
 	 * <ul>
 	 * <li>{@link #isVirtual(I_M_HU)}
-	 * <li>and it's parent HU Item ({@link I_M_HU#getM_HU_Item_Parent()}) it's a material line (i.e. {@link #getItemType(I_M_HU_Item)} is {@link X_M_HU_PI_Item#ITEMTYPE_Material})
+	 * <li>and its parent HU Item ({@link I_M_HU#getM_HU_Item_Parent()}) is a material line (i.e. {@link #getItemType(I_M_HU_Item)} is {@link X_M_HU_PI_Item#ITEMTYPE_Material})
 	 * </ul>
 	 *
 	 * e.g.
 	 * <ul>
-	 * <li>a VHU on a palet it's virtual but it's NOT PURE virtual (i.e. it's parent HU Item is an item of type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit})
-	 * <li>a VHU, top level, it's virtual but it's NOT PURE virtual
+	 * <li>a VHU on a palet is virtual but it's NOT PURE virtual (i.e. it's parent HU Item is an item of type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit})
+	 * <li>a VHU, top level, is virtual but it's NOT PURE virtual
 	 * <li>a VHU linked to an material HU Item IS PURE virtual
 	 * </ul>
 	 *
@@ -204,7 +185,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Additionally, this method does:
 	 * <ul>
 	 * <li>destroys any of it's HU children which have empty storage
-	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursivelly to the top).
+	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursively to the top).
 	 * </ul>
 	 *
 	 * @param huContext
@@ -214,7 +195,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean destroyIfEmptyStorage(IHUContext huContext, I_M_HU hu);
 
 	/**
-	 * Gets HU Item Type
+	 * Gets HU Item Type.
+	 * <p>
+	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
+	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
 	 * @param huItem
 	 * @return HU Item Type
@@ -252,19 +236,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	ILUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
 	/**
-	 * Calculates Weight Tare for given HU PI.
-	 *
-	 * NOTE: this method calculates PI's tare weight without considering included HUs because we don't know how many are.
-	 *
-	 * @param piVersion
-	 * @return weight tare
-	 */
-	BigDecimal getWeightTare(I_M_HU_PI_Version piVersion);
-
-	/**
 	 * Determines if the handling unit is a loading unit (type {@link X_M_HU_PI_Version#HU_UNITTYPE_LoadLogistiqueUnit} )
 	 *
-	 * @param hu
+	 * @param hu maybe be {@code null}. In that case, {@code false} is returned.
 	 * @return true if loading unit (LU)
 	 */
 	boolean isLoadingUnit(I_M_HU hu);
@@ -292,6 +266,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if transport unit (TU) or virtual handling unit
 	 */
 	boolean isTransportUnitOrVirtual(I_M_HU hu);
+
+	/**
+	 * @return true if the HU is a TU or an aggregated TU
+	 */
+	boolean isTransportUnitOrAggregate(I_M_HU hu);
 
 	/**
 	 * Checks if given handling unit is top level (i.e. it has no parents)
@@ -368,16 +347,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isPhysicalHU(String huStatus);
 
-	/**
-	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse sourse the one given as parameter
-	 *
-	 * @param ctx
-	 * @param warehouse
-	 * @param trxName
-	 *
-	 * @return the gebinde warehouse (if found,exception thrown otherwise)
-	 */
-	I_M_Warehouse getEmptiesWarehouse(Properties ctx, I_M_Warehouse warehouse, String trxName);
 
 	/**
 	 * Set the status of the HU. <br>
@@ -385,7 +354,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * NOTE: this method is not saving the HU.
 	 *
-	 * @param huContext
+	 * @param huContext mandatory, because depending on the given {@code huStatus}, we might need the context's {@link IHUContext#getHUPackingMaterialsCollector()}.
 	 * @param hu
 	 * @param huStatus
 	 */
@@ -394,12 +363,21 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
 	 *
+	 * NOTE: this method is not saving the HU.
+	 * 
 	 * @param huContext
 	 * @param hu
 	 * @param huStatus
 	 * @param forceFetchPackingMaterial
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
+	
+	/**
+	 * Activate the HU (assuming it was Planning)
+	 * 
+	 * @param hus
+	 */
+	void setHUStatusActive(Collection<I_M_HU> hus);
 
 	/**
 	 * Marks the hu as destroyed, but doesn't handle the storages
@@ -418,9 +396,28 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
 
 	/**
-	 * Builder for the movements TO and FROM the GebindeLager
-	 *
+	 * Checks if the given {@code hu} is a "bag".
+	 * 
+	 * @param hu optional, may be {@code null}.
+	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
+	 */
+	boolean isAggregateHU(I_M_HU hu);
+
+	/**
+	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
+	 * Otherwise, return the given {@code hu}'s own/direct PI version.
+	 * 
+	 * @param hu
 	 * @return
 	 */
-	IEmptiesMovementBuilder createEmptiesMovementBuilder();
+	I_M_HU_PI_Version getEffectivePIVersion(I_M_HU hu);
+
+	/**
+	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
+	 * Otherwise, return the given {@code hu}'s own/direct PI.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_PI getEffectivePI(I_M_HU hu);
 }

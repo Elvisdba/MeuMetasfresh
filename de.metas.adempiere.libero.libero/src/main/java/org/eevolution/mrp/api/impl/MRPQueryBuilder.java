@@ -57,15 +57,15 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_M_Product;
 import org.compiere.model.X_M_Warehouse;
 import org.compiere.model.X_S_Resource;
-import org.compiere.util.Env;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
+
+import de.metas.material.planning.IMaterialPlanningContext;
+import lombok.NonNull;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder
 {
@@ -74,7 +74,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
 	private Object _contextProvider = null;
-	private IMRPContext _mrpContext = null;
+	private IMaterialPlanningContext _mrpContext = null;
 
 	//
 	// Planning segment
@@ -165,7 +165,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Set<Integer> plantIds = getPP_Plant_IDs_ToUse();
 		if (plantIds != null && !plantIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_S_Resource_ID, plantIds);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_S_Resource_ID, plantIds);
 		}
 
 		//
@@ -202,7 +202,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		if (mrpFirmType != null)
 		{
 			final List<String> docStatuses = mrpFirmType.getDocStatuses();
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_DocStatus, docStatuses);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_DocStatus, docStatuses);
 		}
 
 		//
@@ -210,7 +210,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Set<String> orderTypes = getOrderTypes();
 		if (!Check.isEmpty(orderTypes))
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_OrderType, orderTypes);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_OrderType, orderTypes);
 		}
 
 		//
@@ -261,7 +261,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Set<Integer> mrpIds = getOnlyPP_MRP_IDs();
 		if (mrpIds != null && !mrpIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, mrpIds);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, mrpIds);
 		}
 
 		//
@@ -382,7 +382,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 
 		if (qty == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return qty;
 	}
@@ -395,7 +395,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	}
 
 	@Override
-	public int updateMRPRecords(IQueryUpdater<I_PP_MRP> queryUpdater)
+	public int updateMRPRecords(@NonNull final IQueryUpdater<I_PP_MRP> queryUpdater)
 	{
 		return createQueryBuilder()
 				.create() // create query
@@ -466,7 +466,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	}
 
 	@Override
-	public MRPQueryBuilder setMRPContext(final IMRPContext mrpContext)
+	public MRPQueryBuilder setMRPContext(final IMaterialPlanningContext mrpContext)
 	{
 		this._mrpContext = mrpContext;
 		return this;
@@ -492,9 +492,12 @@ import org.eevolution.mrp.api.MRPFirmType;
 			return InterfaceWrapperHelper.getContextAware(_contextProvider);
 		}
 
-		Check.assumeNotNull(_mrpContext, LiberoException.class, "contextProvider shall be set");
-		return _mrpContext;
-
+		if(_mrpContext != null)
+		{
+			return _mrpContext;
+		}
+		
+		return PlainContextAware.newWithThreadInheritedTrx();
 	}
 
 	@Override

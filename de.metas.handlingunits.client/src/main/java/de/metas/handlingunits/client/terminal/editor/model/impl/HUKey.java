@@ -13,11 +13,11 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,6 +43,7 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.base.Optional;
 
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -96,10 +97,13 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 
 	// Services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 
 	private final I_M_HU _hu;
 	private IHUStorage _huStorage;
 	private final boolean virtualPI;
+	private final boolean aggregateHU;
+	private final int aggregatedHUCount;
 	private final IHUDocumentLine _documentLine;
 
 	private final String id;
@@ -141,6 +145,16 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 			// never aggregate together non-concrete HUs
 			aggregationKey = Util.mkKey(piId, UUID.randomUUID());
 		}
+
+		aggregateHU = handlingUnitsBL.isAggregateHU(hu);
+		if (aggregateHU)
+		{
+			aggregatedHUCount = hu.getM_HU_Item_Parent().getQty().intValueExact(); // no NPE because isAggregateHU(hu) returned true.
+		}
+		else
+		{
+			aggregatedHUCount = 0;
+		}
 	}
 
 	private IHUStorage getHUStorage()
@@ -174,8 +188,12 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	@Override
 	public final I_M_HU getM_HU()
 	{
-		// NOTE: never null
 		return _hu;
+	}
+	
+	public final int getM_HU_ID()
+	{
+		return _hu.getM_HU_ID();
 	}
 
 	@Override
@@ -247,10 +265,13 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		return documentLine;
 	}
 
+	/**
+	 * @return {@code true} if the wrapped HU is a virtual <b>and not</b> aggregate HU.
+	 */
 	@Override
 	public boolean isVirtualPI()
 	{
-		return virtualPI;
+		return virtualPI && !aggregateHU;
 	}
 
 	@Override
@@ -326,7 +347,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		if (documentLine == null)
 		{
 			// If there is no document line, just create a simple Source/Destination that wraps our HU.
-			return new HUListAllocationSourceDestination(hu);
+			return HUListAllocationSourceDestination.of(hu);
 		}
 
 		return documentLine.createAllocationSource(hu);
@@ -345,7 +366,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		}
 
 		final I_M_HU hu = getM_HU();
-		if (hu.isLocked())
+		if(huLockBL.isLocked(hu))
 		{
 			return true;
 		}
@@ -430,6 +451,16 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	public boolean isDestroyed()
 	{
 		return handlingUnitsBL.isDestroyed(getM_HU());
+	}
+
+	public boolean isAggregateHU()
+	{
+		return aggregateHU;
+	}
+
+	public int getAggregatedHUCount()
+	{
+		return aggregatedHUCount;
 	}
 
 	/**

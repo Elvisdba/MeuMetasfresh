@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
@@ -19,9 +20,11 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
 import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
@@ -55,13 +58,21 @@ import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SpringBootApplication( //
-scanBasePackages = { "de.metas", "org.adempiere" },  //
-excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
-)
-@ServletComponentScan(value = { "de.metas", "org.adempiere" })
+@SpringBootApplication(scanBasePackages =
+	{ "de.metas", "org.adempiere" })
+@ServletComponentScan(value =
+	{ "de.metas", "org.adempiere" })
+@Profile(ServerBoot.PROFILE)
 public class ServerBoot
 {
+	/**
+	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
+	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
+	 */
+	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
+
+	public static final String PROFILE = "metasfresh-server";
+
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -70,9 +81,12 @@ public class ServerBoot
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.BACKEND);
 
+		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+
 		new SpringApplicationBuilder(ServerBoot.class)
-				.headless(true)
+				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
+				.profiles(PROFILE, JasperConstants.PROFILE_JasperServer)
 				.run(args);
 	}
 
@@ -134,8 +148,7 @@ public class ServerBoot
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance();
-		adempiere.setApplicationContext(applicationContext);
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 		return adempiere;
 	}

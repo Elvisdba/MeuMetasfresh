@@ -124,11 +124,11 @@ public class AWindow extends CFrame
 	 *  Set Window Busy
 	 *  @param busy busy
 	 */
-	public void setBusy (boolean busy)
+	public void setBusy (final boolean busy)
 	{
 		if (busy == m_glassPane.isVisible())
 			return;
-		log.info(getName() + " - " + busy);
+		log.debug("set busy: {}, window={}", busy, this);
 		m_glassPane.setMessage(null);
 		m_glassPane.setVisible(busy);
 		if (busy)
@@ -142,7 +142,12 @@ public class AWindow extends CFrame
 	public void setBusyMessage (String AD_Message)
 	{
 		m_glassPane.setMessage(AD_Message);
-	}   //  setBusyMessage
+	}
+	
+	public void setBusyMessagePlain(final String messagePlain)
+	{
+		m_glassPane.setMessagePlain(messagePlain);
+	}
 
 	/**
 	 *  Set and start Busy Counter
@@ -182,7 +187,8 @@ public class AWindow extends CFrame
 	{
 		if (Env.hideWindow(this))
 			return;
-		log.info(toString());
+		
+		log.debug("disposing: {}", this);
 		if (m_APanel != null)
 			m_APanel.dispose();
 		m_APanel = null;

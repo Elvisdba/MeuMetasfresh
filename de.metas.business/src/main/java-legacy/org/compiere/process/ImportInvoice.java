@@ -21,18 +21,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.List;
 
+import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLocation;
-import org.compiere.model.MUser;
 import org.compiere.model.X_I_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Import Invoice from I_Invoice
@@ -40,7 +45,7 @@ import org.compiere.util.Env;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: ImportInvoice.java,v 1.1 2007/09/05 09:27:31 cruiz Exp $
  */
-public class ImportInvoice extends SvrProcess
+public class ImportInvoice extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;
@@ -61,7 +66,7 @@ public class ImportInvoice extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -575,29 +580,29 @@ public class ImportInvoice extends SvrProcess
 					|| imp.getEMail () != null 
 					|| imp.getPhone () != null)
 				{
-					MUser[] users = bp.getContacts(true);
-					MUser user = null;
-					for (int i = 0; user == null && i < users.length;  i++)
+					List<de.metas.adempiere.model.I_AD_User> users = bp.getContacts(true);
+					I_AD_User user = null;
+					for (int i = 0; user == null && i < users.size();  i++)
 					{
-						String name = users[i].getName();
+						String name = users.get(i).getName();
 						if (name.equals(imp.getContactName()) 
 							|| name.equals(imp.getName()))
 						{
-							user = users[i];
+							user = users.get(i);
 							imp.setAD_User_ID (user.getAD_User_ID ());
 						}
 					}
 					if (user == null)
 					{
-						user = new MUser (bp);
+						user = Services.get(IBPartnerBL.class).createDraftContact(bp);
 						if (imp.getContactName () == null)
 							user.setName (imp.getName ());
 						else
 							user.setName (imp.getContactName ());
 						user.setEMail (imp.getEMail ());
 						user.setPhone (imp.getPhone ());
-						if (user.save ())
-							imp.setAD_User_ID (user.getAD_User_ID ());
+						InterfaceWrapperHelper.save(user);
+						imp.setAD_User_ID (user.getAD_User_ID ());
 					}
 				}
 				imp.save ();

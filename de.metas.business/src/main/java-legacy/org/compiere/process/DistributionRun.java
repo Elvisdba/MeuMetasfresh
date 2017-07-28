@@ -22,7 +22,11 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
@@ -41,7 +45,6 @@ import org.compiere.model.MWarehouse;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
@@ -54,7 +57,7 @@ import org.eevolution.model.MDDOrderLine;
  * 	@see 	http://sourceforge.net/tracker/index.php?func=detail&aid=2030865&group_id=176962&atid=879335		
  *  @version $Id: DistributionRun.java,v 1.4 2006/07/30 00:51:02 jjanke Exp $
  */
-public class DistributionRun extends SvrProcess
+public class DistributionRun extends JavaProcess
 {
 	/**	The Run to execute		*/
 	private int					p_M_DistributionRun_ID = 0;
@@ -94,7 +97,7 @@ public class DistributionRun extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

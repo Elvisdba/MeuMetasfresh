@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,8 +43,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.api.IMsgDAO;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -66,6 +64,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;
@@ -98,7 +98,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
-	private final transient IMsgDAO msgDAO = Services.get(IMsgDAO.class);
+	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 
@@ -283,7 +283,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 								invoiceHeader.getC_DocTypeInvoice() != null ? invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID() : 0,
 								invoiceHeader.getDateInvoiced(),
 								invoiceHeader.getDateAcct() // task 08437
-				),
+						),
 						I_C_Invoice.class);
 				setC_DocType(invoice, invoiceHeader);
 
@@ -626,7 +626,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final BigDecimal qtyInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null);
+						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null); // TODO
+
+						// #870
+						// Make sure the Qty and Price override are set to null when an invoiceline is created
+						{
+							final int invoiceCandidate_ID = candForIlVO.getC_Invoice_Candidate_ID();
+
+							Services.get(ITrxManager.class)
+									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+									.onAfterCommit(() -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+						}
 					}
 
 					//
@@ -664,6 +674,21 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					throw e;
 				}
 			}
+		}
+
+		/**
+		 * @param invoiceCandidate_ID
+		 */
+		private void set_QtyAndPriceOverrideToNull(final int invoiceCandidate_ID)
+		{
+
+			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+
+			ic.setQtyToInvoice_Override(null);
+			ic.setPriceEntered_Override(null);
+
+			InterfaceWrapperHelper.save(ic);
+
 		}
 
 		private final I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
@@ -925,7 +950,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (userId != USERINCHARGE_NA)
 				{
 					note = InterfaceWrapperHelper.create(ctx, I_AD_Note.class, trxName);
-					note.setAD_Message_ID(msgDAO.retrieveMessageId(MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
+					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
 
 					note.setAD_User_ID(userId);
 

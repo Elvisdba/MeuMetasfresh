@@ -10,14 +10,14 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,7 +44,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -350,9 +349,12 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID)
 				.createQueryOrderBy();
 
-		final POJOQuery<I_C_Printing_Queue> query = new POJOQuery<I_C_Printing_Queue>(ctx, I_C_Printing_Queue.class, trxName)
-				.addFilter(filter)
-				.setOrderBy(orderBy);
+		final POJOQuery<I_C_Printing_Queue> query = new POJOQuery<I_C_Printing_Queue>(ctx,
+				I_C_Printing_Queue.class,
+				null,  // tableName=null => get it from the given model class
+				trxName)
+						.addFilter(filter)
+						.setOrderBy(orderBy);
 
 		return query;
 	}
@@ -427,14 +429,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				return pojo.getC_Print_Job_ID() == printJob.getC_Print_Job_ID();
 			}
 		});
-	}
-
-	@Override
-	public I_AD_Session retrieveCurrentSession(final Properties ctx)
-	{
-		final int sessionId = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
-		Check.assume(sessionId > 0, "No session found in context");
-		return lookupMap.lookup(I_AD_Session.class, sessionId);
 	}
 
 	@Override

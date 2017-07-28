@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,12 +50,16 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.persistence.po.INoDataFoundHandler;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.ISessionDAO;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -66,7 +71,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -91,12 +95,16 @@ import org.w3c.dom.Element;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.i18n.impl.POInfoModelTranslationMap;
+import de.metas.i18n.po.POModelTranslationMap;
+import de.metas.i18n.po.POTrlInfo;
+import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import lombok.NonNull;
 
 /**
  * Persistent Object.
@@ -316,8 +324,6 @@ public abstract class PO
 	 * Compared to {@link #m_createNew} this flag will be never ever reset so can always know if this PO was created now.
 	 */
 	private boolean m_wasJustCreated = false;
-	/** Attachment with entries */
-	private MAttachment m_attachment = null;
 	/** Deleted ID */
 	private int m_idOld = 0;
 	/** Custom Columns */
@@ -636,7 +642,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_Value", columnName);
 			Trace.printStack();
 			return null;
 		}
@@ -654,12 +660,20 @@ public abstract class PO
 		return get_Value(columnName);
 	}   // get_ValueE
 
+	@Override
+	public <T> T get_ValueAsObject(String variableName)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)get_Value(variableName);
+		return value;
+	}
+
 	/**
 	 * Get Column Value
 	 *
 	 * @param variableName name
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>string value
 	 *         <li>empty string in case the underlying value is null
 	 *         <li>"Y"/"N" in case the underlying value is {@link Boolean}
@@ -697,7 +711,7 @@ public abstract class PO
 		int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
 		{
-			log.warn("Not found - AD_Column_ID=" + AD_Column_ID);
+			log.warn("Column with AD_Column_ID={} not found in method PO.get_ValueOfColumn", AD_Column_ID);
 			return null;
 		}
 		return get_Value(index);
@@ -731,7 +745,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_ValueOld", columnName);
 			return null;
 		}
 		return get_ValueOld(index);
@@ -748,7 +762,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_ValueOldAsInt", columnName);
 			return 0;
 		}
 		return get_ValueOldAsInt(index);
@@ -795,14 +809,15 @@ public abstract class PO
 			return false;
 		}
 
-		if (m_newValues[index] == null)
-			return false;
 		// metas: begin: If column was explicitly marked as changed we consider it changed
 		if (markedChangedColumns != null && markedChangedColumns.contains(index))
 		{
 			return true;
 		}
 		// metas: end
+
+		if (m_newValues[index] == null)
+			return false;
 
 		// metas: normalize null values before comparing them (04219)
 		Object newValue = m_newValues[index];
@@ -830,7 +845,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.is_ValueChanged", columnName);
 			return false;
 		}
 		return is_ValueChanged(index);
@@ -900,7 +915,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_ValueDifference", columnName);
 			return null;
 		}
 		return get_ValueDifference(index);
@@ -922,7 +937,7 @@ public abstract class PO
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
-			log.error("Column not found - " + ColumnName);
+			log.warn("Column {} not found in method PO.set_Value", ColumnName);
 			return false;
 		}
 		if (ColumnName.endsWith("_ID") && value instanceof String)
@@ -983,14 +998,14 @@ public abstract class PO
 			// metas-ts 02973 only show this message (and clutter the log) if old and new value differ
 			// NOTE: when comparing we need to take the old value (the one which is in database) and NOT the previously set (via set_ValueNoCheck for example).
 			final Object oldValue = get_ValueOld(index);
-			if (Check.equals(oldValue, value))
+			if (Objects.equals(oldValue, value))
 			{
 				// Value did not changed.
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
 				// ...but we can do a quick look-ahead and see if that's the case
-				if (Check.equals(m_newValues[index], value))
+				if (Objects.equals(m_newValues[index], value))
 				{
 					return true;
 				}
@@ -1112,7 +1127,7 @@ public abstract class PO
 					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
 					value instanceof String)
 			{
-				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
+				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
 				if (!hasListValue)
 				{
 					final StringBuilder validValues = new StringBuilder();
@@ -1144,7 +1159,7 @@ public abstract class PO
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
-			log.error("Column not found - " + ColumnName);
+			log.warn("Column {} not found in method PO.set_ValueNoCheck", ColumnName);
 			return false;
 		}
 		return set_ValueNoCheck(index, value);
@@ -1266,7 +1281,7 @@ public abstract class PO
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
 		{
-			log.error("Not found - ColumnName={}", columnName);
+			log.warn("Column {} not found in method PO.set_ValueOfColumnReturningBoolean", columnName);
 			return false;
 		}
 
@@ -1285,7 +1300,7 @@ public abstract class PO
 		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
 		if (columnIndex < 0)
 		{
-			log.error("Not found - AD_Column_ID={}", AD_Column_ID);
+			log.warn("Column with AD_Column_ID={} not found in method PO.set_ValueOfAD_Column_ID", AD_Column_ID);
 			return false;
 		}
 
@@ -1335,7 +1350,7 @@ public abstract class PO
 			return set_Value(columnName, value);
 		}
 		if (m_custom == null)
-			m_custom = new HashMap<String, String>();
+			m_custom = new HashMap<>();
 		String valueString = "NULL";
 		if (value == null)
 			;
@@ -1553,15 +1568,15 @@ public abstract class PO
 				// metas: end: us215
 				// Ignore Standard Values
 				else // metas: us215: use else
-					if (fromColumnName.startsWith("Created")
-							|| fromColumnName.startsWith("Updated")
-							|| fromColumnName.equals("IsActive")
-							// fresh 07896: skip copying org and client ONLY if it's calculated
-							|| (to.p_info.isCalculated(fromColumnIndex)
-									&& (fromColumnName.equals("AD_Client_ID") || fromColumnName.equals("AD_Org_ID")))
-							|| fromColumnName.equals("DocumentNo")
-							|| fromColumnName.equals("Processing")
-							|| fromColumnName.equals("Processed") // metas: tsa: us215
+				if (fromColumnName.startsWith("Created")
+						|| fromColumnName.startsWith("Updated")
+						|| fromColumnName.equals("IsActive")
+						// fresh 07896: skip copying org and client ONLY if it's calculated
+						|| (to.p_info.isCalculated(fromColumnIndex)
+								&& (fromColumnName.equals("AD_Client_ID") || fromColumnName.equals("AD_Org_ID")))
+						|| fromColumnName.equals("DocumentNo")
+						|| fromColumnName.equals("Processing")
+						|| fromColumnName.equals("Processed") // metas: tsa: us215
 				)
 				{
 					;	// ignore / skip this column
@@ -1602,16 +1617,16 @@ public abstract class PO
 				// metas: end: us215
 				// Ignore Standard Values
 				else // metas: us215: use else
-					if (colName.startsWith("Created")
-							|| colName.startsWith("Updated")
-							|| colName.equals("IsActive")
-							// fresh 07896: skip copying org and client ONLY if it's calculated
-							|| (to.p_info.isCalculated(i)
-									&& (colName.equals("AD_Client_ID")
-											|| colName.equals("AD_Org_ID")))
-							|| colName.equals("DocumentNo")
-							|| colName.equals("Processing")
-							|| colName.equals("Processed") // metas: tsa: us215
+				if (colName.startsWith("Created")
+						|| colName.startsWith("Updated")
+						|| colName.equals("IsActive")
+						// fresh 07896: skip copying org and client ONLY if it's calculated
+						|| (to.p_info.isCalculated(i)
+								&& (colName.equals("AD_Client_ID")
+										|| colName.equals("AD_Org_ID")))
+						|| colName.equals("DocumentNo")
+						|| colName.equals("Processing")
+						|| colName.equals("Processed") // metas: tsa: us215
 				)
 				{
 					;	// ignore / skip this column
@@ -1634,7 +1649,7 @@ public abstract class PO
 						{
 							if (to.m_poCacheLocals == null)
 							{
-								to.m_poCacheLocals = new HashMap<String, POCacheLocal>();
+								to.m_poCacheLocals = new HashMap<>();
 							}
 							final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
 							to.m_poCacheLocals.put(colName, poCacheLocalCopy);
@@ -1685,7 +1700,7 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName);
+			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
 		}
 		finally
 		{
@@ -1694,7 +1709,13 @@ public abstract class PO
 		}
 	}
 
-	private final boolean load0(final String trxName)
+	/**
+	 * Do the actual loading.
+	 *
+	 * @param trxName
+	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry.
+	 */
+	private final boolean load0(final String trxName, final boolean isRetry)
 	{
 		m_trxName = trxName;
 		boolean success = true;
@@ -1720,6 +1741,17 @@ public abstract class PO
 			}
 			else
 			{
+				if (!isRetry)
+				{
+					// gh #986 see if any noDataFoundHandler can do something and, if so, retry *once*
+					if (NoDataFoundHandlers.get()
+							.invokeHandlers(get_TableName(),
+									m_IDs,
+									InterfaceWrapperHelper.getContextAware(this)))
+					{
+						return load0(trxName, true); // this is the retry, so isRetry=true this time
+					}
+				}
 				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
 				m_IDs = new Object[] { I_ZERO };
 				success = false;
@@ -2021,7 +2053,7 @@ public abstract class PO
 	 */
 	protected final HashMap<String, String> get_HashMap()
 	{
-		HashMap<String, String> hmOut = new HashMap<String, String>();
+		HashMap<String, String> hmOut = new HashMap<>();
 		int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
@@ -2402,25 +2434,13 @@ public abstract class PO
 	 * @return translated string
 	 * @throws IllegalArgumentException if columnName or AD_Language is null or model has multiple PK
 	 */
-	public final String get_Translation(final String columnName, final String AD_Language)
+	public final String get_Translation(@NonNull final String columnName, @NonNull final String AD_Language)
 	{
-		//
-		// Check if columnName, AD_Language is valid or table support translation (has 1 PK) => error
-		if (columnName == null || AD_Language == null
-				|| m_IDs.length > 1 || m_IDs[0].equals(I_ZERO)
-				|| !(m_IDs[0] instanceof Integer))
-		{
-			throw new IllegalArgumentException("ColumnName=" + columnName
-					+ ", AD_Language=" + AD_Language
-					+ ", ID.length=" + m_IDs.length
-					+ ", ID=" + m_IDs[0]);
-		}
-
 		String retValue = null;
 		//
 		// Check if NOT base language and column is translated => load trl from db
-		if (!Env.isBaseLanguage(AD_Language, get_TableName())
-				&& p_info.isColumnTranslated(p_info.getColumnIndex(columnName)))
+		final POTrlInfo trlInfo = p_info.getTrlInfo();
+		if (is_Translatable() && !Env.isBaseLanguage(AD_Language, get_TableName()) && trlInfo.isColumnTranslated(columnName))
 		{
 			// Load translation from database
 			// metas: begin
@@ -2519,7 +2539,7 @@ public abstract class PO
 
 		//
 		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
-		final I_AD_Session session = get_Session();
+		final MFSession session = get_Session();
 		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
 		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
 
@@ -2663,7 +2683,7 @@ public abstract class PO
 		{
 			return;
 		}
-		final I_AD_Session session = get_Session();
+		final MFSession session = get_Session();
 		if (session == null)
 		{
 			return;
@@ -2960,8 +2980,16 @@ public abstract class PO
 		m_createNew = false;
 
 		//
-		// Reset cache
+		// Reset model cache
 		if (!newRecord)
+		{
+			TableModelLoader.instance.invalidateCache(get_TableName(), get_ID(), get_TrxName());
+		}
+		//
+		// Reset cache
+		// NOTE: we need to do it even for newly created records because there are some aggregates which are cached (e.g. all lines for a given document),
+		// so in case a new record pops in, those caches shall be reset..
+		// if (!newRecord)
 		{
 			final int id = get_ID();
 			CacheMgt.get().resetOnTrxCommit(get_TrxName(), p_info.getTableName(), id);
@@ -2993,7 +3021,7 @@ public abstract class PO
 		}
 		if (s_docWFMgr != null)
 		{
-			s_docWFMgr.process(this, p_info.getAD_Table_ID());
+			s_docWFMgr.process(this);
 		}
 	}
 
@@ -3142,8 +3170,8 @@ public abstract class PO
 			// Update Document No
 			if (columnName.equals("DocumentNo"))
 			{
-				String strValue = (String)value;
-				if (strValue.startsWith("<") && strValue.endsWith(">"))
+				String documentNo = (String)value;
+				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
@@ -3156,7 +3184,7 @@ public abstract class PO
 						final int docTypeId = get_ValueAsInt(docTypeIndex);
 						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 					}
@@ -3164,7 +3192,7 @@ public abstract class PO
 					{
 						value = documentNoFactory.forTableName(p_info.getTableName(), getAD_Client_ID(), getAD_Org_ID())
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
@@ -3349,7 +3377,7 @@ public abstract class PO
 			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
 			if (idNew <= 0)
 			{
-				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ")");
+				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
 				// log.error(ex.getLocalizedMessage(), ex);
 				// return false;
 				throw ex;
@@ -3410,21 +3438,21 @@ public abstract class PO
 			if (index != -1 && p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value != null && value.startsWith("<") && value.endsWith(">"))
+				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
 					value = null;
-				if (value == null || value.length() == 0)
+				if (value == null || value.isEmpty())
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
-					int dt = p_info.getColumnIndex("C_DocTypeTarget_ID");
-					if (dt == -1)
+					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
+					if (docTypeIndex == -1)
 					{
-						dt = p_info.getColumnIndex("C_DocType_ID");
+						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
-					if (dt != -1) 		// get based on Doc Type (might return null)
+					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(dt), false) // useDefiniteSequence=false
+						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 					}
@@ -3432,7 +3460,7 @@ public abstract class PO
 					{
 						value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
@@ -3455,12 +3483,17 @@ public abstract class PO
 			else if (p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value == null || value.length() == 0)
+				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
+				{
+					value = null;
+				}
+
+				if (value == null || value.isEmpty())
 				{
 					// metas: using AD_Org_ID as additional parameter
 					value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 							.setTrxName(m_trxName)
-							.setPO(this)
+							.setDocumentModel(this)
 							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
 							.build();
 					set_ValueNoCheck(index, value);
@@ -3947,12 +3980,10 @@ public abstract class PO
 		}
 
 		// Delete translations, if any
-		deleteTranslations(trxName);
+		deleteTranslations();
 
 		// Delete Cascade AD_Table_ID/Record_ID (Attachments, ..)
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
-
-		MRelation.deleteForPO(this); // metas-ts us197
 
 		//
 		// The Delete Statement
@@ -3981,7 +4012,6 @@ public abstract class PO
 
 			// Housekeeping
 			m_IDs[0] = I_ZERO;
-			m_attachment = null;
 
 			if (log.isDebugEnabled())
 				log.debug("[" + m_trxName + "] - complete");
@@ -4006,7 +4036,10 @@ public abstract class PO
 			m_valueLoaded = new boolean[size]; // metas
 			m_stale = false; // metas: 01537
 
-			CacheMgt.get().resetOnTrxCommit(trxName, p_info.getTableName(), m_idOld);
+			final String tableName = get_TableName();
+			CacheMgt.get().resetOnTrxCommit(trxName, tableName, m_idOld);
+			TableModelLoader.instance.invalidateCache(tableName, m_idOld, trxName);
+
 			m_idOld = 0;
 		}
 	}
@@ -4059,6 +4092,24 @@ public abstract class PO
 	{
 		return success;
 	} 	// afterDelete
+	
+	private boolean is_Translatable()
+	{
+		if(!p_info.getTrlInfo().isTranslated())
+		{
+			return false;
+		}
+		
+		// Make sure it's single ID key which is integer and which is set
+		if (m_IDs.length > 1 || m_IDs.length == 0
+				|| I_ZERO.equals(m_IDs[0])
+				|| !(m_IDs[0] instanceof Integer))
+		{
+			return false;
+		}
+		
+		return true;
+	}
 
 	/**
 	 * Insert (missing) Translation Records
@@ -4068,144 +4119,67 @@ public abstract class PO
 	public final boolean insertTranslations()
 	{
 		// Not a translation table
-		if (m_IDs.length > 1 || m_IDs.length == 0
-				|| m_IDs[0].equals(I_ZERO)
-				|| !p_info.isTranslated()
-				|| !(m_IDs[0] instanceof Integer))
-			return true;
-		//
-		StringBuilder iColumns = new StringBuilder();
-		StringBuilder sColumns = new StringBuilder();
-		for (int i = 0; i < p_info.getColumnCount(); i++)
+		if (!is_Translatable())
 		{
-			if (p_info.isColumnTranslated(i))
-			{
-				iColumns.append(p_info.getColumnName(i))
-						.append(",");
-				sColumns.append("t.")
-						.append(p_info.getColumnName(i))
-						.append(",");
-			}
-		}
-		if (iColumns.length() == 0)
 			return true;
-
-		String tableName = p_info.getTableName();
-		String keyColumn = m_KeyColumns[0];
-		StringBuilder sql = new StringBuilder("INSERT INTO ")
-				.append(tableName).append("_Trl (AD_Language,")
-				.append(keyColumn).append(", ")
-				.append(iColumns)
-				.append(" IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) ")
-				.append("SELECT l.AD_Language,t.")
-				.append(keyColumn).append(", ")
-				.append(sColumns)
-				.append(" 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy ")
-				.append("FROM AD_Language l, ").append(tableName).append(" t ")
-				.append("WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.")
-				.append(keyColumn).append("=").append(get_ID())
-				.append(" AND NOT EXISTS (SELECT * FROM ").append(tableName)
-				.append("_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.")
-				.append(keyColumn).append("=t.").append(keyColumn).append(")");
-		int no = DB.executeUpdateEx(sql.toString(), m_trxName);
-		log.debug("Inserted {} translation records for {}", no, this);
-		m_translations = null; // metas
-		return no > 0;
+		}
+		
+		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
+		if(ok)
+		{
+			m_translations = null; // reset translations cache
+		}
+		return ok;
 	}	// insertTranslations
 
 	/**
 	 * Update Translations.
 	 *
-	 * @return false if error (true if no translation or success)
+	 * @return
+	 *         <ul>
+	 *         <li>true if no translation or success
+	 *         <li>false if error
+	 *         </ul>
 	 */
 	private boolean updateTranslations()
 	{
 		// Not a translation table
-		if (m_IDs.length > 1
-				|| m_IDs[0].equals(I_ZERO)
-				|| !p_info.isTranslated()
-				|| !(m_IDs[0] instanceof Integer))
-			return true;
-		//
-		boolean trlColumnChanged = false;
-		for (int i = 0; i < p_info.getColumnCount(); i++)
+		if(!is_Translatable())
 		{
-			if (p_info.isColumnTranslated(i)
-					&& is_ValueChanged(p_info.getColumnName(i)))
-			{
-				trlColumnChanged = true;
-				break;
-			}
+			return true; // OK
 		}
-		if (!trlColumnChanged)
-			return true;
-		//
-		MClient client = MClient.get(getCtx());
-		//
-		String tableName = p_info.getTableName();
-		String keyColumn = m_KeyColumns[0];
-		StringBuilder sql = new StringBuilder("UPDATE ")
-				.append(tableName).append("_Trl SET ");
-		//
-		if (client.isAutoUpdateTrl(tableName))
+		
+		final boolean ok = POTrlRepository.instance.updateTranslations(this);
+		if(ok)
 		{
-			for (int i = 0; i < p_info.getColumnCount(); i++)
-			{
-				if (p_info.isColumnTranslated(i))
-				{
-					String columnName = p_info.getColumnName(i);
-					sql.append(columnName).append("=");
-					Object value = get_Value(columnName);
-					if (value == null)
-						sql.append("NULL");
-					else if (value instanceof String)
-						sql.append(DB.TO_STRING((String)value));
-					else if (value instanceof Boolean)
-						sql.append(((Boolean)value).booleanValue() ? "'Y'" : "'N'");
-					else if (value instanceof Timestamp)
-						sql.append(DB.TO_DATE((Timestamp)value));
-					else
-						sql.append(value.toString());
-					sql.append(",");
-				}
-			}
-			sql.append("IsTranslated='Y'");
+			m_translations = null; // reset cached translations
 		}
-		else
-			sql.append("IsTranslated='N'");
+
 		//
-		sql.append(" WHERE ")
-				.append(keyColumn).append("=").append(get_ID());
-		int no = DB.executeUpdate(sql.toString(), m_trxName);
-		log.debug("Updated {} translation records for {}", no, this);
-		m_translations = null; // metas
-		return no >= 0;
+		return ok;
 	}	// updateTranslations
 
 	/**
 	 * Delete Translation Records
 	 *
-	 * @param trxName transaction
 	 * @return false if error (true if no translation or success)
 	 */
-	private boolean deleteTranslations(String trxName)
+	private boolean deleteTranslations()
 	{
 		// Not a translation table
-		if (m_IDs.length > 1
-				|| m_IDs[0].equals(I_ZERO)
-				|| !p_info.isTranslated()
-				|| !(m_IDs[0] instanceof Integer))
+		if(!is_Translatable())
+		{
 			return true;
+		}
+		
+		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
+		if(ok)
+		{
+			m_translations = NullModelTranslationMap.instance; // reset cached translations
+		}
+		
 		//
-		String tableName = p_info.getTableName();
-		String keyColumn = m_KeyColumns[0];
-		StringBuilder sql = new StringBuilder("DELETE FROM  ")
-				.append(tableName).append("_Trl WHERE ")
-				.append(keyColumn).append("=").append(get_ID());
-		int no = DB.executeUpdate(sql.toString(), trxName);
-		log.debug("Deleted {} translation records for {}", no, this);
-		m_translations = null; // metas
-		return no >= 0;
+		return ok;
 	}	// deleteTranslations
 
 	/**
@@ -4225,7 +4199,7 @@ public abstract class PO
 		if (s_acctColumns == null	// cannot cache C_BP_*_Acct as there are 3
 				|| acctTable.startsWith("C_BP_"))
 		{
-			s_acctColumns = new ArrayList<String>();
+			s_acctColumns = new ArrayList<>();
 			final String sql = "SELECT c.ColumnName "
 					+ "FROM AD_Column c INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
 					+ "WHERE t.TableName=? AND c.IsActive='Y' AND c.AD_Reference_ID=25 ORDER BY c.ColumnName";
@@ -4439,118 +4413,6 @@ public abstract class PO
 	}	// getTrx
 
 	/**************************************************************************
-	 * Get Attachments.
-	 * An attachment may have multiple entries
-	 *
-	 * @return Attachment or null
-	 */
-	public final MAttachment getAttachment()
-	{
-		return getAttachment(false);
-	}	// getAttachment
-
-	/**
-	 * Get Attachments
-	 *
-	 * @param requery requery
-	 * @return Attachment or null
-	 */
-	public final MAttachment getAttachment(boolean requery)
-	{
-		// Make sure the attachment is for current PO ID
-		if (m_attachment != null && m_attachment.getRecord_ID() != get_ID())
-		{
-			m_attachment = null;
-		}
-
-		if (m_attachment == null || requery)
-		{
-			m_attachment = MAttachment.get(getCtx(), p_info.getAD_Table_ID(), get_ID());
-		}
-		return m_attachment;
-	}	// getAttachment
-
-	/**
-	 * Create/return Attachment for PO.
-	 * If not exist, create new
-	 *
-	 * @return attachment
-	 */
-	public final MAttachment createAttachment()
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			m_attachment = new MAttachment(getCtx(), p_info.getAD_Table_ID(), get_ID(), ITrx.TRXNAME_None);
-		return m_attachment;
-	}	// createAttachment
-
-	/**
-	 * Do we have a Attachment of type
-	 *
-	 * @param extension extension e.g. .pdf
-	 * @return true if there is a attachment of type
-	 */
-	public final boolean isAttachment(String extension)
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			return false;
-		for (int i = 0; i < m_attachment.getEntryCount(); i++)
-		{
-			if (m_attachment.getEntryName(i).endsWith(extension))
-			{
-				if (log.isDebugEnabled())
-					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
-				return true;
-			}
-		}
-		return false;
-	}	// isAttachment
-
-	/**
-	 * Get Attachment Data of type
-	 *
-	 * @param extension extension e.g. .pdf
-	 * @return data or null
-	 */
-	public final byte[] getAttachmentData(String extension)
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			return null;
-		for (int i = 0; i < m_attachment.getEntryCount(); i++)
-		{
-			if (m_attachment.getEntryName(i).endsWith(extension))
-			{
-				if (log.isDebugEnabled())
-					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
-				return m_attachment.getEntryData(i);
-			}
-		}
-		return null;
-	}	// getAttachmentData
-
-	/**
-	 * Do we have a PDF Attachment
-	 *
-	 * @return true if there is a PDF attachment
-	 */
-	public boolean isPdfAttachment()
-	{
-		return isAttachment(".pdf");
-	}	// isPdfAttachment
-
-	/**
-	 * Get PDF Attachment Data
-	 *
-	 * @return data or null
-	 */
-	public byte[] getPdfAttachment()
-	{
-		return getAttachmentData(".pdf");
-	}	// getPDFAttachment
-
-	/**************************************************************************
 	 * Dump Record
 	 */
 	public void dump()
@@ -4601,7 +4463,7 @@ public abstract class PO
 	 */
 	public static int[] getAllIDs(String TableName, String WhereClause, String trxName)
 	{
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Integer> list = new ArrayList<>();
 		StringBuilder sql = new StringBuilder("SELECT ");
 		sql.append(TableName).append("_ID FROM ").append(TableName);
 		if (WhereClause != null && WhereClause.length() > 0)
@@ -4685,7 +4547,7 @@ public abstract class PO
 				int index = 1;	// correct
 				if (blob.getClass().getName().equals("oracle.jdbc.rowset.OracleSerialBlob"))
 					index = 0;	// Oracle Bug Invalid Arguments
-	// at oracle.jdbc.rowset.OracleSerialBlob.getBytes(OracleSerialBlob.java:130)
+				// at oracle.jdbc.rowset.OracleSerialBlob.getBytes(OracleSerialBlob.java:130)
 				retValue = blob.getBytes(index, (int)length);
 			}
 			else
@@ -4722,7 +4584,7 @@ public abstract class PO
 		PO_LOB lob = new PO_LOB(p_info.getTableName(), get_ColumnName(index),
 				get_WhereClause(true), displayType, value);
 		if (m_lobInfo == null)
-			m_lobInfo = new ArrayList<PO_LOB>();
+			m_lobInfo = new ArrayList<>();
 		m_lobInfo.add(lob);
 	}	// lobAdd
 
@@ -4966,7 +4828,7 @@ public abstract class PO
 	public final Object setDynAttribute(String name, Object value)
 	{
 		if (m_dynAttrs == null)
-			m_dynAttrs = new HashMap<String, Object>();
+			m_dynAttrs = new HashMap<>();
 		return m_dynAttrs.put(name, value);
 	}
 
@@ -4981,6 +4843,11 @@ public abstract class PO
 		if (m_dynAttrs == null)
 			return null;
 		return m_dynAttrs.get(name);
+	}
+
+	public final boolean isDynAttributeTrue(final String name)
+	{
+		return DisplayType.toBoolean(getDynAttribute(name));
 	}
 
 	/**
@@ -5046,7 +4913,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found: {}", columnName);
+			log.warn("Column {} not found in method PO.get_ValueOldAsString", columnName);
 			return "";
 		}
 		return get_ValueOldAsString(index);
@@ -5069,9 +4936,9 @@ public abstract class PO
 	private IModelTranslation get_ModelTranslation(final String AD_Language)
 	{
 		final IModelTranslationMap modelTranslationMap = get_ModelTranslationMap();
-		if (modelTranslationMap instanceof POInfoModelTranslationMap)
+		if (modelTranslationMap instanceof POModelTranslationMap)
 		{
-			return ((POInfoModelTranslationMap)modelTranslationMap).getTranslation(get_ID(), AD_Language);
+			return ((POModelTranslationMap)modelTranslationMap).getTranslation(get_ID(), AD_Language);
 		}
 		else
 		{
@@ -5083,16 +4950,18 @@ public abstract class PO
 	{
 		final int id = get_ID();
 		if (id <= 0)
+		{
 			return NullModelTranslationMap.instance;
+		}
 
 		if (m_translations == null)
 		{
-			m_translations = POInfoModelTranslationMap.of(p_info, id);
+			m_translations = POTrlRepository.instance.retrieveAll(p_info.getTrlInfo(), id);
 		}
 		return m_translations;
 	}
 
-	private POInfoModelTranslationMap m_translations = null;
+	private IModelTranslationMap m_translations = null;
 
 	public final POInfo getPOInfo()
 	{
@@ -5104,7 +4973,9 @@ public abstract class PO
 	private POCacheLocal get_POCacheLocal(String columnName, String refTableName)
 	{
 		if (m_poCacheLocals == null)
-			m_poCacheLocals = new HashMap<String, POCacheLocal>();
+		{
+			m_poCacheLocals = new HashMap<>();
+		}
 
 		POCacheLocal poCache = m_poCacheLocals.get(columnName);
 		if (poCache != null && !refTableName.equals(poCache.getTableName()))
@@ -5121,14 +4992,20 @@ public abstract class PO
 		return poCache;
 	}
 
-	public final <T> T get_ValueAsPO(String columnName, Class<T> refClass)
+	public final <T> T get_ValueAsPO(final String columnName, final Class<T> refClass)
 	{
 		final String refTableName = InterfaceWrapperHelper.getTableName(refClass);
 		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
 		return poCache == null ? null : poCache.get(refClass);
 	}
 
-	public final <T> void set_ValueFromPO(String columnName, Class<T> refClass, Object obj)
+	public final Object get_ValueAsPO(final String columnName, final String refTableName)
+	{
+		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
+		return poCache == null ? null : poCache.get();
+	}
+
+	public final <T> void set_ValueFromPO(final String columnName, final Class<T> refClass, final Object obj)
 	{
 		final String refTableName = InterfaceWrapperHelper.getTableName(refClass);
 		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
@@ -5206,7 +5083,7 @@ public abstract class PO
 	 * @return session or null
 	 */
 	// metas
-	private final I_AD_Session get_Session()
+	private final MFSession get_Session()
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{
@@ -5214,7 +5091,7 @@ public abstract class PO
 			return null;
 		}
 
-		final MSession session = MSession.get(getCtx(), false);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
 		if (session == null)
 		{
 			log.debug("No Session found");
@@ -5262,7 +5139,7 @@ public abstract class PO
 		}
 		if (markedChangedColumns == null)
 		{
-			markedChangedColumns = new HashSet<Integer>();
+			markedChangedColumns = new HashSet<>();
 		}
 		markedChangedColumns.add(columnIndex);
 	}
@@ -5330,7 +5207,6 @@ public abstract class PO
 		poCopy.p_ctx = this.p_ctx;
 		poCopy.m_trxName = this.m_trxName;
 		poCopy.isAssignedID = this.isAssignedID;
-		poCopy.m_attachment = null;
 		poCopy.m_createNew = this.m_createNew;
 		poCopy.m_wasJustCreated = this.m_wasJustCreated;
 		poCopy.m_idOld = this.m_idOld;
@@ -5339,7 +5215,7 @@ public abstract class PO
 		poCopy.m_newValues = this.m_newValues == null ? null : Arrays.copyOf(this.m_newValues, this.m_newValues.length);
 		poCopy.m_KeyColumns = this.m_KeyColumns == null ? null : Arrays.copyOf(this.m_KeyColumns, this.m_KeyColumns.length);
 		// m_currentChangeType : int
-		poCopy.m_custom = this.m_custom == null ? null : new HashMap<String, String>(this.m_custom);
+		poCopy.m_custom = this.m_custom == null ? null : new HashMap<>(this.m_custom);
 		// poCopy.m_doc = this.m_doc // NOTE: don't need to copy; it will be set by org.compiere.acct.Doc
 		poCopy.m_dynAttrs = null; // don't copy DynAttributes
 		poCopy.m_isReplication = false; // don't copy IsReplication
@@ -5350,8 +5226,8 @@ public abstract class PO
 		poCopy.m_stale = this.m_stale;
 		// m_translations : Map<String, Map<String, String>> // TODO: copy the translations
 		poCopy.m_valueLoaded = this.m_valueLoaded == null ? null : Arrays.copyOf(this.m_valueLoaded, this.m_valueLoaded.length);
-		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<Integer>(this.markedChangedColumns);
-		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<String>(this.s_acctColumns);
+		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<>(this.markedChangedColumns);
+		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<>(this.s_acctColumns);
 
 		//
 		// Manual User Action (i.e. if user loaded this PO from a window)

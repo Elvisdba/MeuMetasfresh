@@ -29,15 +29,15 @@ import java.sql.Timestamp;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.flatrate.api.IContractChangeBL;
 import de.metas.flatrate.model.I_C_Contract_Change;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class C_Flatrate_Term_Change extends SvrProcess
+public class C_Flatrate_Term_Change extends JavaProcess
 {
 
 	public static final String ChangeTerm_ACTION_SwitchContract = "SC";
@@ -66,7 +66,7 @@ public class C_Flatrate_Term_Change extends SvrProcess
 		
 		final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
-		Services.get(IContractChangeBL.class).cancelContract(currentTerm, changeDate);
+		Services.get(IContractChangeBL.class).cancelContract(currentTerm, changeDate, true);
 
 		return "@Success@";
 	}
@@ -76,7 +76,7 @@ public class C_Flatrate_Term_Change extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

@@ -13,20 +13,20 @@ package org.adempiere.ad.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.service.ISequenceDAO;
@@ -35,15 +35,13 @@ import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.LoggerLoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.I_AD_Table;
@@ -52,8 +50,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 public class TableSequenceChecker implements ITableSequenceChecker
 {
@@ -61,7 +60,6 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	private final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private ILoggable logger = null;
 	private final Properties ctx;
 	private String trxName = ITrx.TRXNAME_None;
 	private boolean sequenceRangeCheck = false;
@@ -70,7 +68,6 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 	public TableSequenceChecker(final Properties ctx)
 	{
-		super();
 		this.ctx = ctx;
 	}
 
@@ -82,22 +79,9 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		return this;
 	}
 
-	@Override
-	public ITableSequenceChecker setLogger(final ILoggable logger)
+	private ILoggable getLogger()
 	{
-		this.logger = logger;
-
-		return this;
-	}
-
-	public ILoggable getLogger()
-	{
-		if (logger == null)
-		{
-			logger = LoggerLoggable.of(this.log, Level.INFO);
-		}
-
-		return logger;
+		return Loggables.get().withLogger(log, Level.INFO);
 	}
 
 	@Override
@@ -174,14 +158,14 @@ public class TableSequenceChecker implements ITableSequenceChecker
 				continue;
 			}
 
-			createUpdateTableSequence(table);
+			createOrUpdateSequence(table);
 			countChecked++;
 		}
 
 		getLogger().addLog("Checked " + countChecked + " of " + countAll + " tables");
 	}
 
-	private void createUpdateTableSequence(final I_AD_Table table)
+	private void createOrUpdateSequence(final I_AD_Table table)
 	{
 		final String tableName = table.getTableName();
 
@@ -201,7 +185,10 @@ public class TableSequenceChecker implements ITableSequenceChecker
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				createUpdateTableSequence(ctx, tableName, localTrxName);
+				createOrUpdateTableSequence(ctx, tableName, localTrxName);
+
+				// gh #941 *always* deal with native sequences, even if there is no AD_Sequence or no AD_Column
+				createOrUpdateNativeSequence(tableName, localTrxName);
 			}
 
 			@Override
@@ -228,14 +215,14 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	}
 
 	/**
-	 * Create/Update Table ID Sequence
+	 * Create/Update {@link I_AD_Sequence} for the given {@code tableName}.
 	 * 
 	 * @param ctx context
 	 * @param TableName table name
 	 * @param trxName transaction
 	 * @return created/updated sequence; never return null
 	 */
-	private final I_AD_Sequence createUpdateTableSequence(final Properties ctx, final String tableName, final String trxName)
+	private final I_AD_Sequence createOrUpdateTableSequence(final Properties ctx, final String tableName, final String trxName)
 	{
 		I_AD_Sequence sequence = sequenceDAO.retrieveTableSequenceOrNull(ctx, tableName, trxName);
 		if (sequence == null)
@@ -243,9 +230,9 @@ public class TableSequenceChecker implements ITableSequenceChecker
 			final Properties ctxSystem = Env.deriveCtx(ctx);
 			Env.setContext(ctxSystem, Env.CTXNAME_AD_Client_ID, 0);
 			Env.setContext(ctxSystem, Env.CTXNAME_AD_Org_ID, 0);
-			final IContextAware contextProvider = new PlainContextAware(ctxSystem, trxName);
+			final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctxSystem, trxName);
 
-			I_AD_Sequence sequenceNew = InterfaceWrapperHelper.newInstance(I_AD_Sequence.class, contextProvider, true); // useCLientOrgFromProvider=true
+			final I_AD_Sequence sequenceNew = InterfaceWrapperHelper.newInstance(I_AD_Sequence.class, contextProvider, true); // useCLientOrgFromProvider=true
 			sequenceNew.setAD_Org_ID(0);
 			sequenceNew.setName(tableName);
 			sequenceNew.setDescription("Table " + tableName);
@@ -253,8 +240,6 @@ public class TableSequenceChecker implements ITableSequenceChecker
 			sequenceNew.setIsActive(true);
 			sequence = sequenceNew;
 		}
-
-		final SequenceChangeLog changeLog = new SequenceChangeLog(sequence);
 
 		//
 		// Correct Sequence Name (if needed)
@@ -265,20 +250,9 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 		//
 		// Check ID range (if needed)
-		if (isSequenceRangeCheck()
-				// task 08607: if using native sequences, we will recreate the native sequence from the current AD_Sequence.CurrentNext value
-				// so, as a workaround, we also make sure that AD_Sequence.CurrentNext is OK.
-				|| DB.isUseNativeSequences())
+		if (isSequenceRangeCheck())
 		{
 			updateTableCurrentNext(sequence);
-		}
-
-		//
-		// Create native sequence (if needed)
-		// task 08607 we still need this invocation; we already called updateTableCurrentNext(), but it might *not* already have called createTableNativeSequence(sequence).
-		if (DB.isUseNativeSequences())
-		{
-			createTableNativeSequence(sequence);
 		}
 
 		//
@@ -287,50 +261,15 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 		//
 		// Log
+		final SequenceChangeLog changeLog = new SequenceChangeLog(sequence);
 		changeLog.setNewValues(sequence);
 		log(changeLog);
 
 		return sequence;
 	}	// createTableSequence
 
-	private final void createTableNativeSequence(final I_AD_Sequence sequence)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(sequence);
-		final String tableName = sequence.getName();
-
-		//
-		// metas: 03863: Skip inactive sequences
-		if (!sequence.isActive())
-		{
-			// we already logged in updateTableCurrentNext() that we skip the sequence, so no need to log to the loggable again
-			log.debug("Skip checking native sequence " + sequence + " because is not active.");
-			return;
-		}
-
-		final String dbSequenceName = DB.getTableSequenceName(tableName);
-		final int dbSeqIncrement = sequence.getIncrementNo();
-
-		// NOTE: we use CurrentNext and not CurrentNextSys because CurrentNextSys is used only when changing system data, and then we are not using native sequences anyway
-		final int dbSeqStart = sequence.getCurrentNext();
-
-		final int dbSeqMin = 0;
-		final int dbSeqMax = Integer.MAX_VALUE; // even though postgresql supports 2^63-1, we use MAX java integer (because we are fetching the IDs as integers atm), which is 2^31-1
-
-		final boolean created = CConnection.get().getDatabase().createSequence(
-				dbSequenceName,
-				dbSeqIncrement, // increment
-				dbSeqMin,  // min value
-				dbSeqMax, // max value
-				dbSeqStart, // start
-				trxName);
-		if (!created)
-		{
-			throw new DBException("Cannot create native sequence: " + dbSequenceName);
-		}
-	}
-
 	/**
-	 * Checks sequence's CurrentNext and CurrentNextSys and updates them if necessary
+	 * Checks the given {@code seq}'s {@code CurrentNext} and {@code CurrentNextSys} and updates them if necessary.
 	 * 
 	 * NOTE: this method is not saving the modified sequence
 	 * 
@@ -340,6 +279,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	{
 		if (!seq.isTableID())
 		{
+			getLogger().addLog("Skip checking sequence {} because it has isTableID=false.", seq);
 			return false;
 		}
 
@@ -349,9 +289,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		// metas: 03863: Skip inactive sequences
 		if (!seq.isActive())
 		{
-			final String msg = "Skip checking sequence " + tableName + " because it is not active.";
-			getLogger().addLog(msg);
-
+			getLogger().addLog("Skip checking sequence {} because it has isActive=false.", seq);
 			return false;
 		}
 
@@ -365,7 +303,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 				+ " AND c.ColumnName='" + keyColumnName + "'");
 		if (keyColumnId <= 0)
 		{
-			log.debug("Skip checking sequence " + tableName + " because there is no key column name (" + keyColumnName + ")");
+			getLogger().addLog("Skip checking sequence {} because there is no key column name {}", seq, keyColumnName);
 			return false;
 		}
 
@@ -420,15 +358,6 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		}
 
 		//
-		// metas: tsa: 01534: create/update native sequences
-		// [ 3307419 ] Sequence check shall update native sequences
-		if (changed && DB.isUseNativeSequences())
-		{
-			createTableNativeSequence(seq);
-			changed = true;
-		}
-
-		//
 		// Log
 		if (info != null && log.isDebugEnabled())
 		{
@@ -438,6 +367,16 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		return changed;
 	}	// validate
 
+	/**
+	 * Invokes the DB function {@code dba_seq_check_native()} with the given {@code tableName}.
+	 *  
+	 * @task https://github.com/metasfresh/metasfresh/issues/941
+	 */
+	private void createOrUpdateNativeSequence(final String tableName, final String trxName)
+	{
+		DB.executeFunctionCallEx(trxName, "select dba_seq_check_native(?)", new Object[] { tableName });
+	}
+	
 	private void log(final SequenceChangeLog changeLog)
 	{
 		if (!changeLog.isChange())
@@ -467,7 +406,6 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 		public SequenceChangeLog(final I_AD_Sequence sequence)
 		{
-			super();
 			Check.assumeNotNull(sequence, "sequence not null");
 			this.newSequence = sequence.getAD_Sequence_ID() <= 0;
 			this.sequenceName = sequence.getName();
@@ -496,7 +434,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 				return true;
 			}
 
-			if (!Check.equals(this.sequenceName, this.sequenceNameNew))
+			if (!Objects.equals(this.sequenceName, this.sequenceNameNew))
 			{
 				return true;
 			}
@@ -517,7 +455,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		{
 			final StringBuilder changes = new StringBuilder();
 
-			if (newValuesSet && !Check.equals(sequenceName, sequenceNameNew))
+			if (newValuesSet && !Objects.equals(sequenceName, sequenceNameNew))
 			{
 				if (changes.length() > 0)
 				{

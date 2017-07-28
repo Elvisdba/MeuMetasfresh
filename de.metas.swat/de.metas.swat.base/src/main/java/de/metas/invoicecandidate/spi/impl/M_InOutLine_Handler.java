@@ -238,7 +238,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp shipDate = inOut.getMovementDate();
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
-		final int taxId = Services.get(ITaxBL.class).getTax(ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
+		final int taxId = Services.get(ITaxBL.class).getTax(
+				ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
 				, locationId // shipC_BPartner_Location_ID
 				, isSOTrx, trxName);
 		ic.setC_Tax_ID(taxId);
@@ -308,7 +309,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 *
 	 * @param ic
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>+1 on regular shipment/receipt
 	 *         <li>-1 on material returns
 	 *         </ul>
@@ -348,8 +349,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_Order order = inOut.getC_Order();
 			ic.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 		}
-		else
+		else if (ic.getC_Order_ID() <= 0)
 		{
+			// don't attempt to "clear" the order data if it is already set/known.
 			ic.setC_Order(null);
 		}
 
@@ -358,7 +360,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
-		if (docActionBL.isStatusOneOf(inOut, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+		if (docActionBL.isDocumentStatusOneOf(inOut, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyDelivered = inOutLine.getMovementQty().multiply(qtyMultiplier);
@@ -527,11 +529,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 		catch (final ProductNotOnPriceListException e)
-		{
-			final boolean askForDeleteRegeneration = true; // ask for re-generation
-			setError(ic, e, askForDeleteRegeneration);
-		}
-		catch (final org.adempiere.exceptions.ProductNotOnPriceListException e)
 		{
 			final boolean askForDeleteRegeneration = true; // ask for re-generation
 			setError(ic, e, askForDeleteRegeneration);

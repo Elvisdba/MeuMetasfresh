@@ -22,9 +22,10 @@ package org.adempiere.util.lang;
  * #L%
  */
 
-
 /**
  * A pair consisting of two elements. Hint: use {@link ImmutablePair#of(Object, Object)} to get an instance.
+ * <p>
+ * Hint: use {@link ImmutablePair} to make your own instance.
  *
  * @author tsa
  *

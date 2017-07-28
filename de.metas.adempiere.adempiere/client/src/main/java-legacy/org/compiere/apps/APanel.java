@@ -80,7 +80,6 @@ import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.ProcessEvent;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.Find;
 import org.compiere.apps.search.FindPanelContainer;
@@ -109,20 +108,19 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.GridWorkbench;
 import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
+import org.compiere.model.X_AD_Process;
 import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessClassInfo;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.swing.CPanel;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -131,10 +129,16 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IProcessExecutionListener;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ui.AProcess;
+import de.metas.process.ui.ProcessDialog;
 
 /**
  * Main Panel of application window.
@@ -176,7 +180,7 @@ import de.metas.logging.MetasfreshLastError;
  */
 // metas: removed final modifier
 public class APanel extends CPanel
-		implements DataStatusListener, ChangeListener, ActionListener, ASyncProcess, IProcessEventListener // metas
+		implements DataStatusListener, ChangeListener, ActionListener, IProcessExecutionListener, IProcessEventListener // metas
 {
 	/**
 	 * 
@@ -263,7 +267,6 @@ public class APanel extends CPanel
 	 */
 	public void dispose()
 	{
-		// log.info("");
 		// ignore changes
 		m_disposing = true;
 		//
@@ -285,7 +288,7 @@ public class APanel extends CPanel
 			for (int i = 0; i < m_mWorkbench.getWindowCount(); i++)
 			{
 				m_curWindowNo = m_mWorkbench.getWindowNo(i);
-				log.info("#" + m_curWindowNo);
+				log.debug("disposing windowNo={}", m_curWindowNo);
 				Env.setAutoCommit(m_ctx, m_curWindowNo, false);
 				m_mWorkbench.dispose(i);
 				Env.clearWinContext(m_ctx, m_curWindowNo);
@@ -486,18 +489,6 @@ public class APanel extends CPanel
 		// Tools
 		final JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		aCalculator = addAction("Calculator",	mTools, 	null,	false);
-//		aCalendar = addAction("Calendar",		mTools, 	null,	false);
-//		aEditor =	addAction("Editor",			mTools, 	null,	false);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			aScript = addAction("Script",	        mTools, 	null,	false);
-//		if (AEnv.isWorkflowProcess())
-//			aWorkflow = addAction("WorkFlow",	mTools,		null,	false);
-		//@formatter:on
 
 		if ("Y".equals(Env.getContext(m_ctx, "#SysAdmin")))  	// set in DB.loginDB
 			aWinSize = addAction("WinSize", mTools, null, false, false);
@@ -779,7 +770,7 @@ public class APanel extends CPanel
 	{
 		Check.assume(!isNested, "Nested panels/included tabs are not allowed tobe initialized here");
 
-		log.info("WB={}, Win={}, Query={}", new Object[] { AD_Workbench_ID, AD_Window_ID, query });
+		log.debug("initPanel: WB={}, Win={}, Query={}", AD_Workbench_ID, AD_Window_ID, query);
 
 		this.setName("APanel" + AD_Window_ID);
 
@@ -1065,8 +1056,6 @@ public class APanel extends CPanel
 			return true;
 		}
 
-		Dimension size = getPreferredSize();
-		log.info("fini - " + size);
 		m_curWinTab.requestFocusInWindow();
 		return true;
 	}	// initPanel
@@ -1173,16 +1162,16 @@ public class APanel extends CPanel
 					{
 						GridTab pTab = m_mWorkbench.getMWindow(0).getTab(entry.getKey());
 						Object[] value = entry.getValue();
-						MQuery pquery = new MQuery(pTab.getAD_Table_ID());
-						pquery.addRestriction((String)value[0], "=", value[1]);
+						MQuery pquery = new MQuery(pTab.getTableName());
+						pquery.addRestriction((String)value[0], Operator.EQUAL, value[1]);
 						pTab.setQuery(pquery);
 						GridController gc = (GridController)tabPanel.getComponentAt(entry.getKey());
 						gc.activate();
 						gc.query(false, 0, GridTabMaxRows.NO_RESTRICTION);
 					}
 
-					MQuery targetQuery = new MQuery(gTab.getAD_Table_ID());
-					targetQuery.addRestriction(gTab.getLinkColumnName(), "=", parentId);
+					MQuery targetQuery = new MQuery(gTab.getTableName());
+					targetQuery.addRestriction(gTab.getLinkColumnName(), Operator.EQUAL, parentId);
 					gTab.setQuery(targetQuery);
 					GridController gc = null;
 					if (!includedTabId2ParentGC.containsKey(gTab.getAD_Tab_ID()))
@@ -1380,8 +1369,7 @@ public class APanel extends CPanel
 			return;
 		}
 
-		if (log.isInfoEnabled())
-			log.info(e.getMessage());
+		log.debug("Got dataStatusEvent: {}", e);
 
 		String dbInfo = e.getMessage();
 		if (m_curTab != null && m_curTab.isQueryActive())
@@ -1572,7 +1560,7 @@ public class APanel extends CPanel
 			return;
 		}
 
-		log.info(e.toString());
+		log.debug("Got stateChangedEvent: {}", e);
 
 		setBusy(true, true); // busy=true, focus=N/A
 
@@ -1600,7 +1588,6 @@ public class APanel extends CPanel
 			int WBIndex = tabPanel.getSelectedIndex();
 			m_curWindowNo = m_mWorkbench.getWindowNo(WBIndex);
 			// Window Change
-			log.info("curWin=" + m_curWindowNo + " - Win=" + tp);
 			if (tp.getSelectedComponent() instanceof JTabbedPane)
 				m_curWinTab = (JTabbedPane)tp.getSelectedComponent();
 			else
@@ -1620,7 +1607,6 @@ public class APanel extends CPanel
 		else
 		{
 			// Just a Tab Change
-			log.info("Tab=" + tp);
 			m_curWinTab = tp;
 			int tpIndex = m_curWinTab.getSelectedIndex();
 			// detect no tab change
@@ -1764,8 +1750,6 @@ public class APanel extends CPanel
 				if (m_curTab.isInsertRecord()
 						&& (Env.isAutoNew(m_ctx, m_curWindowNo) || m_curTab.isQueryNewRecord()))
 				{
-					log.info("No record - New - AutoNew=" + Env.isAutoNew(m_ctx, m_curWindowNo)
-							+ " - QueryNew=" + m_curTab.isQueryNewRecord());
 					m_curTab.dataNew(DataNewCopyMode.NoCopy);
 				}
 				else	// No Records found
@@ -1861,8 +1845,6 @@ public class APanel extends CPanel
 
 		//
 		m_curWinTab.requestFocusInWindow();
-
-		log.info("fini");
 	}	// stateChanged
 
 	/**
@@ -1942,14 +1924,11 @@ public class APanel extends CPanel
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if (log.isInfoEnabled())
-			log.info(e.getActionCommand() + " - " + e.getModifiers());
-
 		if (m_disposing || isUILocked())
 			return;
 
 		m_lastModifiers = e.getModifiers();
-		String cmd = e.getActionCommand();
+		final String cmd = e.getActionCommand();
 
 		// Problem: doubleClick detection - can't disable button as clicking button may change button status
 		if (!WindowMenu.ShowAllWindows_ActionName.equals(cmd))
@@ -2173,7 +2152,7 @@ public class APanel extends CPanel
 	 */
 	private void cmd_new(final DataNewCopyMode copyMode)
 	{
-		log.info("CopyMode={}", copyMode);
+		log.debug("cmd_new: CopyMode={}", copyMode);
 
 		if (!m_curTab.isInsertRecord())
 		{
@@ -2376,7 +2355,8 @@ public class APanel extends CPanel
 	{
 		if (m_curAPanelTab != null)
 			manualCmd = false;
-		log.info("Manual=" + manualCmd);
+		log.debug("cmd_save: Manual={}", manualCmd);
+		
 		m_errorDisplayed = false;
 		m_curGC.stopEditor(true);
 		m_curGC.acceptEditorChanges();
@@ -2471,7 +2451,6 @@ public class APanel extends CPanel
 	 */
 	private void cmd_report()
 	{
-		log.info("");
 		if (!Env.getUserRolePermissions().isCanReport(m_curTab.getAD_Table_ID()))
 		{
 			ADialog.error(m_curWindowNo, this, "AccessCannotReport");
@@ -2491,8 +2470,7 @@ public class APanel extends CPanel
 	 */
 	private void cmd_zoomAcross()
 	{
-		int record_ID = m_curTab.getRecord_ID();
-		log.info("ID=" + record_ID);
+		final int record_ID = m_curTab.getRecord_ID();
 		if (record_ID <= 0)
 			return;
 
@@ -2506,9 +2484,9 @@ public class APanel extends CPanel
 		if (link.length() != 0)
 		{
 			if (link.endsWith("_ID"))
-				query.addRestriction(link, MQuery.EQUAL, Env.getContextAsInt(m_ctx, m_curWindowNo, link));
+				query.addRestriction(link, Operator.EQUAL, Env.getContextAsInt(m_ctx, m_curWindowNo, link));
 			else
-				query.addRestriction(link, MQuery.EQUAL, Env.getContext(m_ctx, m_curWindowNo, link));
+				query.addRestriction(link, Operator.EQUAL, Env.getContext(m_ctx, m_curWindowNo, link));
 		}
 		new AZoomAcross(aZoomAcross.getButton(), m_curTab.getTableName(), m_curTab.getAD_Window_ID(), query);
 	}	// cmd_zoom
@@ -2518,8 +2496,7 @@ public class APanel extends CPanel
 	 */
 	private void cmd_request()
 	{
-		int record_ID = m_curTab.getRecord_ID();
-		log.info("ID=" + record_ID);
+		final int record_ID = m_curTab.getRecord_ID();
 		if (record_ID <= 0)
 			return;
 
@@ -2536,8 +2513,7 @@ public class APanel extends CPanel
 	 */
 	private void cmd_archive()
 	{
-		int record_ID = m_curTab.getRecord_ID();
-		log.info("ID=" + record_ID);
+		final int record_ID = m_curTab.getRecord_ID();
 		if (record_ID <= 0)
 			return;
 
@@ -2559,30 +2535,25 @@ public class APanel extends CPanel
 	private void cmd_print(boolean printPreview)
 	{
 		// Get process defined for this tab
-		int AD_Process_ID = m_curTab.getAD_Process_ID();
-		log.info("ID=" + AD_Process_ID);
+		final int AD_Process_ID = m_curTab.getAD_Process_ID();
+		log.debug("cmd_print: AD_Process_ID={}", AD_Process_ID);
 
 		// No report defined
-		if (AD_Process_ID == 0)
+		if (AD_Process_ID <= 0)
 		{
 			cmd_report();
 			return;
 		}
 
 		cmd_save(false);
-		//
-		int table_ID = m_curTab.getAD_Table_ID();
-		int record_ID = m_curTab.getRecord_ID();
-		ProcessInfo pi = new ProcessInfo(getTitle(), AD_Process_ID, table_ID, record_ID);
-		pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-		pi.setPrintPreview(printPreview);
-		pi.setWindowNo(m_curWindowNo); // metas: 03040
-		pi.setTabNo(getTabNo());
-
-		ProcessCtl.process(this, m_curWindowNo, pi, ITrx.TRX_None); // calls lockUI, unlockUI
-		statusBar.setStatusLine(pi.getSummary(), pi.isError());
-	}   // cmd_print
+		
+		ProcessDialog.builder()
+				.setAD_Process_ID(AD_Process_ID)
+				.setFromGridTab(m_curTab)
+				.setPrintPreview(printPreview)
+				.setProcessExecutionListener(this)
+				.showModal(getCurrentFrame());
+	}
 
 	/**
 	 * Find - Set Query
@@ -2630,19 +2601,36 @@ public class APanel extends CPanel
 	private void cmd_attachment()
 	{
 		int record_ID = m_curTab.getRecord_ID();
-		log.info("Record_ID=" + record_ID);
 		if (record_ID == -1)  	// No Key
 		{
 			aAttachment.setEnabled(false);
 			return;
 		}
 
-		// Attachment va =
-		new Attachment(getCurrentFrame(), m_curWindowNo,
-				m_curTab.getAD_AttachmentID(), m_curTab.getAD_Table_ID(), record_ID, null);
-		//
-		m_curTab.loadAttachments();				// reload
-		aAttachment.setPressed(m_curTab.hasAttachment());
+		final Attachment va = new Attachment(
+				getCurrentFrame() //
+				, m_curWindowNo //
+				, m_curTab.getAD_AttachmentID() //
+				, m_curTab.getAD_Table_ID(), record_ID //
+		);
+		va.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowOpened(WindowEvent e)
+			{
+				va.requestFocus();
+			}
+			
+			@Override
+			public void windowClosed(final WindowEvent e)
+			{
+				m_curTab.loadAttachments();				// reload
+				
+				aAttachment.setPressed(m_curTab.hasAttachment());
+			}
+		});
+		
+		AEnv.showCenterScreen(va);
 	}	// attachment
 
 	/**
@@ -2651,7 +2639,6 @@ public class APanel extends CPanel
 	private void cmd_chat()
 	{
 		int record_ID = m_curTab.getRecord_ID();
-		log.info("Record_ID=" + record_ID);
 		if (record_ID == -1)  	// No Key
 		{
 			aChat.setEnabled(false);
@@ -2687,7 +2674,8 @@ public class APanel extends CPanel
 	 */
 	private void cmd_lock()
 	{
-		log.info("Modifiers=" + m_lastModifiers);
+		log.debug("cmd_lock: lastModifiers={}", m_lastModifiers);
+		
 		if (!m_isPersonalLock)
 			return;
 		int record_ID = m_curTab.getRecord_ID();
@@ -2700,7 +2688,7 @@ public class APanel extends CPanel
 		}
 		else
 		{
-			m_curTab.lock(Env.getCtx(), record_ID, aLock.getButton().isSelected());
+			m_curTab.lock(record_ID, aLock.getButton().isSelected());
 			m_curTab.loadAttachments();			// reload
 		}
 		aLock.setPressed(m_curTab.isLocked());
@@ -2711,7 +2699,6 @@ public class APanel extends CPanel
 	 */
 	private void cmd_history()
 	{
-		log.info("");
 		if (m_mWorkbench.getMWindow(getWindowIndex()).isTransaction())
 		{
 			if (m_curTab.needSave(true, true) && !cmd_save(false))
@@ -2733,7 +2720,7 @@ public class APanel extends CPanel
 				//
 				m_curTab.setQuery(null);	// reset previous queries
 				//
-				log.info("OnlyCurrent=" + m_onlyCurrentRows + ", Days=" + m_onlyCurrentDays);
+				log.trace("cmd_history: OnlyCurrent={}, Days={}", m_onlyCurrentRows, m_onlyCurrentDays);
 				m_curGC.query(m_onlyCurrentRows, m_onlyCurrentDays, GridTabMaxRows.DEFAULT);   // autoSize
 			}
 			// Restore history button's pressed status
@@ -2750,7 +2737,6 @@ public class APanel extends CPanel
 	 */
 	private void cmd_help()
 	{
-		log.info("");
 		Help hlp = new Help(getCurrentFrame(), this.getTitle(), m_mWorkbench.getMWindow(getWindowIndex()));
 		hlp.setVisible(true);
 	}	// cmd_help
@@ -2825,8 +2811,7 @@ public class APanel extends CPanel
 	 * 
 	 * @param vButton button
 	 */
-	// metas: tsa: changed to protected
-	protected void actionButton(final VButton vButton)
+	public void actionButton(final VButton vButton)
 	{
 		try
 		{
@@ -2841,8 +2826,6 @@ public class APanel extends CPanel
 	private final void actionButton0(final VButton vButton) throws Exception
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
-
-		log.info("{}", vButton);
 
 		if (m_curTab.hasChangedCurrentTabAndParents())
 		{
@@ -2928,12 +2911,12 @@ public class APanel extends CPanel
 			}
 
 			isProcessMandatory = true;
-			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, vButton, record_ID);
+			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, record_ID);
 			// Something to select from?
 			if (vda.getNumberOfOptions() == 0)
 			{
 				vda.dispose();
-				log.info("DocAction - No Options");
+				log.debug("DocAction - No Options");
 				return;
 			}
 			else
@@ -3029,12 +3012,11 @@ public class APanel extends CPanel
 			return;
 		}     // Posted
 
-		/**
-		 * Start Process ----
-		 * or invoke user form
-		 */
-
-		log.info("Process_ID=" + vButton.getProcess_ID() + ", Record_ID=" + record_ID);
+		//
+		// Start Process ----
+		// or invoke user form
+		//
+		
 		if (vButton.getProcess_ID() <= 0)
 		{
 			if (isProcessMandatory)
@@ -3071,13 +3053,14 @@ public class APanel extends CPanel
 			String title = vButton.getDescription();
 			if (title == null || title.length() == 0)
 				title = vButton.getName();
-			final ProcessInfo pi = new ProcessInfo(title, vButton.getProcess_ID(), table_ID, record_ID);
-			pi.setWindowNo(m_curWindowNo);
-			pi.setTabNo(getTabNo());
-			pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
-			pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-			pi.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal());
-			pi.setGridTabSummaryInfo(m_curTab.getSummaryInfo());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(m_ctx)
+					.setAD_Process_ID(vButton.getProcess_ID())
+					.setTitle(title)
+					.setRecord(table_ID, record_ID)
+					.setWindowNo(m_curWindowNo).setTabNo(getTabNo())
+					.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal())
+					.build();
 			ff.setProcessInfo(pi);
 			ff.addWindowListener(new WindowAdapter()
 			{
@@ -3115,19 +3098,13 @@ public class APanel extends CPanel
 		// Call Process
 		else
 		{
-			final ProcessModalDialog dialog = new ProcessModalDialog(
-					m_curTab,   // gridTab
-					this,   // ASyncProcess aProcess
-					vButton.getProcess_ID(),   // AD_Process_ID
-					table_ID, record_ID,   // AD_Table_ID, Record_ID
-					startWOasking  // autoStart
-			);
-			if (dialog.isValidDialog())
-			{
-				dialog.validate();
-				dialog.pack();
-				AEnv.showCenterWindow(Env.getWindow(m_curWindowNo), dialog);
-			}
+			ProcessDialog.builder()
+					.setFromGridTab(m_curTab)
+					.setProcessExecutionListener(this)
+					.setAD_Process_ID(vButton.getProcess_ID())
+					.setShowHelp(startWOasking ? X_AD_Process.SHOWHELP_RunSilently_TakeDefaults : null)
+					.setAllowProcessReRun(startWOasking ? Boolean.FALSE : null)
+					.showModal(getCurrentFrame());
 		}
 	}	// actionButton
 
@@ -3174,8 +3151,10 @@ public class APanel extends CPanel
 		// Process Result
 		if (notPrint)   // refresh if not print
 		{
+			final ProcessExecutionResult result = pi.getResult();
+
 			// Refresh data
-			if (pi.isRefreshAllAfterExecution())
+			if (result.isRefreshAllAfterExecution())
 			{
 				final boolean retainCurrentRowIfAny = false;
 				m_curTab.dataRefreshAll(retainCurrentRowIfAny);
@@ -3187,32 +3166,20 @@ public class APanel extends CPanel
 
 			//
 			// Select record after execution (if any)
-			if (pi.getRecordToSelectAfterExecution() != null)
+			if (result.getRecordToSelectAfterExecution() != null)
 			{
-				m_curTab.setCurrentRowByRecord(pi.getRecordToSelectAfterExecution());
+				m_curTab.setCurrentRowByRecord(result.getRecordToSelectAfterExecution());
 			}
 
 			// Timeout
-			if (pi.isTimeout())  		// set temporarily to R/O
+			if (result.isTimeout())  		// set temporarily to R/O
 			{
-				Env.setContext(m_ctx, m_curWindowNo, "Processed", "Y");
+				Env.setContext(m_ctx, m_curWindowNo, "Processed", true);
 			}
 
 			m_curGC.dynamicDisplay(0);
 
 			updateStatusLine(pi);
-
-			// Show process logs if any
-			if (pi.isShowProcessLogs())
-			{
-				ProcessInfoUtil.setLogFromDB(pi);
-
-				final String logInfo = pi.getLogInfo();
-				if (logInfo.length() > 0)
-				{
-					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
-				}
-			}
 		}
 		else
 		{
@@ -3222,11 +3189,31 @@ public class APanel extends CPanel
 
 	private final void updateStatusLine(final ProcessInfo pi)
 	{
+		final ProcessExecutionResult result = pi.getResult();
+		
 		// Update Status Line
-		setStatusLine(pi.getSummary(), pi.isError());
-		if (pi.isError())
+		setStatusLine(result.getSummary(), result.isError());
+
+		//
+		// If the error or the process logs was not already reported to user, we shall display a popup now
+		if(!result.isErrorWasReportedToUser())
 		{
-			ADialog.error(m_curWindowNo, this, null, pi.getSummary());
+			// Show error if any
+			if (result.isError())
+			{
+				ADialog.error(m_curWindowNo, this, null, result.getSummary());
+				result.setErrorWasReportedToUser();
+			}
+			// Show process logs if any
+			else if (result.isShowProcessLogs())
+			{
+				final String logInfo = result.getLogInfo();
+				if(!Check.isEmpty(logInfo, true))
+				{
+					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
+					result.setErrorWasReportedToUser();
+				}
+			}
 		}
 	}
 
@@ -3235,23 +3222,10 @@ public class APanel extends CPanel
 	 * 
 	 * @return true, if UI is locked
 	 */
-	@Override
-	public boolean isUILocked()
+	private boolean isUILocked()
 	{
 		return m_isLocked;
 	}   // isLoacked
-
-	/**
-	 * Method to be executed async.
-	 * Called from the ASyncProcess worker
-	 * 
-	 * @param pi process info
-	 */
-	@Override
-	public void executeASync(ProcessInfo pi)
-	{
-		log.info("-");
-	}   // executeASync
 
 	/**
 	 * Get Current Tab

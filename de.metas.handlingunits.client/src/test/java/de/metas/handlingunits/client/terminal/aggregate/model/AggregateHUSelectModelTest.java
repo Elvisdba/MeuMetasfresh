@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.aggregate.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,18 +28,21 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.client.terminal.inventory.model.InventoryHUSelectModel;
 import de.metas.handlingunits.client.terminal.inventory.model.InventoryHUSelectModelTestTemplate;
 import de.metas.handlingunits.client.terminal.inventory.view.BPartnerLocationKeyLayoutRenderer;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.lock.api.LockOwner;
 
 /**
  * Test {@link AggregateHUSelectModel}
@@ -50,6 +52,7 @@ import de.metas.handlingunits.model.X_M_HU;
  */
 public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTemplate
 {
+	private IHULockBL huLockBL;
 	//
 	private AggregateHUSelectModel huSelectModel;
 	private Integer huSelectModel_SelectedWarehouse_ID = null;
@@ -59,6 +62,8 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 	@Override
 	protected void afterInit()
 	{
+		huLockBL = Services.get(IHULockBL.class);
+
 		huSelectModel = createHUSelectModel();
 	}
 
@@ -136,13 +141,13 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 				// Expected HUs:
 				Arrays.asList(
 						hu_bp01_wh01_active,
-						hu_bp01_wh01_picked,
-						hu_bp01_wh01_shipped
-						),
+						hu_bp01_wh01_picked
+				// hu_bp01_wh01_shipped #1062 #1327 The shipped HUs shall no longer be displayed in the inventory POS
+				),
 				// Actual HUs:
 				huSelectModel.createHUQueryBuilder().list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test
@@ -155,12 +160,11 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 		Assert.assertEquals("Invalid HUs retrieved",
 				// Expected HUs:
 				Arrays.asList(
-						hu_bp02_wh01_active
-						),
+						hu_bp02_wh01_active),
 				// Actual HUs:
 				huSelectModel.createHUQueryBuilder().list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test
@@ -173,12 +177,11 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 		Assert.assertEquals("Invalid HUs retrieved",
 				// Expected HUs:
 				Arrays.asList(
-						hu_bp03loc01_wh01_active
-						),
+						hu_bp03loc01_wh01_active),
 				// Actual HUs:
 				huSelectModel.createHUQueryBuilder().list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test
@@ -191,12 +194,11 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 		Assert.assertEquals("Invalid HUs retrieved",
 				// Expected HUs:
 				Arrays.asList(
-						hu_bp03loc02_wh01_active
-						),
+						hu_bp03loc02_wh01_active),
 				// Actual HUs:
 				huSelectModel.createHUQueryBuilder().list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -225,8 +227,8 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 				huSelectModel.createHUQueryBuilder()
 						.setErrorIfNoHUs(false, null) // we expect no HUs, so don't fail
 						.list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test
@@ -243,8 +245,8 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 				huSelectModel.createHUQueryBuilder()
 						.setErrorIfNoHUs(false, null) // we expect no HUs, so don't fail
 						.list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test
@@ -261,8 +263,8 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 				huSelectModel.createHUQueryBuilder()
 						.setErrorIfNoHUs(false, null) // we expect no HUs, so don't fail
 						.list()
-				//
-				);
+		//
+		);
 	}
 
 	@Test
@@ -279,8 +281,8 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 				huSelectModel.createHUQueryBuilder()
 						.setErrorIfNoHUs(false, null) // we expect no HUs, so don't fail
 						.list()
-				//
-				);
+		//
+		);
 	}
 
 	/**
@@ -295,13 +297,13 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 
 		// Create our locked HUs
 		{
+			final LockOwner lockOwner = LockOwner.forOwnerName("test");
+
 			final I_M_HU hu_bp03loc02_wh01_activeButLocked01 = createHU(bpartner03, bpartner03_loc02, warehouse01_loc01, X_M_HU.HUSTATUS_Active);
-			hu_bp03loc02_wh01_activeButLocked01.setLocked(true);
-			InterfaceWrapperHelper.save(hu_bp03loc02_wh01_activeButLocked01);
+			huLockBL.lock(hu_bp03loc02_wh01_activeButLocked01, lockOwner);
 			//
 			final I_M_HU hu_bp03loc02_wh01_activeButLocked02 = createHU(bpartner03, bpartner03_loc02, warehouse01_loc01, X_M_HU.HUSTATUS_Active);
-			hu_bp03loc02_wh01_activeButLocked02.setLocked(true);
-			InterfaceWrapperHelper.save(hu_bp03loc02_wh01_activeButLocked02);
+			huLockBL.lock(hu_bp03loc02_wh01_activeButLocked02, lockOwner);
 		}
 
 		// Configure HU Select Panel

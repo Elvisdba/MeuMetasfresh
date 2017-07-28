@@ -44,8 +44,6 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
-import org.adempiere.model.MRelationType;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.compiere.grid.CreateFrom;
@@ -56,7 +54,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.commission.interfaces.I_C_BPartner_Location;
@@ -64,6 +61,7 @@ import de.metas.commission.model.I_C_Invoice_VAT_Corr_Candidates_v1;
 import de.metas.commission.service.IBPartnerDAO;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.document.IDocumentPA;
+import de.metas.i18n.Msg;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -318,7 +316,7 @@ public class CreateCorrections extends CreateFrom
 
 		final int countryID = payrollLocPO.getC_Location().getC_Country_ID();
 
-		final MRelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
+//		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
 
 		for (int i = 0; i < miniTable.getRowCount(); i++)
 		{
@@ -385,8 +383,10 @@ public class CreateCorrections extends CreateFrom
 			plusLine.setDescription(plusDescription);
 			plusLine.saveEx();
 
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
+			// FIXME: adding explicit relations is not supported anymore
+			throw new UnsupportedOperationException("adding explicit relations is not supported anymore");
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
 
 		} // for all rows
 

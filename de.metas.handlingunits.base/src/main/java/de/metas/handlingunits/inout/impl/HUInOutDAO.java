@@ -13,11 +13,11 @@ package de.metas.handlingunits.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,30 +45,11 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inout.IInOutDAO;
 
 public class HUInOutDAO implements IHUInOutDAO
 {
-	@Override
-	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
-	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-
-		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
-
-		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<Integer, I_M_HU>();
-		for (final I_M_InOutLine line : lines)
-		{
-			final List<I_M_HU> lineHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
-			for (final I_M_HU hu : lineHUs)
-			{
-				hus.put(hu.getM_HU_ID(), hu);
-			}
-		}
-		return new ArrayList<>(hus.values());
-	}
-
 	@Override
 	public List<I_M_InOutLine> retrievePackingMaterialLines(final I_M_InOut inOut)
 	{
@@ -96,6 +77,56 @@ public class HUInOutDAO implements IHUInOutDAO
 				.match();
 	}
 
+	/**
+	 * NOTE: keep in sync with {@link #retrieveInOutLineOrNull(I_M_HU)} logic
+	 */
+	@Override
+	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
+		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
+
+		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<Integer, I_M_HU>();
+		for (final I_M_InOutLine line : lines)
+		{
+			final List<I_M_HU> lineHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
+			for (final I_M_HU hu : lineHUs)
+			{
+				hus.put(hu.getM_HU_ID(), hu);
+			}
+		}
+		return new ArrayList<>(hus.values());
+	}
+
+	@Override
+	public List<I_M_HU> retrieveShippedHandlingUnits(final I_M_InOut inOut)
+	{
+
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
+		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
+
+		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<Integer, I_M_HU>();
+		for (final I_M_InOutLine line : lines)
+		{
+			final List<I_M_HU> lineHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
+			for (final I_M_HU hu : lineHUs)
+			{
+				if (X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus()))
+				{
+					hus.put(hu.getM_HU_ID(), hu);
+				}
+			}
+		}
+		return new ArrayList<>(hus.values());
+	}
+
+	/**
+	 * NOTE: keep in sync with {@link #retrieveHandlingUnits(I_M_InOut)} logic
+	 */
 	@Override
 	public I_M_InOutLine retrieveInOutLineOrNull(final I_M_HU hu)
 	{
@@ -121,11 +152,10 @@ public class HUInOutDAO implements IHUInOutDAO
 			return null;
 		}
 
-		if(!docActionBL.isStatusCompletedOrClosed(inoutLine.getM_InOut()))
+		if (!docActionBL.isDocumentCompletedOrClosed(inoutLine.getM_InOut()))
 		{
 			return null;
 		}
 		return inoutLine;
 	}
-
 }

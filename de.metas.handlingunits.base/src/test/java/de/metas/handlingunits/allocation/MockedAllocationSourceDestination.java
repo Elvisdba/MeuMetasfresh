@@ -33,7 +33,7 @@ import org.compiere.util.Util;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU_Item;
 
 public class MockedAllocationSourceDestination implements IAllocationSource, IAllocationDestination
@@ -118,17 +118,4 @@ public class MockedAllocationSourceDestination implements IAllocationSource, IAl
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// Do nothing on this level.
-	}
-
-	@Override
-	public void unloadComplete(final IHUContext huContext) // --NOPMD
-	{
-		// Do nothing on this level.
-	}
-
 }

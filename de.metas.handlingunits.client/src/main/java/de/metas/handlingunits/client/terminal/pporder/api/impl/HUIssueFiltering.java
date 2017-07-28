@@ -16,11 +16,11 @@ package de.metas.handlingunits.client.terminal.pporder.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
@@ -41,7 +42,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
@@ -51,7 +51,10 @@ import org.eevolution.model.X_M_Warehouse_Routing;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
+import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 
 /**
@@ -60,6 +63,8 @@ import de.metas.materialtracking.model.IMaterialTrackingAware;
  */
 public class HUIssueFiltering implements IHUIssueFiltering
 {
+	private static final String SYSCONFIG_FilterHUsByQualityInspection = "de.metas.handlingunits.client.terminal.pporder.api.impl.HUIssueFiltering.FilterHUsByQualityInspection";
+
 	@Override
 	public List<I_M_Warehouse> retrieveWarehouse(final Properties ctx)
 	{
@@ -110,7 +115,6 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	@Override
 	public IHUQueryBuilder getHUsForIssueQuery(final I_PP_Order ppOrder, final List<I_PP_Order_BOMLine> orderBOMLines, final int warehouseId)
 	{
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		//
@@ -118,7 +122,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		final Set<Integer> productIds = new HashSet<Integer>();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
-			if (ppOrderBOMBL.isReceipt(orderBOMLine))
+			if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 			{
 				continue;
 			}
@@ -131,8 +135,11 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
-				.addOnlyInWarehouseId(warehouseId);
+				.addOnlyInWarehouseId(warehouseId)
+				.onlyNotLocked() // skip those locked because usually those were planned for something...
+		;
 
+		//
 		// if the ppOrder is already associated to a material tracking, then don't allow the user to add others
 		final IMaterialTrackingAware materialTrackingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IMaterialTrackingAware.class);
 		if (materialTrackingAware != null && materialTrackingAware.getM_Material_Tracking_ID() > 0)
@@ -142,8 +149,24 @@ public class HUIssueFiltering implements IHUIssueFiltering
 
 			huQueryBuilder.addOnlyWithAttribute(
 					materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx),
-					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID())
-					);
+					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID()));
+		}
+
+		//
+		// Filter HUs by QualityInspection
+		if (Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_FilterHUsByQualityInspection, true))
+		{
+			final boolean qualityInspectionOrder = Services.get(IMaterialTrackingPPOrderBL.class).isQualityInspection(ppOrder);
+			if (qualityInspectionOrder)
+			{
+				// #579 Disable this condition.
+				// From now on, the qualityInspection production orders will also allow HUs with no QualityInspection attributes set
+				// huQueryBuilder.addOnlyWithAttributeNotNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+			}
+			else
+			{
+				huQueryBuilder.addOnlyWithAttributeMissingOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+			}
 		}
 
 		return huQueryBuilder;

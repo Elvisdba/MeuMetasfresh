@@ -1,6 +1,7 @@
 DROP FUNCTION IF EXISTS report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1));
+DROP FUNCTION IF EXISTS report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1), IN ad_org_id numeric);
 
-CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1)) RETURNS TABLE
+CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1), IN ad_org_id numeric) RETURNS TABLE
 	(
 	BP_Value Character Varying,
 	BP_Name Character Varying, 
@@ -11,7 +12,8 @@ CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN S
 	TotalOrdered numeric,
 	IsPackingMaterial boolean,
 	Month timestamp with time zone,
-	ISO_Code char(3)
+	ISO_Code char(3),
+	ad_org_id numeric
 	)
 AS 
 $$
@@ -23,9 +25,10 @@ SELECT
 	SUM( ic.QtyInvoiced * ic.PriceActual ) AS TotalInvoiced,
 	SUM( ic.QtyInvoicable * ic.PriceActual ) AS TotalShipped,
 	SUM( CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END * ic.PriceActual ) AS TotalOrdered,
-	p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID') AS IsPackingMaterial,
+	p.M_Product_Category_ID =  getSysConfigAsNumeric('PackingMaterialProductCategoryID', ic.AD_Client_ID, ic.AD_Org_ID) AS IsPackingMaterial,
 	date_trunc( 'month', ic.Date ) AS Month,
-	c.ISO_Code
+	c.ISO_Code,
+	ic.ad_org_id
 FROM
 	(
 		SELECT
@@ -40,7 +43,8 @@ FROM
 			ac.C_Currency_ID AS Base_Currency_ID,
 
 			-- Date for filtering
-			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date
+			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date,
+			ic.AD_Org_ID, ic.AD_Client_ID
 		FROM
 			C_Invoice_Candidate ic
 			INNER JOIN (
@@ -67,36 +71,42 @@ FROM
 							LEFT OUTER JOIN (
 								SELECT	ila.C_Invoice_Candidate_ID, SUM(QtyInvoicedInPriceUOM) as QtyInvoicedInPriceUOM
 								FROM	C_Invoice_Line_Alloc ila
-									LEFT OUTER JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
+									LEFT OUTER JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID AND il.isActive = 'Y'
+								WHERE ila.isActive = 'Y'
 								GROUP BY	ila.C_Invoice_Candidate_ID
 							) il ON ic.C_Invoice_Candidate_ID = il.C_Invoice_Candidate_ID
 						WHERE 	IsSOTrx = $4
 							AND ( CASE WHEN $1 IS NULL THEN TRUE ELSE $1 = Bill_BPartner_ID END )
 							AND PriceActual_Net_Effective != 0
+							AND ic.isActive = 'Y'
 					) ic
-					LEFT OUTER JOIN C_Orderline ol ON ic.Record_ID = ol.C_OrderLine_ID
+					LEFT OUTER JOIN C_Orderline ol ON ic.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
 						AND ic.AD_Table_ID = ((SELECT Get_Table_ID('C_OrderLine')))
 			) icq ON ic.C_Invoice_Candidate_ID = icq.C_Invoice_Candidate_ID
-			INNER JOIN AD_ClientInfo ci ON ic.AD_Client_ID = ci.AD_Client_ID
-			INNER JOIN C_AcctSchema ac ON ci.C_AcctSchema1_ID = ac.C_AcctSchema_ID
+			INNER JOIN AD_ClientInfo ci ON ic.AD_Client_ID = ci.AD_Client_ID AND ci.isActive = 'Y'
+			INNER JOIN C_AcctSchema ac ON ci.C_AcctSchema1_ID = ac.C_AcctSchema_ID AND ac.isActive = 'Y'
 			LEFT OUTER JOIN
 			(
 				SELECT 	ila.C_Invoice_Candidate_ID,
 					First_agg( i.DateAcct::text ORDER BY i.DateAcct)::Date AS DateAcct
 				FROM 	C_Invoice_Line_Alloc ila
-					LEFT OUTER JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
-					LEFT OUTER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
+					LEFT OUTER JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID AND il.isActive = 'Y'
+					LEFT OUTER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+				WHERE  ila.isActive = 'Y'
 				GROUP BY	ila.C_Invoice_Candidate_ID
 			) i ON ic.C_Invoice_Candidate_ID = i.C_Invoice_Candidate_ID
+	WHERE ic.isActive = 'Y'
 	) ic
-	INNER JOIN C_BPartner bp ON ic.Bill_BPartner_ID = bp.C_BPartner_ID
-	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID
-	INNER JOIN C_Currency c ON ic.Base_Currency_ID = c.C_Currency_ID
+	INNER JOIN C_BPartner bp ON ic.Bill_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	INNER JOIN C_Currency c ON ic.Base_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 WHERE
-	Date::date >= $2 AND Date::date <= $3
+	ic.AD_Org_ID = $5
+	AND Date::date >= $2 AND Date::date <= $3
 	AND COALESCE( ic.PriceActual, 0 ) != 0
 	AND ( ic.QtyInvoiced != 0 OR ic.QtyInvoicable != 0
 	OR (CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END) != 0 )
+	
 GROUP BY
 	bp.Value,
 	bp.Name,
@@ -104,12 +114,15 @@ GROUP BY
 	p.Name,
 	p.M_Product_Category_ID,
 	date_trunc( 'month', ic.Date ),
-	c.ISO_Code
+	c.ISO_Code,
+	ic.ad_org_id,
+	ic.ad_client_id
 ORDER BY
 	date_trunc( 'month', ic.Date ),
 	bp.Value,
 	p.M_Product_Category_ID =
-		(SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+		 getSysConfigAsNumeric('PackingMaterialProductCategoryID', ic.AD_Client_ID, ic.AD_Org_ID)
 
 $$
   LANGUAGE sql STABLE;
+

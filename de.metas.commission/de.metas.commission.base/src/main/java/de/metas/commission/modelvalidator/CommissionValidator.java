@@ -38,14 +38,12 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
@@ -56,7 +54,6 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -82,7 +79,6 @@ import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_HR_Movement;
 import de.metas.commission.order.spi.impl.CommissionOrderCopyHandler;
-import de.metas.commission.pricing.spi.impl.CommissionPlvCreationListener;
 import de.metas.commission.service.IComRelevantPoBL;
 import de.metas.commission.service.ICommissionFactBL;
 import de.metas.commission.service.ICommissionPayrollBL;
@@ -111,6 +107,7 @@ import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
@@ -196,7 +193,7 @@ public class CommissionValidator implements ModelValidator
 			engine.addModelValidator(new C_Invoice(), client);
 			engine.addModelValidator(new M_InOut(), client);
 
-			Services.get(IPriceListBL.class).addPlvCreationListener(new CommissionPlvCreationListener());
+			// Services.get(IPriceListBL.class).addPlvCreationListener(new CommissionPlvCreationListener());
 
 			Services.get(ICopyHandlerBL.class).registerCopyHandler(
 					org.compiere.model.I_C_Order.class,
@@ -239,7 +236,8 @@ public class CommissionValidator implements ModelValidator
 
 	private void setCommission_Calendar_ID(final Properties ctx)
 	{
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(MUser.get(ctx).getC_BPartner(), I_C_BPartner.class);
+		final de.metas.adempiere.model.I_AD_User loggedUser = Services.get(IUserDAO.class).retrieveUser(Env.getAD_User_ID(ctx));
+		final I_C_BPartner bp = InterfaceWrapperHelper.create(loggedUser.getC_BPartner(), I_C_BPartner.class);
 		if (bp == null || bp.getC_BPartner_ID() == 0)
 		{
 			return;
@@ -291,22 +289,6 @@ public class CommissionValidator implements ModelValidator
 		if (po instanceof MHRProcess)
 		{
 			return payrollValidate((MHRProcess)po, timing);
-		}
-		else if (po instanceof MInvoice)
-		{
-			return invoiceValidate((MInvoice)po, timing);
-		}
-		return null;
-	}
-
-	private String invoiceValidate(final MInvoice invoice, final int timing)
-	{
-		if (timing == ModelValidator.TIMING_AFTER_VOID || timing == ModelValidator.TIMING_AFTER_REVERSECORRECT)
-		{
-			for (final MInvoiceLine il : invoice.getLines())
-			{
-				MRelation.deleteForPO(il);
-			}
 		}
 		return null;
 	}

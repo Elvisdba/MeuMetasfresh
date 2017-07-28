@@ -25,16 +25,14 @@ package org.adempiere.util.lang;
 
 import java.io.Serializable;
 
-import com.google.common.base.Supplier;
-
 /**
  * An memorizing supplier which also allows to forget the value or to peek current value.
  * 
  * @param <T>
  */
-public final class ExtendedMemorizingSupplier<T> implements Supplier<T>, Serializable
+public final class ExtendedMemorizingSupplier<T> implements java.util.function.Supplier<T>, Serializable
 {
-	public static final <T> ExtendedMemorizingSupplier<T> of(final Supplier<T> supplier)
+	public static final <T> ExtendedMemorizingSupplier<T> of(final java.util.function.Supplier<T> supplier)
 	{
 		if (supplier instanceof ExtendedMemorizingSupplier)
 		{
@@ -43,14 +41,15 @@ public final class ExtendedMemorizingSupplier<T> implements Supplier<T>, Seriali
 		return new ExtendedMemorizingSupplier<T>(supplier);
 	}
 
-	private final Supplier<T> delegate;
+	private final java.util.function.Supplier<T> delegate;
 	private transient volatile boolean initialized;
 	// "value" does not need to be volatile; visibility piggy-backs
 	// on volatile read of "initialized".
 	private transient T value;
 
-	private ExtendedMemorizingSupplier(final Supplier<T> delegate)
+	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> delegate)
 	{
+		super();
 		this.delegate = delegate;
 	}
 

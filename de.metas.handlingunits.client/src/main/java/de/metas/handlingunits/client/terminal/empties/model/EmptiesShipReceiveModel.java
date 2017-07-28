@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.empties.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.math.BigDecimal;
@@ -35,7 +34,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -44,12 +42,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.TrxRunnable2;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -60,13 +58,14 @@ import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
+import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKeyLayout;
-import de.metas.handlingunits.inout.IEmptiesInOutProducer;
-import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 
 /**
  *
@@ -78,14 +77,11 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 {
 	// services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 
 	public static enum BPartnerReturnType
 	{
-		ReturnToVendor(X_M_Transaction.MOVEMENTTYPE_VendorReturns, Color.CYAN),
-		ReturnFromCustomer(X_M_Transaction.MOVEMENTTYPE_CustomerReturns, Color.ORANGE);
+		ReturnToVendor(X_M_Transaction.MOVEMENTTYPE_VendorReturns, Color.CYAN), ReturnFromCustomer(X_M_Transaction.MOVEMENTTYPE_CustomerReturns, Color.ORANGE);
 
 		private final String movementType;
 		private final Color color;
@@ -130,12 +126,25 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	private final I_M_Warehouse _warehouse;
 	private BPartnerReturnType _bpartnerReturnType = null;
 	private KeyNamePair _bpartnerKNP = null;
+
+	/**
+	 * BPartner for which the empties inout will be created
+	 */
 	private I_C_BPartner _bpartner;
+
+	/**
+	 * The BPartner Location for which the empties inout will be created
+	 */
+	private org.compiere.model.I_C_BPartner_Location _bpLocation = null;
 	private final SimpleTableLookup<I_C_BPartner> bpartnerLookup = new SimpleTableLookup<I_C_BPartner>(I_C_BPartner.class, I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_Name);
 	private Date _date;
 	private final BPartnerLocationKeyLayout _bpLocationKeyLayout;
 
-	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId)
+	// #643: Order
+	private I_C_Order _order;
+
+	public EmptiesShipReceiveModel(
+			final ITerminalContext terminalContext, final int warehouseId, final I_M_ReceiptSchedule receiptSchedule)
 	{
 		super(terminalContext);
 
@@ -144,6 +153,24 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		Check.assumeNotNull(_warehouse, "warehouse not null");
 
 		_date = Env.getDate(terminalContext.getCtx()); // use Login date (08306)
+
+		if (receiptSchedule != null)
+		{
+			_bpartner = receiptSchedule.getC_BPartner();
+			_bpLocation = receiptSchedule.getC_BPartner_Location();
+			_order = receiptSchedule.getC_Order();
+		}
+
+		// load bpartner if selected. This will be the suggested bpartner. It is free for the user to change it if needed
+		if (_bpartner != null)
+		{
+
+			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(), _bpartner.getName());
+
+			// In case the bpartner was selected or taken from order/ receipt schedule, the suggested return type will be ReturnToVendor
+			_bpartnerReturnType = BPartnerReturnType.ReturnToVendor;
+
+		}
 
 		{
 			_bpLocationKeyLayout = new BPartnerLocationKeyLayout(terminalContext);
@@ -196,45 +223,28 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	@Override
 	public void execute() throws MaterialMovementException
 	{
-		final I_M_InOut[] result = new I_M_InOut[] { null };
-
-		trxManager.run(new TrxRunnable2()
+		try
 		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
+			final I_M_InOut emptiesInOut = createEmptiesInOut();
+			
+			//
+			// Open window with shipment document for the user if it was created successfully
+			if (emptiesInOut != null)
 			{
-				result[0] = createInOut(localTrxName);
-
-				final I_M_InOut emptiesInOut = result[0];
-				huMovementBL.generateMovementFromEmptiesInout(emptiesInOut);
+				AEnv.zoom(I_M_InOut.Table_Name, emptiesInOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
 			}
-
-			@Override
-			public boolean doCatch(final Throwable e) throws Throwable
-			{
-				throw new MaterialMovementException(e.getLocalizedMessage(), e);
-			}
-
-			@Override
-			public void doFinally()
-			{
-				// nothing
-			}
-		});
-
-		//
-		// Open window with shipment document for the user if it was created successfully
-		final I_M_InOut inOut = result[0];
-		if (inOut != null)
+		}
+		catch (Exception ex)
 		{
-			AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
+			throw new MaterialMovementException(ex.getLocalizedMessage(), ex);
 		}
 	}
 
-	private final I_M_InOut createInOut(final String trxName)
+	private final I_M_InOut createEmptiesInOut()
 	{
-		final IEmptiesInOutProducer producer = huInOutBL.createEmptiesInOutProducer(getCtx());
+
+		final IReturnsInOutProducer producer = huEmptiesService.newReturnsInOutProducer(getCtx());
+
 		producer.setC_BPartner(getC_BPartner());
 		producer.setC_BPartner_Location(getC_BPartner_Location());
 
@@ -245,12 +255,15 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 		producer.setMovementDate(getDate());
 
+		// task #643: Set the order to the producer
+		producer.setC_Order(getOrder());
+
 		addPackingMaterialsFromKeyLayout(producer, getLUKeyLayout());
 		addPackingMaterialsFromKeyLayout(producer, getTUKeyLayout());
 
 		if (producer.isEmpty())
 		{
-			throw new AdempiereException("@NoSelection@");
+			throw new MaterialMovementException("@NoSelection@");
 		}
 
 		//
@@ -259,7 +272,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		return inOut;
 	}
 
-	private void addPackingMaterialsFromKeyLayout(final IEmptiesInOutProducer producer, final IKeyLayout keyLayout)
+	private void addPackingMaterialsFromKeyLayout(final IReturnsInOutProducer producer, final IKeyLayout keyLayout)
 	{
 		Check.assumeNotNull(keyLayout, "keyLayout not null");
 
@@ -277,6 +290,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 				throw new AdempiereException("@NotFound@ @M_HU_PackingMaterial_ID@"
 						+ "\n @M_HU_PI_ID@: " + key.getPIName());
 			}
+
 			for (final I_M_HU_PackingMaterial packingMaterial : packingMaterials)
 			{
 				producer.addPackingMaterial(packingMaterial, qty);
@@ -428,6 +442,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		final KeyNamePair bpartnerOld = _bpartnerKNP;
 		_bpartnerKNP = bpartner;
 		_bpartner = null; // needs to be re-fetched
+		_bpLocation = null;
 		firePropertyChanged(PROPERTY_BPartner, bpartnerOld, _bpartnerKNP);
 
 		//
@@ -453,7 +468,24 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		final I_C_BPartner bpartner = getC_BPartner();
 		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveBPartnerShipToLocations(bpartner);
 		_bpLocationKeyLayout.createAndSetKeysFromBPartnerLocations(shipToLocations);
-		_bpLocationKeyLayout.selectFirstKeyIfAny();
+
+		// in case the location was already taken from the order / receipt schedule
+		// It is safe to consider this location as a shipTo location because all C_BPartner_Locations in order line must be ShipTo
+		if (_bpLocation != null)
+		{
+			final ITerminalContext terminalContext = getTerminalContext();
+
+			// recreate the key the same way as for the key layout
+			final BPartnerLocationKey key = new BPartnerLocationKey(terminalContext, _bpLocation);
+
+			// mark this key as selected.
+			_bpLocationKeyLayout.setSelectedKey(key);
+		}
+		else
+		{
+			// if no location was selected, just select the first one, as before
+			_bpLocationKeyLayout.selectFirstKeyIfAny();
+		}
 	}
 
 	public I_M_Warehouse getM_Warehouse()
@@ -479,5 +511,15 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	public void setDate(final Date date)
 	{
 		_date = date;
+	}
+
+	public void setOrder(I_C_Order order)
+	{
+		_order = order;
+	}
+
+	public I_C_Order getOrder()
+	{
+		return _order;
 	}
 }

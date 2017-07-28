@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.inoutcandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ReceiptSchedule_Alloc
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1247388279L;
+	private static final long serialVersionUID = 1325249708L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule_Alloc (Properties ctx, int M_ReceiptSchedule_Alloc_ID, String trxName)
@@ -42,8 +25,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
         {
 			setM_ReceiptSchedule_Alloc_ID (0);
 			setM_ReceiptSchedule_ID (0);
-			setQtyWithIssues (Env.ZERO);
-// 0
+			setQtyWithIssues (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -62,13 +44,53 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_ReceiptSchedule_Alloc[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
+	{
+
+		throw new IllegalArgumentException ("DocStatus is virtual column");	}
+
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
+	@Override
+	public java.lang.String getDocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+	}
 
 	@Override
 	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
@@ -82,7 +104,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
-	/** Set Shipment/Receipt.
+	/** Set Lieferung/Wareneingang.
 		@param M_InOut_ID 
 		Material Shipment Document
 	  */
@@ -91,7 +113,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	{
 		throw new IllegalArgumentException ("M_InOut_ID is virtual column");	}
 
-	/** Get Shipment/Receipt.
+	/** Get Lieferung/Wareneingang.
 		@return Material Shipment Document
 	  */
 	@Override
@@ -211,26 +233,29 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAllocated);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set QtyWithIssues.
-		@param QtyWithIssues QtyWithIssues	  */
+	/** Set Minderwertige Menge.
+		@param QtyWithIssues 
+		Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
+	  */
 	@Override
 	public void setQtyWithIssues (java.math.BigDecimal QtyWithIssues)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyWithIssues, QtyWithIssues);
 	}
 
-	/** Get QtyWithIssues.
-		@return QtyWithIssues	  */
+	/** Get Minderwertige Menge.
+		@return Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
+	  */
 	@Override
 	public java.math.BigDecimal getQtyWithIssues () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -248,7 +273,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

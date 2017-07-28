@@ -31,9 +31,8 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
@@ -52,6 +51,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import de.metas.quantity.Quantity;
 
 /**
  * Calculates and updates Quality related fields of a {@link I_PP_Order} (and it's BOM Lines).
@@ -72,7 +72,7 @@ public class PPOrderQualityCalculator
 
 	public void update(final IMaterialTrackingDocuments documents)
 	{
-		modelsToBeSaved = new ArrayList<Object>();
+		modelsToBeSaved = new ArrayList<>();
 
 		//
 		// Iterate quality orders and update their quality related fields
@@ -84,7 +84,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
+			Loggables.get().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
 
 			//
 			// Update QM_QtyDeliveredPercOfRaw
@@ -209,7 +209,7 @@ public class PPOrderQualityCalculator
 			}
 
 			// skip receipts which are not COmpleted/CLosed
-			if (!docActionBL.isStatusCompletedOrClosed(inout))
+			if (!docActionBL.isDocumentCompletedOrClosed(inout))
 			{
 				continue;
 			}

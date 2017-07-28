@@ -13,17 +13,17 @@ package de.metas.handlingunits.movement.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,14 +48,16 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_MovementLine;
@@ -65,6 +67,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Generate {@link I_M_Movement} to move given {@link I_M_HU}s
@@ -92,6 +95,7 @@ public class HUMovementBuilder
 	private I_M_Locator _locatorTo;
 	private String _description;
 	private final Set<I_M_HU> _husToMove = new TreeSet<>(HUByIdComparator.instance);
+	private final List<I_M_HU> _husMoved = new ArrayList<>();
 
 	//
 	// Status
@@ -112,7 +116,7 @@ public class HUMovementBuilder
 
 	public HUMovementBuilder setContextInitial(final Properties ctx)
 	{
-		_contextInitial = new PlainContextAware(ctx);
+		_contextInitial = PlainContextAware.newOutOfTrxAllowThreadInherited(ctx);
 		return this;
 	}
 
@@ -211,9 +215,14 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	public HUMovementBuilder addHU(final I_M_HU hu)
+	public HUMovementBuilder addHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		// Only top level HUs can be moved
+		if (!handlingUnitsBL.isTopLevel(hu))
+		{
+			throw new HUException("Only top level HUs can be moved")
+					.setParameter("hu", hu);
+		}
 
 		//
 		// HU's locator shall match movement's From Locator
@@ -234,8 +243,19 @@ public class HUMovementBuilder
 		return _husToMove;
 	}
 
+	final List<I_M_HU> getHUsMoved()
+	{
+		return _husMoved;
+	}
+
+	private final void addHUMoved(final I_M_HU hu)
+	{
+		_husMoved.add(hu);
+	}
+
 	/**
-	 * Create and process the movement
+	 * Create and process the movement. Note that this BL only creates lines for the goods within the HUs,
+	 * but there is a model interceptor that creates the packing material lines was soon as the M_Movement is prepared.
 	 *
 	 * @return movement
 	 */
@@ -245,7 +265,6 @@ public class HUMovementBuilder
 		huTrxBL.createHUContextProcessorExecutor(contextInitial)
 				.run(new IHUContextProcessor()
 				{
-
 					@Override
 					public IMutableAllocationResult process(final IHUContext huContext)
 					{
@@ -268,7 +287,8 @@ public class HUMovementBuilder
 		return movement;
 	}
 
-	private void createMovement0()
+	@VisibleForTesting
+	/* package */ void createMovement0()
 	{
 		//
 		// Get the HUs to move
@@ -299,9 +319,14 @@ public class HUMovementBuilder
 			// Iterate the product storages of this HU and create/update the movement lines
 			final IHUStorage huStorage = huStorageFactory.getStorage(hu);
 			final List<IHUProductStorage> productStorages = huStorage.getProductStorages();
-			for (final IHUProductStorage productStorage : productStorages)
+			if (!productStorages.isEmpty())
 			{
-				updateMovementLine(productStorage);
+				for (final IHUProductStorage productStorage : productStorages)
+				{
+					updateMovementLine(productStorage);
+				}
+				
+				addHUMoved(hu);
 			}
 		}
 

@@ -28,16 +28,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.junit.Test;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.quantity.Quantity;
 
 /**
- * Asserts correct behaviour of NET Weight when adjusting ReceiptSchedule Quantity
+ * Asserts correct behavior of NET Weight when adjusting ReceiptSchedule Quantity
  *
  * @author al
  */
@@ -143,10 +143,9 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 
 		final I_C_UOM cuUOM = receiptSchedules.get(0).getC_UOM();
 
-		final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-		huGenerator.setContext(huContext);
-		huGenerator.setQtyToAllocateTarget(new Quantity(BigDecimal.valueOf(4300), cuUOM)); // i.e. 10xPaloxe
-		huGenerator.addM_ReceiptSchedules(receiptSchedules);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContext)
+				.setQtyToAllocateTarget(new Quantity(BigDecimal.valueOf(4300), cuUOM)) // i.e. 10xPaloxe
+				.addM_ReceiptSchedules(receiptSchedules);
 		huGenerator.getLUTUConfigurationManager()
 				.setCurrentLUTUConfigurationAndSave(createM_HU_LUTU_Configuration_ForTU(materialItemProductTomato_430));
 		final List<I_M_HU> paloxes = huGenerator.generate();

@@ -33,7 +33,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
@@ -42,6 +41,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
@@ -227,26 +227,6 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	}
 
 	@Override
-	public List<I_M_IolCandHandler_Log> retrieveOLHandlerLogs(
-			final @CacheCtx Properties ctx,
-			final int M_IolCandHandler_ID,
-			final int recordID,
-			final @CacheTrx String trxName)
-	{
-		// FIXME: use querybuilder
-		final String wc = I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_ID + " = ? AND "
-				+ I_M_IolCandHandler_Log.COLUMNNAME_Record_ID + " = ? AND "
-				+ I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID + " = ? ";
-
-		// keep in sync with the "M_IolCandHandler_Log" section of "OrderLineInOutCandHandler" and possibly other handlers
-		return new Query(ctx, I_M_IolCandHandler_Log.Table_Name, wc, trxName)
-				.setParameters(M_IolCandHandler_ID, recordID, Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name))
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_Log_ID)
-				.list(I_M_IolCandHandler_Log.class);
-	}
-
-	@Override
 	public IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -255,6 +235,6 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 		final IInOutCandHandler inOutCandHandler = tableName2Handler.get(tableName);
 		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
 
-		return inOutCandHandler.createDeliverReques(sched);
+		return inOutCandHandler.createDeliverRequest(sched);
 	}
 }

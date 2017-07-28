@@ -43,12 +43,12 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
-public class M_MatchInv_RecreateForInOutLine extends SvrProcess
+public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -65,7 +65,7 @@ public class M_MatchInv_RecreateForInOutLine extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (PARAM_WhereClause.equals(name))
@@ -108,7 +108,7 @@ public class M_MatchInv_RecreateForInOutLine extends SvrProcess
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus
-			inoutQueryBuilder.addInArrayFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			inoutQueryBuilder.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 
 			// IsSOTrx
 			if (p_IsSOTrx != null)
@@ -131,13 +131,13 @@ public class M_MatchInv_RecreateForInOutLine extends SvrProcess
 		// Skip inout lines that are already fully matched
 		{
 			final String wc = "M_InOutLine.MovementQty<>(SELECT COALESCE(SUM(mi.Qty), 0) FROM M_MatchInv mi  WHERE mi.M_InOutLine_ID=M_InOutLine.M_InOutLine_ID)";
-			queryBuilder.filter(new TypedSqlQueryFilter<I_M_InOutLine>(wc));
+			queryBuilder.filter(TypedSqlQueryFilter.of(wc));
 		}
 
 		// Add custom WHERE clause if any
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			queryBuilder.filter(new TypedSqlQueryFilter<I_M_InOutLine>(p_WhereClause));
+			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
 		}
 
 		//

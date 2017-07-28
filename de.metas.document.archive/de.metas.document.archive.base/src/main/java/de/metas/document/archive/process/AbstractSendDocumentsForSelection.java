@@ -10,18 +10,17 @@ package de.metas.document.archive.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,35 +31,35 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.SqlQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Contains basic utility BL needed to create processes which send mails for given selection.
  *
  * @author al
  */
-public abstract class AbstractSendDocumentsForSelection extends SvrProcess
+public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
@@ -78,7 +77,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 	{
 		//
 		// Init parameters first
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -91,26 +90,19 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 			}
 		}
 
-		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-
-		final String tableName = I_C_Doc_Outbound_Log.Table_Name;
-
-		final ProcessInfo pi = getProcessInfo();
-		final SqlQueryFilter piQueryFilter = (SqlQueryFilter)pi.getQueryFilter();
-		final String whereClause = piQueryFilter.getSql();
-
 		final int pInstanceId = getAD_PInstance_ID();
+		final ProcessInfo pi = getProcessInfo();
 
-		//
-		// Create selection for PInstance and make sure we're enqueuing something
-		final int selectionCount = new Query(ctx, tableName, whereClause, trxName)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
+				.addOnlyActiveRecordsFilter()
+				.filter(pi.getQueryFilter())
+				.create()
 				.createSelection(pInstanceId);
+
 		if (selectionCount == 0)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ctx, MSG_No_DocOutboundLog_Selection));
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_No_DocOutboundLog_Selection));
 		}
 	}
 
@@ -135,7 +127,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 
 			queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
 		}
-		return "OK";
+		return Services.get(IMsgBL.class).getMsg(getCtx(), Async_Constants.MSG_WORKPACKAGES_CREATED, new Object[] {docOutboundLines.size()});
 	}
 
 	protected abstract Class<? extends IWorkpackageProcessor> getWorkpackageProcessor();
@@ -182,7 +174,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 	 */
 	protected I_C_Doc_Outbound_Log_Line retrieveDocumentLogLine(final I_C_Doc_Outbound_Log log)
 	{
-		final I_C_Doc_Outbound_Log_Line logLine = Services.get(IArchiveDAO.class).retrieveCurrentPDFArchiveLogLineOrNull(log);
+		final I_C_Doc_Outbound_Log_Line logLine = Services.get(IDocOutboundDAO.class).retrieveCurrentPDFArchiveLogLineOrNull(log);
 		return logLine;
 	}
 
@@ -200,6 +192,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		// No document archive log line found; skipping
 		if (logLine == null)
 		{
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_C_Doc_Outbound_Log_Line_ID, new Object[]{ log.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_C_Doc_Outbound_Log_Line_ID, log.getDocumentNo());
 			return false;
 		}
@@ -208,6 +201,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		// Log line must have an archive to be viable
 		if (logLine.getAD_Archive_ID() <= 0)
 		{
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_AD_Archive_ID, new Object[]{ log.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_AD_Archive_ID, log.getDocumentNo());
 			return false;
 		}
@@ -224,6 +218,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
 		if (partner == null)
 		{
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_C_BPartner_ID, new Object[]{ log.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_C_BPartner_ID, log.getDocumentNo());
 			return false;
 		}
@@ -233,6 +228,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		final I_AD_User userTo = Services.get(IBPartnerBL.class).retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
 		if (userTo == null)
 		{
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_AD_User_To_ID, new Object[]{ partner.getName() }));
 			collector.collectException(MSG_EMPTY_AD_User_To_ID, partner.getName());
 			return false;
 		}
@@ -242,6 +238,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 		final String mailTo = userTo.getEMail();
 		if (Check.isEmpty(mailTo))
 		{
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_MailTo, new Object[]{ userTo.getName() }));
 			collector.collectException(MSG_EMPTY_MailTo, userTo.getName());
 			return false;
 		}
@@ -264,6 +261,6 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 			final String trxName)
 	{
 		// no additional assertions at this level
-		return Collections.emptyMap(); 
+		return Collections.emptyMap();
 	}
 }

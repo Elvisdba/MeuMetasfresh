@@ -1,24 +1,21 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -40,7 +37,6 @@ import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,32 +57,47 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
+import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  * General Database Interface
  *
  * @author Jorg Janke
  * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
- * @author Ashley Ramdass (Posterita) <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
+ * @author Ashley Ramdass (Posterita)
+ *         <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
  *         connections set rw/ro properties for the connection accordingly.
  *
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1647864 ] WAN: delete record error <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods <li>FR [ 1904460 ] DB.executeUpdate should handle
- *         Boolean params <li>BF [ 1962568 ] DB.executeUpdate should handle null params <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
- *         Object[], String) <li>BF [ 2030233 ] Remove duplicate code from DB class <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods <li>FR
- *         [ 2781053 ] Introduce DB.getValueNamePairs <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <li>BF [ 1647864 ] WAN: delete record error
+ *         <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
+ *         <li>FR [ 1904460 ] DB.executeUpdate should handle
+ *         Boolean params
+ *         <li>BF [ 1962568 ] DB.executeUpdate should handle null params
+ *         <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
+ *         <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
+ *         Object[], String)
+ *         <li>BF [ 2030233 ] Remove duplicate code from DB class
+ *         <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
+ *         <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
+ *         <li>FR
+ *         [ 2781053 ] Introduce DB.getValueNamePairs
+ *         <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
  *         https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
- * @author Teo Sarca, teo.sarca@gmail.com <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332 <li>FR [
+ * @author Teo Sarca, teo.sarca@gmail.com
+ *         <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
+ *         <li>FR [
  *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  */
 public final class DB
@@ -155,28 +166,13 @@ public final class DB
 
 		// Role update
 		log.info("After migration: running role access update for all roles");
-		String sql = "SELECT * FROM AD_Role";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final MRole role = new MRole(ctx, rs, null);
-				Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-			}
+			Services.get(IUserRolePermissionsDAO.class).updateAccessRecordsForAllRoles();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			log.error("Role access update failed. Ignored.", e);
-		}
-		finally
-		{
-			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+			log.error("Role access update failed. Ignored.", ex);
 		}
 
 		// Release Specif stuff & Print Format
@@ -192,7 +188,7 @@ public final class DB
 
 		// Language check
 		log.info("After migration: Language maintainance");
-		Services.get(ILanguageDAO.class).addAllMissingTranslations(ctx);
+		Services.get(ILanguageDAO.class).addAllMissingTranslations();
 
 		// Sequence check
 		log.info("After migration: Sequence check");
@@ -211,80 +207,6 @@ public final class DB
 		system.setIsJustMigrated(false);
 		return system.save();
 	}	// afterMigration
-
-	/**
-	 * Update Mail Settings for System Client and System User
-	 */
-	public static void updateMail()
-	{
-		// Get Property File
-		String envName = Ini.getAdempiereHome();
-		if (envName == null)
-			return;
-		envName += File.separator + "AdempiereEnv.properties";
-		File envFile = new File(envName);
-		if (!envFile.exists())
-			return;
-
-		Properties env = new Properties();
-		try
-		{
-			FileInputStream in = new FileInputStream(envFile);
-			env.load(in);
-			in.close();
-		}
-		catch (Exception e)
-		{
-			return;
-		}
-		String updated = env.getProperty("ADEMPIERE_MAIL_UPDATED");
-		if (updated != null && updated.equals("Y"))
-			return;
-
-		// See org.compiere.install.ConfigurationData
-		String server = env.getProperty("ADEMPIERE_MAIL_SERVER");
-		if (server == null || server.length() == 0)
-			return;
-		String adminEMail = env.getProperty("ADEMPIERE_ADMIN_EMAIL");
-		if (adminEMail == null || adminEMail.length() == 0)
-			return;
-		String mailUser = env.getProperty("ADEMPIERE_MAIL_USER");
-		if (mailUser == null || mailUser.length() == 0)
-			return;
-		String mailPassword = env.getProperty("ADEMPIERE_MAIL_PASSWORD");
-		// if (mailPassword == null || mailPassword.length() == 0)
-		// return;
-		//
-		StringBuffer sql = new StringBuffer("UPDATE AD_Client SET")
-				.append(" SMTPHost=").append(DB.TO_STRING(server))
-				.append(", RequestEMail=").append(DB.TO_STRING(adminEMail))
-				.append(", RequestUser=").append(DB.TO_STRING(mailUser))
-				.append(", RequestUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(", IsSMTPAuthorization='Y' WHERE AD_Client_ID=0");
-		int no = DB.executeUpdate(sql.toString(), null);
-		log.debug("Client #" + no);
-		//
-		sql = new StringBuffer("UPDATE AD_User SET ")
-				.append(" EMail=").append(DB.TO_STRING(adminEMail))
-				.append(", EMailUser=").append(DB.TO_STRING(mailUser))
-				.append(", EMailUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(" WHERE AD_User_ID IN (0,100)");
-		no = DB.executeUpdate(sql.toString(), null);
-		log.debug("User #" + no);
-		//
-		try
-		{
-			env.setProperty("ADEMPIERE_MAIL_UPDATED", "Y");
-			FileOutputStream out = new FileOutputStream(envFile);
-			env.store(out, "");
-			out.flush();
-			out.close();
-		}
-		catch (Exception e)
-		{
-		}
-
-	}	// updateMail
 
 	/**************************************************************************
 	 * Set connection.
@@ -539,7 +461,7 @@ public final class DB
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
 			return s_cc.getDatabase();
-		log.error("No Database Connection");
+		log.error("No Database Connection (getDatabase). Returning null.");
 		return null;
 	}   // getDatabase
 
@@ -556,7 +478,7 @@ public final class DB
 		{
 			return true;
 		}
-		log.error("No Database");
+		log.error("No Database (isPostgreSQL). Returning false.");
 		return false;
 	}
 
@@ -693,17 +615,6 @@ public final class DB
 //		return false;
 //	}   // isDatabaseOK
 // @formatter:on
-
-	/**************************************************************************
-	 * Prepare Forward Read Only Call
-	 *
-	 * @param SQL sql
-	 * @return Callable Statement
-	 */
-	public static CallableStatement prepareCall(String sql)
-	{
-		return prepareCall(sql, ResultSet.CONCUR_UPDATABLE, null);
-	}
 
 	/**************************************************************************
 	 * Prepare Call
@@ -1019,9 +930,13 @@ public final class DB
 				// conn.commit();
 			}
 		}
+		catch (final DBException ex)
+		{
+			throw ex;
+		}
 		catch (final Exception ex)
 		{
-			Exception sqlException = DBException.getSQLException(ex);
+			Exception sqlException = DBException.extractSQLExceptionOrNull(ex);
 			// metas-2009_0021_AP1_CR061: teo_sarca: begin
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
@@ -1072,14 +987,14 @@ public final class DB
 			}
 			else if (onFail == OnFail.ThrowException)
 			{
-				throw DBException.wrapIfNeeded(sqlException)
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
-				throw DBException.wrapIfNeeded(sqlException)
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
 			}
 		}
@@ -1343,7 +1258,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return retValue;
 	}
@@ -1429,7 +1344,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error("Error while executing: {}", sql, DBException.getSQLException(e));
+			log.error("Error while executing: {}", sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return retValue;
 	}
@@ -1515,7 +1430,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return null;
 	}
@@ -1600,7 +1515,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return null;
 	}
@@ -1674,7 +1589,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		finally
 		{
@@ -1691,78 +1606,91 @@ public final class DB
 	/**
 	 * Is Sales Order Trx. Assumes Sales Order. Queries IsSOTrx of table with where clause
 	 *
-	 * @param TableName table
+	 * @param tableName table
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static boolean isSOTrx(String TableName, String whereClause)
+	public static boolean isSOTrx(final String tableName, final String whereClause)
 	{
-		if (TableName == null || TableName.length() == 0)
+		final boolean defaultIsSOTrx = true;
+
+		if (Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
-			return true;
+			return defaultIsSOTrx;
 		}
-		if (whereClause == null || whereClause.length() == 0)
+
+		if (Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
-			return true;
+			return defaultIsSOTrx;
 		}
+
 		//
-		boolean isSOTrx = true;
-		String sql = "SELECT IsSOTrx FROM " + TableName
-				+ " WHERE " + whereClause;
+		// Extract the SQL to select the IsSOTrx column
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String sqlSelectIsSOTrx;
+		// Case: tableName has the "IsSOTrx" column
+		if (poInfo != null && poInfo.isPhysicalColumn("IsSOTrx"))
+		{
+			sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
+		}
+		// Case: tableName does NOT have the "IsSOTrx" column but ends with "Line", so we will check the parent table.
+		else if (tableName.endsWith("Line"))
+		{
+			final String parentTableName = tableName.substring(0, tableName.indexOf("Line"));
+			final POInfo parentPOInfo = POInfo.getPOInfo(parentTableName);
+			if (parentPOInfo != null && parentPOInfo.isPhysicalColumn("IsSOTrx"))
+			{
+				// metas: use IN instead of EXISTS as the subquery should be highly selective
+				sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + parentTableName
+						+ " h WHERE h." + parentTableName + "_ID IN (SELECT l." + parentTableName + "_ID FROM " + tableName
+						+ " l WHERE " + whereClause + ")";
+			}
+			else
+			{
+				sqlSelectIsSOTrx = null;
+			}
+		}
+		// Fallback: no IsSOTrx
+		else
+		{
+			return defaultIsSOTrx;
+		}
+
+		//
+		// Fetch IsSOTrx value if possible
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sqlSelectIsSOTrx, ITrx.TRXNAME_None);
+			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
-				isSOTrx = "Y".equals(rs.getString(1));
-		}
-		catch (Exception e)
-		{
-			if (TableName.endsWith("Line"))
 			{
-				String hdr = TableName.substring(0, TableName.indexOf("Line"));
-				// metas: use IN instead of EXISTS as the subquery should be highly selective
-				sql = "SELECT IsSOTrx FROM " + hdr
-						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + TableName
-						+ " l WHERE " + whereClause + ")";
-				PreparedStatement pstmt2 = null;
-				ResultSet rs2 = null;
-				try
-				{
-					pstmt2 = DB.prepareStatement(sql, null);
-					rs2 = pstmt2.executeQuery();
-					if (rs2.next())
-						isSOTrx = "Y".equals(rs2.getString(1));
-				}
-				catch (Exception ee)
-				{
-					ee = DBException.getSQLException(ee);
-					log.trace("Error while checking isSOTrx (SQL: {})", sql, ee);
-				}
-				finally
-				{
-					close(rs2, pstmt2);
-					rs = null;
-					pstmt = null;
-				}
+				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
+				return isSOTrx;
 			}
 			else
 			{
-				log.trace("Table {} has no IsSOTrx column", TableName, e);
+				log.trace("No records were found to fetch the IsSOTrx from SQL: {}", sqlSelectIsSOTrx);
+				return defaultIsSOTrx;
 			}
+		}
+		catch (final Exception ex)
+		{
+			final SQLException sqlEx = DBException.extractSQLExceptionOrNull(ex);
+			log.trace("Error while checking isSOTrx (SQL: {})", sqlSelectIsSOTrx, sqlEx);
+
+			return defaultIsSOTrx;
 		}
 		finally
 		{
-			close(rs);
-			close(pstmt);
+			close(rs, pstmt);
 			rs = null;
 			pstmt = null;
 		}
-		return isSOTrx;
 	}	// isSOTrx
 
 	/**************************************************************************
@@ -1844,6 +1772,7 @@ public final class DB
 	 */
 	public static final String TO_SQL(final Object param)
 	{
+		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
 			return "NULL";
 		else if (param instanceof String)
@@ -1898,7 +1827,7 @@ public final class DB
 	 * @see org.compiere.util.DisplayType
 	 * @see org.compiere.util.Env
 	 *
-	 * */
+	 */
 	public static String TO_CHAR(String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
 		return getDatabase().TO_CHAR(columnName, displayType);
@@ -2003,6 +1932,22 @@ public final class DB
 	{
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
+	}
+
+	/**
+	 * @param comment
+	 * @return SQL multiline comment
+	 */
+	public static final String TO_COMMENT(final String comment)
+	{
+		if (Check.isEmpty(comment, true))
+		{
+			return "";
+		}
+
+		return "/* "
+				+ comment.replace("/*", " ").replace("*/", " ")
+				+ " */";
 	}
 
 	/**
@@ -2270,7 +2215,7 @@ public final class DB
 	 */
 	public static int createT_Selection(Iterable<Integer> selection, String trxName)
 	{
-		final int adPInstanceId = getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
 		createT_Selection(adPInstanceId, selection, trxName);
 		return adPInstanceId;
 	}
@@ -2386,19 +2331,20 @@ public final class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it might return the string <code>"(3,1,2)"</code>, depending on the order in which the elements are returned from the given <code>paramIn</code>'s
 	 * iterable.
 	 * <p>
-	 * In other workds, note that depending on the actual type of <code>paramsIn</code>, the ordering might vary, but usually that is not a problem.
+	 * In other words, note that depending on the actual type of <code>paramsIn</code>, the ordering might vary, but usually that is not a problem.
 	 *
+	 * <p>
+	 * <b>IMPORTANT: Please use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
+	 *
+	 * <pre>
+	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
+	 * </pre>
+	 * 
 	 * @param paramsIn
 	 * @param paramsOut
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
-	 * @deprecated <b>pls use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
-	 *
-	 *             <pre>
-	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
-	 * </pre>
 	 */
-	@Deprecated
 	public static String buildSqlList(final Collection<? extends Object> paramsIn)
 	{
 		if (paramsIn == null || paramsIn.isEmpty())
@@ -2414,6 +2360,7 @@ public final class DB
 				sql.append(",");
 			}
 
+			// TODO: check and refactor together with TO_SQL(..)
 			if (paramIn == null)
 			{
 				sql.append("NULL");
@@ -2430,6 +2377,7 @@ public final class DB
 			{
 				sql.append(TO_DATE(TimeUtil.asTimestamp((Date)paramIn)));
 			}
+			else
 			{
 				sql.append(TO_STRING(paramIn.toString()));
 			}
@@ -2496,6 +2444,20 @@ public final class DB
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		return tableName + "_SEQ";
+	}
+
+	/**
+	 * Create database table sequence for given table name.
+	 */
+	public static final void createTableSequence(final String tableName)
+	{
+		final String sequenceName = getTableSequenceName(tableName);
+		CConnection.get().getDatabase().createSequence(sequenceName,
+				1, // increment
+				1, // minvalue
+				Integer.MAX_VALUE, // maxvalue
+				1000000, // start
+				ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2654,4 +2616,3 @@ public final class DB
 	}
 
 } // DB
-

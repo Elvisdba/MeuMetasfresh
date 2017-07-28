@@ -28,8 +28,11 @@ package de.metas.fresh.picking.form;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,6 +50,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.NonNull;
 
 /**
  * Item to be packed.
@@ -115,7 +119,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public int getC_BPartner_ID()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return -1;
@@ -128,7 +132,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return null;
@@ -164,7 +168,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public int getC_BPartner_Location_ID()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return -1;
@@ -181,7 +185,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public Set<I_M_Warehouse> getWarehouses()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return Collections.emptySet();
@@ -214,7 +218,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public Set<Integer> getWarehouseIds()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return Collections.emptySet();
@@ -241,8 +245,8 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 
 	@Override
 	public IFreshPackingItem subtractToPackingItem(
-			final BigDecimal subtrahent,
-			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
+			@NonNull final BigDecimal subtrahent,
+			@Nullable final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		final Map<I_M_ShipmentSchedule, BigDecimal> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
 		return FreshPackingItemHelper.create(sched2qty);

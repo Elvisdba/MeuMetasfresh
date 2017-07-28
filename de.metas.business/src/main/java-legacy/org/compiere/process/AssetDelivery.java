@@ -22,11 +22,11 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MAsset;
 import org.compiere.model.MAssetDelivery;
 import org.compiere.model.MClient;
 import org.compiere.model.MProductDownload;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
 
@@ -34,6 +34,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Deliver Assets Electronically
@@ -42,7 +44,7 @@ import de.metas.email.IMailTextBuilder;
  * 	@version 	$Id: AssetDelivery.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  * 	@author 	Michael Judd BF [ 2736995 ] - toURL() in java.io.File has been deprecated
  */
-public class AssetDelivery extends SvrProcess
+public class AssetDelivery extends JavaProcess
 {
 	private MClient		m_client = null;
 
@@ -63,7 +65,7 @@ public class AssetDelivery extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -201,7 +203,7 @@ public class AssetDelivery extends SvrProcess
 		MAsset asset = new MAsset (getCtx(), A_Asset_ID, trxName);
 		if (asset.getAD_User_ID() == 0)
 			return "** No Asset User";
-		MUser user = new MUser (getCtx(), asset.getAD_User_ID(), get_TrxName());
+		I_AD_User user = asset.getAD_User();
 		if (user.getEMail() == null || user.getEMail().length() == 0)
 			return "** No Asset User Email";
 		
@@ -244,7 +246,7 @@ public class AssetDelivery extends SvrProcess
 		MAsset asset = new MAsset (getCtx(), A_Asset_ID, get_TrxName());
 		if (asset.getAD_User_ID() == 0)
 			return "** No Asset User";
-		MUser user = new MUser (getCtx(), asset.getAD_User_ID(), get_TrxName());
+		I_AD_User user = asset.getAD_User();
 		if (user.getEMail() == null || user.getEMail().length() == 0)
 			return "** No Asset User Email";
 		if (asset.getProductR_MailText_ID() == 0)

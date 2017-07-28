@@ -39,7 +39,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_C_BPartner;
@@ -65,6 +64,7 @@ import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
@@ -89,6 +89,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**
@@ -103,7 +104,6 @@ public class HUIssuePanel implements IHUSelectPanel
 
 	public static final String PROPERTY_Disposed = "Disposed";
 	public static final String ACTION_Receipt = "de.metas.handlingunits.client.ACTION_Receipt";
-	public static final String ACTION_Receipt_HUEditor = "de.metas.handlingunits.client.ACTION_Receipt_HUEditor";
 	public static final String ACTION_DDOrderPanel = "ACTION_DDOrderPanel";
 	public static final String ACTION_ClosePPOrder = "de.metas.handlingunits.client.ACTION_ClosePPOrder";
 	public static final String ACTION_Issue = "de.metas.handlingunits.client.ACTION_Issue";
@@ -117,7 +117,6 @@ public class HUIssuePanel implements IHUSelectPanel
 	private ITerminalButton ddOrderButton;
 	private ITerminalButton issueOrderButton;
 	private ITerminalButton receiptOrderButton;
-	private ITerminalButton receiptHUEditorButton;
 	private ITerminalButton closeOrderBUtton;
 	private ITerminalLabel detailsLabel;
 
@@ -194,12 +193,10 @@ public class HUIssuePanel implements IHUSelectPanel
 		ddOrderButton = confirmPanel.addButton(HUIssuePanel.ACTION_DDOrderPanel);
 		issueOrderButton = confirmPanel.addButton(ACTION_Issue);
 		receiptOrderButton = confirmPanel.addButton(HUIssuePanel.ACTION_Receipt);
-		receiptHUEditorButton = confirmPanel.addButton(HUIssuePanel.ACTION_Receipt_HUEditor);
 		closeOrderBUtton = confirmPanel.addButton(ACTION_ClosePPOrder);
 		ddOrderButton.setEnabled(false);
 		issueOrderButton.setEnabled(false);
 		receiptOrderButton.setEnabled(false);
-		receiptHUEditorButton.setEnabled(false);
 		closeOrderBUtton.setEnabled(false);
 
 		//
@@ -243,10 +240,6 @@ public class HUIssuePanel implements IHUSelectPanel
 					model.loadOrderBOMLineKeyLayout();
 
 				}
-				else if (HUIssuePanel.ACTION_Receipt_HUEditor.equals(action))
-				{
-					doReceiptHUEditor();
-				}
 				else if (HUIssuePanel.ACTION_ClosePPOrder.equals(action))
 				{
 					model.closeSelectedOrder();
@@ -277,7 +270,6 @@ public class HUIssuePanel implements IHUSelectPanel
 		ddOrderButton.setEnabled(enabled);
 		issueOrderButton.setEnabled(enabled);
 		receiptOrderButton.setEnabled(enabled);
-		receiptHUEditorButton.setEnabled(enabled);
 		closeOrderBUtton.setEnabled(enabled);
 
 		updateDetailsLabels();
@@ -538,6 +530,8 @@ public class HUIssuePanel implements IHUSelectPanel
 		final HUEditorPanel editorPanel = new HUEditorPanel(huEditorModel);
 		editorPanel.setAskUserWhenCancelingChanges(true); // 07729
 
+		// this editor's results (selected HU-Keys) are needed on this panel, because we want to issue those HUs.
+		// therefore we don't want to disposed them when the modal dialog finishes and maintain the references in HUIssueModel.doIssueHUs()
 		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel); // TODO: TRL
 		editorDialog.setSize(getTerminalContext().getScreenResolution());
 
@@ -562,44 +556,45 @@ public class HUIssuePanel implements IHUSelectPanel
 		Check.assumeInstanceOf(selectedKey, ManufacturingOrderKey.class, "selectedKey");
 		final ManufacturingOrderKey manufacturingOrderKey = (ManufacturingOrderKey)selectedKey;
 
-		final HUPPOrderReceiptModel receiptModel = model.createReceiptModel();
+		final List<I_M_HU> planningHUs;
+		final CUKey cuKey;
 
-		final LUTUConfigurationEditorPanel receiptPanel = new LUTUConfigurationEditorPanel(receiptModel);
-
-		final ITerminalDialog receiptDialog = getTerminalFactory().createModalDialog(this, "Receipt", receiptPanel); // TODO: trl
-
-		// Activate editor dialog and wait until user closes the window
-		receiptDialog.activate();
-		if (receiptDialog.isCanceled())
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			return;
+			final HUPPOrderReceiptModel receiptModel = model.createReceiptModel();
+
+			final LUTUConfigurationEditorPanel receiptPanel = new LUTUConfigurationEditorPanel(receiptModel);
+
+			final ITerminalDialog receiptDialog = getTerminalFactory().createModalDialog(this, "Receipt", receiptPanel); // TODO: trl
+
+			// Activate editor dialog and wait until user closes the window
+			receiptDialog.activate();
+			if (receiptDialog.isCanceled())
+			{
+				return;
+			}
+
+			//
+			// Refresh manufacturing order key and lines
+			manufacturingOrderKey.reload();
+
+			model.loadOrderBOMLineKeyLayout();
+
+			planningHUs = receiptModel.getCreatedPlanningHUs();
+			cuKey = receiptModel.getSelectedCUKey();
 		}
-
-		//
-		// Refresh manufacturing order key and lines
-		manufacturingOrderKey.reload();
-		model.loadOrderBOMLineKeyLayout();
-
-		final List<I_M_HU> hus = receiptModel.getCreatedHUs();
-
-		final CUKey cuKey = receiptModel.getSelectedCUKey();
-
 		//
 		// Open HUEditor on Receipt warehouses letting the user to do further editing
 		// and move the HUs forward through DD Order Line
 
 		// 08077
-		// We must associate the HUs with the transaction None because
-		// their original transaction is no more
-		for (final I_M_HU hu : hus)
-		{
-			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None);
-		}
+		// We must associate the HUs with the transaction None because their original transaction is no more
+		planningHUs.stream().forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None));
 
-		doReceiptHUEditor(hus, cuKey);
+		doReceiptHUEditor(planningHUs, cuKey);
 
 		// after receipt
-		afterReceipt(hus);
+		afterReceipt(planningHUs);
 
 		model.refreshAfterReceipt();
 	}
@@ -626,54 +621,41 @@ public class HUIssuePanel implements IHUSelectPanel
 	/**
 	 * Open HUEditor on Receipt warehouse letting the user to do further editing and move the HUs forward through DD Order Line.
 	 */
-	private void doReceiptHUEditor(final List<I_M_HU> hus, final CUKey cuKey)
+	private void doReceiptHUEditor(final List<I_M_HU> planningHUs, final CUKey cuKey)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
 
-		//
-		// Create a Root HU Key from HUs that were created
-		final IHUKeyFactory keyFactory = terminalContext.getService(IHUKeyFactory.class);
-		final IHUKey rootHUKey = keyFactory.createRootKey();
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
+		{
+			//
+			// Create a Root HU Key from HUs that were created
+			final IHUKeyFactory keyFactory = terminalContext.getService(IHUKeyFactory.class);
+			final IHUKey rootHUKey = keyFactory.createRootKey();
 
-		//
-		// Create HU Editor Model
-		final HUEditorModel huEditorModel = new HUEditorModel(terminalContext);
-		huEditorModel.setRootHUKey(rootHUKey);
+			//
+			// Create HU Editor Model
+			final HUEditorModel huEditorModel = new HUEditorModel(terminalContext);
+			huEditorModel.setRootHUKey(rootHUKey);
 
-		// We don't want any document line for the HUKeys
-		final IHUDocumentLine nullDocumentLine = null;
-		final List<IHUKey> huKeys = keyFactory.createKeys(hus, nullDocumentLine);
-		rootHUKey.addChildren(huKeys);
+			// We don't want any document line for the HUKeys
+			final IHUDocumentLine nullDocumentLine = null;
+			final List<IHUKey> huKeys = keyFactory.createKeys(planningHUs, nullDocumentLine);
+			rootHUKey.addChildren(huKeys);
 
-		//
-		// Create HU Editor Model
+			//
+			// Create HU Editor Model
+			final HUPPOrderReceiptHUEditorModel editorModel = model.createReceiptHUEditorModel(cuKey);
+			editorModel.setRootHUKey(rootHUKey);
+			final HUPPOrderReceiptHUEditorPanel editorPanel = new HUPPOrderReceiptHUEditorPanel(editorModel);
 
-		// we don't need the already existing HUs to be loaded because we only want the ones to be created according with the lu tu configuration
-		final boolean loadHUs = false;
-		final HUPPOrderReceiptHUEditorModel editorModel = model.createReceiptHUEditorModel(cuKey, loadHUs);
-		editorModel.setRootHUKey(rootHUKey);
-		final HUPPOrderReceiptHUEditorPanel editorPanel = new HUPPOrderReceiptHUEditorPanel(editorModel);
-		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel);
-		editorDialog.setSize(getTerminalContext().getScreenResolution());
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel);
+			editorDialog.setSize(getTerminalContext().getScreenResolution());
 
-		// Activate editor dialog
-		editorDialog.activate();
-	}
-
-	private void doReceiptHUEditor()
-	{
-		// we don't have a certain cuKey selected so we will pass null
-		final CUKey cuKey = null;
-
-		// we want the already existing HUs to be all loaded.
-		final boolean loadHUs = true;
-		final HUPPOrderReceiptHUEditorModel editorModel = model.createReceiptHUEditorModel(cuKey, loadHUs);
-		final HUPPOrderReceiptHUEditorPanel editorPanel = new HUPPOrderReceiptHUEditorPanel(editorModel);
-		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel);
-		editorDialog.setSize(getTerminalContext().getScreenResolution());
-
-		// Activate editor dialog
-		editorDialog.activate();
+			// Activate editor dialog
+			editorDialog.activate();
+		}
+		
+		planningHUs.forEach(InterfaceWrapperHelper::markStaled);
 	}
 
 	private boolean _disposed = false;

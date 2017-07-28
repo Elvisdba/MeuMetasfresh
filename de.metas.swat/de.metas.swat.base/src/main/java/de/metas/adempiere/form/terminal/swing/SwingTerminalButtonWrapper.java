@@ -39,7 +39,6 @@ import javax.swing.Icon;
 import javax.swing.SwingConstants;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.MImage;
@@ -48,6 +47,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -272,7 +272,10 @@ import de.metas.logging.LogManager;
 	@Override
 	public String toString()
 	{
-		return "SwingTerminalButtonWrapper [listeners=" + listeners + ", getComponent()=" + getComponent() + ", getWidth()=" + getWidth() + ", getHeight()=" + getHeight() + "]";
+		return "SwingTerminalButtonWrapper [listeners=" + listeners 
+				+ ", getComponent()=" + getComponent() 
+				+ ", getWidth()=" + getWidth() 
+				+ ", getHeight()=" + getHeight() + "]";
 	}
 
 	@Override

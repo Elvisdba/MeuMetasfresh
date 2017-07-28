@@ -21,19 +21,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
 import org.compiere.model.MStore;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *  Send Mail to Interest Area Subscribers
@@ -41,7 +45,7 @@ import de.metas.email.IMailTextBuilder;
  *  @author Jorg Janke
  *  @version $Id: SendMailText.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class SendMailText extends SvrProcess
+public class SendMailText extends JavaProcess
 {
 	/** What to send			*/
 	private int				m_R_MailText_ID = -1;
@@ -52,7 +56,7 @@ public class SendMailText extends SvrProcess
 	/** Client Info				*/
 	private MClient			m_client = null;
 	/**	From					*/
-	private MUser			m_from = null;
+	private I_AD_User		m_from = null;
 	/** Recipient List to prevent duplicate mails	*/
 	private ArrayList<Integer>	m_list = new ArrayList<Integer>();
 
@@ -75,7 +79,7 @@ public class SendMailText extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -117,9 +121,7 @@ public class SendMailText extends SvrProcess
 		//
 		if (m_AD_User_ID > 0)
 		{
-			m_from = new MUser (getCtx(), m_AD_User_ID, get_TrxName());
-			if (m_from.getAD_User_ID() == 0)
-				throw new Exception ("No found @AD_User_ID@=" + m_AD_User_ID);
+			m_from = Services.get(IUserDAO.class).retrieveUser(m_AD_User_ID);
 		}
 		log.debug("From " + m_from);
 		long start = System.currentTimeMillis();
@@ -271,7 +273,7 @@ public class SendMailText extends SvrProcess
 			return null;
 		m_list.add(ii);
 		//
-		MUser to = new MUser (getCtx(), AD_User_ID, null);
+		I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
 		mailTextBuilder.setAD_User(AD_User_ID);		//	parse context
 		String message = mailTextBuilder.getFullMailText();
 		//	Unsubscribe
@@ -290,8 +292,8 @@ public class SendMailText extends SvrProcess
 		{
 			log.warn("NOT VALID - " + email);
 			to.setIsActive(false);
-			to.addDescription("Invalid EMail");
-			to.save();
+			addDescription(to, "Invalid EMail");
+			InterfaceWrapperHelper.save(to);
 			return Boolean.FALSE;
 		}
 
@@ -306,5 +308,17 @@ public class SendMailText extends SvrProcess
 		addLog(0, null, null, (OK ? "@OK@" : "@ERROR@") + " - " + to.getEMail());
 		return new Boolean(OK);
 	}	//	sendIndividualMail
+	
+	private static final void addDescription(final I_AD_User user, String description)
+	{
+		if (description == null || description.length() == 0)
+			return;
+		String descr = user.getDescription();
+		if (descr == null || descr.length() == 0)
+			user.setDescription(description);
+		else
+			user.setDescription(descr + " - " + description);
+	}	// addDescription
+
 
 }	//	SendMailText

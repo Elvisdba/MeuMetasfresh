@@ -129,6 +129,8 @@ check_java_version()
             if [[ ! $JAVA_VERSION == "8" ]]; then
                 trace check_java_version "[ERROR] JAVA-Version does not match supported version (found Java 1.${JAVA_VERSION})! Only Java 1.8 JDK supported! Check ' http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html ' for more infos and make sure 'java -version' is 1.8.x ! NOTE: you may also need to update to Java-8 on your Clients: ' http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_client.html '"
                 exit 1
+			else
+				trace check_java_version "OK: JAVA_VERSION=${JAVA_VERSION}"
             fi
         else
             trace check_java_version "could not find valid /usr/bin/java. assuming Java 1.8 JDK is installed."
@@ -224,6 +226,34 @@ stop_metasfresh()
 	fi
 		
 	trace stop_metasfresh END
+}
+
+start_metasfresh-webui-api()
+{
+	if [ -e /etc/init.d/metasfresh-webui-api ]; 
+	then
+		echo Starting metasfresh-webui-api
+		/etc/init.d/metasfresh-webui-api start
+	else
+		echo "/etc/init.d/metasfresh-webui-api does not exist. Please create it. Menawhile, this script does *not* start the service."
+		echo "to create /etc/init.d/metasfresh-webui-api , you can do (as root):"
+		echo "		ln -s metasfresh-webui-api.jar /etc/init.d/metasfresh-webui-api"
+	fi
+}
+
+stop_metasfresh-webui-api()
+{
+	if [ -e /etc/init.d/metasfresh-webui-api ]; 
+	then
+		echo Stopping metasfresh-webui-api
+		/etc/init.d/metasfresh-webui-api stop
+	elif [ -e /etc/systemd/system/metasfresh_webui.service]; 
+	then
+		echo Stopping metasfresh-webui-api
+		systemctl stop metasfresh_webui.service
+	else
+		echo "/etc/init.d/metasfresh-webui-api does not exist. Please create it. Menawhile, this script does *not* stop the service."
+	fi
 }
 
 delete_rollout()

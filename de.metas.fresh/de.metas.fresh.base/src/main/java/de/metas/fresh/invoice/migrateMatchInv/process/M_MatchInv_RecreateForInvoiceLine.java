@@ -44,13 +44,13 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
-public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
+public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -67,7 +67,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (PARAM_WhereClause.equals(name))
@@ -110,7 +110,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus
-			invoiceQueryBuilder.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			invoiceQueryBuilder.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 
 			// IsSOTrx
 			if (p_IsSOTrx != null)
@@ -134,13 +134,13 @@ public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
 		// Skip invoice lines that are already fully matched
 		{
 			final String wc = "C_InvoiceLine.QtyInvoiced<>(SELECT COALESCE(SUM(mi.Qty), 0) FROM M_MatchInv mi  WHERE mi.C_InvoiceLine_ID=C_InvoiceLine.C_InvoiceLine_ID)";
-			queryBuilder.filter(new TypedSqlQueryFilter<I_C_InvoiceLine>(wc));
+			queryBuilder.filter(TypedSqlQueryFilter.of(wc));
 		}
 
 		// Add custom WHERE clause if any
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			queryBuilder.filter(new TypedSqlQueryFilter<I_C_InvoiceLine>(p_WhereClause));
+			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
 		}
 
 		//
@@ -268,7 +268,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
 				final I_M_InOut inout = inoutLine.getM_InOut();
 
 				// Skip inouts which are not COmpleted or CLosed
-				if (!Services.get(IDocActionBL.class).isStatusCompletedOrClosed(inout))
+				if (!Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
 				{
 					continue;
 				}

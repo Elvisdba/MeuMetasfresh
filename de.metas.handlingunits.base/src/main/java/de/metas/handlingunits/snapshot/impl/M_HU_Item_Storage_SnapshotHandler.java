@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -37,17 +36,18 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage_Snapshot;
+import de.metas.quantity.Quantity;
 
 class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item_Storage, I_M_HU_Item_Storage_Snapshot, I_M_HU_Item>
 {
@@ -64,7 +64,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 	protected void createSnapshotsByParentIds(final Set<Integer> huItemIds)
 	{
 		query(I_M_HU_Item_Storage.class)
-				.addInArrayFilter(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID, huItemIds)
+				.addInArrayOrAllFilter(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID, huItemIds)
 				.create()
 				.insertDirectlyInto(I_M_HU_Item_Storage_Snapshot.class)
 				.mapCommonColumns()

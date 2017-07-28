@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
@@ -39,9 +38,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
@@ -56,14 +52,23 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HULoadException;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.quantity.Quantity;
 
 public class HULoader
 {
+	public static final HULoader of(final IAllocationSource source, final IAllocationDestination destination)
+	{
+		return new HULoader(source, destination);
+	}
+
 	private final IAllocationSource source;
 	private final IAllocationDestination destination;
 
@@ -83,10 +88,8 @@ public class HULoader
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public HULoader(final IAllocationSource source, final IAllocationDestination destination)
+	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
 	{
-		super();
-		// this.huContext = huContext;
 		this.source = source;
 		this.destination = destination;
 	}
@@ -110,9 +113,10 @@ public class HULoader
 	 *
 	 * @param allowPartialUnloads true if partial unloads are allowed (i.e. source does not have all the requested qty)
 	 */
-	public void setAllowPartialUnloads(final boolean allowPartialUnloads)
+	public HULoader setAllowPartialUnloads(final boolean allowPartialUnloads)
 	{
 		this.allowPartialUnloads = allowPartialUnloads;
+		return this;
 	}
 
 	/**
@@ -126,21 +130,25 @@ public class HULoader
 
 	/**
 	 *
-	 * @param allowPartialLoads true if partial loads are allowed (i.e. destination can not accept all qty that was unloaded from source)
+	 * @param allowPartialLoads true if partial loads are allowed (i.e. if it is OK in case the destination can not accept all qty that was unloaded from source).
 	 */
-	public void setAllowPartialLoads(final boolean allowPartialLoads)
+	public HULoader setAllowPartialLoads(final boolean allowPartialLoads)
 	{
 		this.allowPartialLoads = allowPartialLoads;
+		return this;
 	}
 
-	public void setForceLoad(final boolean forceLoad)
+	/**
+	 * If this setter is called with {@code true}, then the loader will load into the destination whatever was unloaded from the source, no matter what the destination's capacity is.
+	 * <p>
+	 * The default if this setter is not called is {@code false}.
+	 *
+	 * @param forceLoad
+	 */
+	public HULoader setForceLoad(final boolean forceLoad)
 	{
 		this.forceLoad = forceLoad;
-	}
-
-	public final boolean isForceLoad()
-	{
-		return forceLoad;
+		return this;
 	}
 
 	/**
@@ -187,7 +195,7 @@ public class HULoader
 	 * <ul>
 	 * <li>managing database transaction</li>
 	 * <li>collecting and automatically processing {@link IHUTransactionAttribute}s</li>
-	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getDestroyedHUPackingMaterialsCollector()})</li>
+	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
 	 *
 	 * @param huContext
@@ -234,8 +242,12 @@ public class HULoader
 
 	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>.
+	 * <p>
+	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransaction}s are created).<br>
+	 * If not all from the given {@code unloadRequest} is unloaded, then the it will only try to load the lesser qtys which were unloaded.<br>
+	 * However, in the end, only the stuff that will be "accepted" by the {@link IAllocationDestination} will really be moved.<br>
 	 *
-	 * NOTE:
+	 * NOTEs:
 	 * <ul>
 	 * <li>that transactions from result will be already processed.
 	 * <li>context's trxName will be used, no transaction management will be performed (see {@link #load(IAllocationRequest)} which is doing the magic)
@@ -280,7 +292,7 @@ public class HULoader
 
 		//
 		// Notify listeners that load was completed
-		huContext.getTrxListeners().afterLoad(huContext, Collections.<IAllocationResult> singletonList(finalResult));
+		huContext.getTrxListeners().afterLoad(huContext, Collections.singletonList(finalResult));
 
 		//
 		// Notify our source that the unload was completed
@@ -290,7 +302,9 @@ public class HULoader
 	}
 
 	/**
-	 * Loads everything from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s.
+	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s trx candidates.
+	 * For each trx candidates, the code will attempts to loadto the {@link IAllocationDestination}.
+	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransaction}s will be created based of what was actually loaded to the destination.
 	 *
 	 * After running this method:
 	 * <ul>
@@ -309,9 +323,7 @@ public class HULoader
 	 *            created to load on destination
 	 * @return load result (will contain also unload transactions); the result will be already processed
 	 */
-	private IMutableAllocationResult loadToDestination(final IHUContext huContext,
-			final IAllocationResult unloadResult,
-			final IAllocationRequest unloadRequestActual)
+	private IMutableAllocationResult loadToDestination(final IHUContext huContext, final IAllocationResult unloadResult, final IAllocationRequest unloadRequestActual)
 	{
 		assertValidProcessingContext(huContext);
 
@@ -355,16 +367,17 @@ public class HULoader
 				// source.unloadCancel(unloadResult, unloadTrx, loadResult.getQtyToAllocate());
 			}
 
-			final List<IHUTransaction> trxs = new ArrayList<IHUTransaction>();
+			final List<IHUTransaction> trxs = new ArrayList<>();
 
 			//
 			// Iterate each load transaction:
-			// * create it's counterpart unload transaction (taking properties from unloadTrx)
+			// * create it's counterpart 'unloadTrxPartial' by taking properties from 'unloadTrx', but just the part that was actually loaded
 			// * transfer attributes
-			final List<IHUTransaction> loadTransactions = loadResult.getTransactions();
+			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
+			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
 
 			BigDecimal qtyUnloaded = BigDecimal.ZERO;
-			for (final IHUTransaction loadTrx : loadTransactions)
+			for (final IHUTransaction loadTrx : aggregatedLoadTransactions)
 			{
 				final IHUTransaction unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
 				unloadTrxPartial.pair(loadTrx);
@@ -407,9 +420,10 @@ public class HULoader
 			final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
 					loadResult.getQtyToAllocate(),   // qtyToAllocate
 					loadResult.getQtyAllocated(),   // qtyAllocated
-					trxs,   // transactions
+					trxs, //
 					attributeTrxs // attribute transactions
 			);
+
 			huTrxBL.createTrx(huContext, result);
 
 			//
@@ -427,7 +441,7 @@ public class HULoader
 	private final IAllocationRequest createQtyLoadRequest(final IAllocationRequest unloadRequestActual, final IHUTransaction unloadTrx)
 	{
 		final IAllocationRequestBuilder builder = AllocationUtils.createQtyLoadRequestBuilder(unloadRequestActual, unloadTrx);
-		if (isForceLoad())
+		if (forceLoad)
 		{
 			builder.setForceQtyAllocation(true);
 		}
@@ -443,10 +457,12 @@ public class HULoader
 
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product);
 
-		final Quantity qtyUnloadPartial = loadTrx
-				.getQuantity()
-				.negate()
-				.convertTo(uomConversionCtx, qtyUnloadFull.getUOM());
+		final Quantity qtyUnloadPartial = uomConversionBL.convertQuantityTo(
+				loadTrx
+						.getQuantity()
+						.negate(),
+				uomConversionCtx,
+				qtyUnloadFull.getUOM());
 
 		return new HUTransaction(
 				unloadTrx.getReferencedModel(),
@@ -556,49 +572,45 @@ public class HULoader
 		trxAttributesBuilder.transferAttributes(request);
 	}
 
-	public void unloadAllFromSource(final IHUContext huContext)
+	public void unloadAllFromSource(final IHUContext huContextInitial)
 	{
-		processInHUContext(huContext, new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
+		processInHUContext(huContextInitial, huContext -> {
+			final List<IAllocationResult> loadResults = new ArrayList<>();
+
+			for (final IPair<IAllocationRequest, IAllocationResult> unloadPair : source.unloadAll(huContext))
 			{
-				final List<IAllocationResult> loadResults = new ArrayList<>();
+				final IAllocationRequest unloadRequest = AllocationUtils.derive(unloadPair.getLeft())
+						.setForceQtyAllocation(true) // we need to force pushing everything
+						.create();
 
-				for (final IPair<IAllocationRequest, IAllocationResult> unloadPair : source.unloadAll(huContext))
-				{
-					final IAllocationRequest unloadRequest = AllocationUtils.derive(unloadPair.getLeft())
-							.setForceQtyAllocation(true) // we need to force pushing everything
-							.create();
+				final IAllocationResult unloadResult = unloadPair.getRight();
+				final IMutableAllocationResult loadResult = loadToDestination(huContext, unloadResult, unloadRequest);
 
-					final IAllocationResult unloadResult = unloadPair.getRight();
-					final IMutableAllocationResult loadResult = loadToDestination(huContext, unloadResult, unloadRequest);
-
-					loadResults.add(loadResult);
-				}
-
-				//
-				// Notify listeners that load was completed
-				huContext.getTrxListeners().afterLoad(huContext, loadResults);
-
-				//
-				// Notify the source that our unload was completed
-				source.unloadComplete(huContext);
-
-				// NOTE: we are returning null because we actually can transfer more then one type of product and our IAllocationResult is product oriented
-				return null;
+				loadResults.add(loadResult);
 			}
+
+			//
+			// Notify listeners that load was completed
+			huContext.getTrxListeners().afterLoad(huContext, loadResults);
+
+			//
+			// Notify the source that our unload was completed
+			source.unloadComplete(huContext);
+
+			// NOTE: we are returning null because we actually can transfer more then one type of product and our IAllocationResult is one product oriented
+			return null;
 		});
 	}
 
 	/**
 	 * Advises the {@link HULoader} to skip transferring the attributes.
-	 * 
+	 *
 	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
 	 */
-	public void setSkipAttributesTransfer(final boolean skipAttributesTransfer)
+	public HULoader setSkipAttributesTransfer(final boolean skipAttributesTransfer)
 	{
 		this.skipAttributesTransfer = skipAttributesTransfer;
+		return this;
 	}
 
 	/**

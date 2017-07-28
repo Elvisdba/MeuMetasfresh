@@ -25,6 +25,7 @@ package de.metas.handlingunits.materialtracking.spi.impl;
 import java.util.List;
 
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_Order;
@@ -108,7 +109,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 		//
 		// check if the HU is assigned to a PP_Order and also update that PP_Order's material tracking reference
 		{
-			final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+			final ILoggable loggable = Loggables.get();
 
 			final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 			final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);

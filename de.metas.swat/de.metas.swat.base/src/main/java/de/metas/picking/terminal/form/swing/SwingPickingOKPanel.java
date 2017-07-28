@@ -16,15 +16,14 @@ package de.metas.picking.terminal.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
@@ -50,7 +49,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.Waiting;
 import org.compiere.apps.form.FormFrame;
@@ -62,8 +60,6 @@ import org.compiere.model.I_M_PackagingTreeItem;
 import org.compiere.model.MBPartner;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -91,14 +87,18 @@ import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.ITerminalTextPane;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalTable;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.terminal.IPackingStateProvider;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
 import net.miginfocom.swing.MigLayout;
 
@@ -493,6 +493,13 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		return model;
 	}
 
+	/**
+	 * Used to be able to dispose components that are created while the "packing" terminal window is open.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1911
+	 */
+	private ITerminalContextReferences packageTerminalRefs;
+
 	@Override
 	protected final void executePacking(final IPackingDetailsModel detailsModel)
 	{
@@ -502,8 +509,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		if (packageTerminalOld != null && packageTerminalOld.getFrame() != null)
 		{
 			packageTerminalOld.getFrame().removeWindowListener(packageTerminalWindowListener);
+			getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
 		}
-		this.packageTerminal = null;
+		packageTerminal = null;
+		
+		packageTerminalRefs = getTerminalContext().newReferences(); // gh #1911
 
 		//
 		// Create and setup new Package Terminal
@@ -512,7 +522,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		final FormFrame packageTerminalNewFrame = new FormFrame();
 		packageTerminalNew.init(terminalContext.getWindowNo(), packageTerminalNewFrame);
 		packageTerminalNewFrame.addWindowListener(packageTerminalWindowListener);
-		this.packageTerminal = packageTerminalNew;
+		packageTerminal = packageTerminalNew;
 
 		// we saving the tree and in this way we assure that only one user can see this specific tree
 		if (!getModel().isGroupByProduct())
@@ -551,6 +561,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		unlockShipmentSchedules(); // task 08153: make sure we unlock *and* update the scheds we did picking on
 
+		getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
+
 		//
 		// If this window was already disposed (i.e. user closed all windows all together, e.g. on logout) then do nothing
 		if (isDisposed())
@@ -587,11 +599,9 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void unlockUI(ProcessInfo pi)
+	public void unlockUI(final ProcessInfo pi)
 	{
 		getModel().uiLocked = false;
-		// display the process results
-		ProcessInfoUtil.setLogFromDB(pi);
 		//
 		if (waitIndicator != null)
 		{
@@ -604,13 +614,14 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		final FormFrame framePicking = getPickingFrame();
 		framePicking.setEnabled(true);
 		//
-		final StringBuffer iText = new StringBuffer();
+		final ProcessExecutionResult result = pi.getResult();
+		final StringBuilder iText = new StringBuilder();
 		iText.append("<b>") //
-				.append(pi.getSummary()) //
+				.append(result.getSummary()) //
 				.append("</b><br>(") //
 				.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Belegerstellung")) //
 				.append(")<br>") //
-				.append(pi.getLogInfo(true));
+				.append(result.getLogInfo(true));
 
 		SwingPickingTerminalPanel pickPanel = ((SwingPickingTerminalPanel)pickingPanel.getTerminalBasePanel());
 		ITerminalTextPane text = pickPanel.resultTextPane;
@@ -703,8 +714,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		setValueAt(miniTable, COLUMNNAME_Qty, rowIdx, currentRow.getQtyToDeliver());
 		setValueAt(miniTable, COLUMNNAME_DeliveryDate, rowIdx, currentRow.getDeliveryDate());
 		setValueAt(miniTable, COLUMNNAME_PreparationDate, rowIdx, currentRow.getPreparationDate());
-		setValueAt(miniTable, COLUMNNAME_BPValue, rowIdx, currentRow.getBPartnerValue()); // BP Value
-		setValueAt(miniTable, COLUMNNAME_C_BPartner_Location_ID, rowIdx, currentRow.getBPartnerLocationName()); // BP Location Name
+		setValueAt(miniTable, COLUMNNAME_BPValue, rowIdx, currentRow.getBpartnerValue()); // BP Value
+		setValueAt(miniTable, COLUMNNAME_C_BPartner_Location_ID, rowIdx, currentRow.getBpartnerLocationName()); // BP Location Name
 		setValueAt(miniTable, COLUMNNAME_M_Warehouse_Dest_ID, rowIdx, currentRow.getWarehouseDestName());
 
 		final String matchingType;
@@ -833,8 +844,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	@Override
 	public void setIsPos(boolean isPos)
 	{
-		PackingMd model = getModel();
-		model.isPOS = isPos;
+		final PackingMd model = getModel();
+		model.setPOSMode(isPos);
 	}
 
 	@Override
@@ -910,11 +921,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			}
 			else
 			{
-				data.append(currentRow.getBPartnerValue())
+				data.append(currentRow.getBpartnerValue())
 						.append("   ")
-						.append(currentRow.getbPartnerName())
+						.append(currentRow.getBpartnerName())
 						.append("<br>")
-						.append(currentRow.getBPartnerAddress());
+						.append(currentRow.getKey().getBpartnerAddress());
 				break; // once is enough
 			}
 		}

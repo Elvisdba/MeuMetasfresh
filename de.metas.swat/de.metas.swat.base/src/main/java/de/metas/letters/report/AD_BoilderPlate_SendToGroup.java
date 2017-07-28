@@ -28,34 +28,36 @@ package de.metas.letters.report;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MGroup;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.model.Query;
 import org.compiere.model.X_R_Group;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+import org.compiere.util.Env;
 
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
  * @author teo_sarca
  *
  */
-public class AD_BoilderPlate_SendToGroup extends SvrProcess
+public class AD_BoilderPlate_SendToGroup extends JavaProcess
 {
 	public static final String CCM_NotificationType_EMail = "E"; 
 	public static final String CCM_NotificationType_Letter = "L";
@@ -66,7 +68,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -153,9 +155,9 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 				return prospect.getR_Group_ID();
 			}
 			@Override
-			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
-				String message = text.getTextSnippetParsed(variables);
+				String message = text.getTextSnippetParsed(attributes);
 				//
 				StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
 				String to = st.nextToken();
@@ -174,7 +176,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 					
 					//
 					if (from != null)
-						new MUserMail(from, from.getAD_User_ID(), email, emailSentStatus).save();
+						new MUserMail(Env.getCtx(), from.getAD_User_ID(), email, emailSentStatus).save();
 					if (emailSentStatus.isSentOK())
 					{
 						//ADialog.info(0, this, "MessageSent");
@@ -200,15 +202,15 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 	
 	private void notifyLetter(MADBoilerPlate text, MRGroupProspect prospect)
 	{
-		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(prospect);
-		final String html = text.getTextSnippetParsed(variables);
-		final ReportEngine re = MADBoilerPlate.getReportEngine(html, variables);
+		final BoilerPlateContext attributes = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(prospect));
+		final String html = text.getTextSnippetParsed(attributes);
+		final ReportEngine re = MADBoilerPlate.getReportEngine(html, attributes);
 		re.print();
 		File pdf = re.getPDF();
 		MADBoilerPlate.createRequest(pdf,
 				X_R_Group.Table_ID,
 				prospect.getR_Group_ID(),
-				variables);
+				attributes);
 	}
 
 	private List<MRGroupProspect> getProspects(int R_Group_ID)

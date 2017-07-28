@@ -31,7 +31,6 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -41,8 +40,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.builder.ITUMergeBuilder;
-import de.metas.handlingunits.allocation.builder.impl.TUMergeBuilder;
+import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
@@ -50,14 +49,15 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractMaterialMovementModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
-import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinBL;
+import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinOrMergeBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.IMsgBL;
 
 public final class HUMergeModel extends AbstractMaterialMovementModel
 {
 	private static final String ERR_SELECT_HU_KEY = "SelectHUKey";
-	private static final String ERR_MULTIPLE_PRODUCTS = "MultipleCUsForTUMerge";
+	public static final String ERR_MULTIPLE_PRODUCTS = "MultipleCUsForTUMerge";
 
 	//
 	// Services
@@ -160,7 +160,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 			tuKeysToJoin = createTUJoinKeysRecursively(selectedTUs, getSelectedChildrenCount());
 		}
 
-		Services.get(ILUTUJoinBL.class).joinHUs(getTerminalContext(), selectedLUKey, tuKeysToJoin);
+		Services.get(ILUTUJoinOrMergeBL.class).joinOrMergeHUs(getTerminalContext(), selectedLUKey, tuKeysToJoin);
 	}
 
 	private List<TUJoinKey> createTUJoinKeysRecursively(final List<LUJoinKey> luKeys, final LUJoinKey selectedLUKey)

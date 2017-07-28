@@ -22,9 +22,6 @@ import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERM;
 import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERMLOCATION;
 import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS;
 import static org.adempiere.util.CustomColNames.C_Order_DESCRIPTION_BOTTOM;
-import static org.adempiere.util.CustomColNames.M_InOut_DESCRIPTION_BOTTOM;
-import static org.adempiere.util.CustomColNames.M_InOut_INCOTERM;
-import static org.adempiere.util.CustomColNames.M_InOut_INCOTERMLOCATION;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -50,17 +47,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyBL;
@@ -68,8 +63,9 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.tax.api.ITaxBL;
@@ -453,10 +449,10 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
-		if (contacts != null && contacts.length > 0) 	// get first User
+		List<I_AD_User> contacts = bp.getContacts(false);
+		if (contacts != null && contacts.size() > 0) 	// get first User
 		{
-			setAD_User_ID(contacts[0].getAD_User_ID());
+			setAD_User_ID(contacts.get(0).getAD_User_ID());
 		}
 	}	// setBPartner
 
@@ -502,9 +498,9 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, M_InOut_INCOTERM);
-		poService.copyValue(ship, this, M_InOut_INCOTERMLOCATION);
-		poService.copyValue(ship, this, M_InOut_DESCRIPTION_BOTTOM);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_IncotermLocation);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
 		poService.copyValue(ship, this, C_Invoice_BPARTNERADDRESS);
@@ -1726,11 +1722,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					{
 						ol.setQtyInvoiced(ol.getQtyInvoiced().add(line.getQtyInvoiced()));
 					}
-					if (!ol.save(get_TrxName()))
-					{
-						m_processMsg = "Could not update Order Line";
-						return DocAction.STATUS_Invalid;
-					}
+					
+					ol.saveEx(get_TrxName());
 				}
 				// Order Invoiced Qty updated via Matching Inv-PO
 				else if (!isSOTrx()
@@ -1740,15 +1733,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					BigDecimal matchQty = line.getQtyInvoiced();
 					MMatchPO po = MMatchPO.create(line, null, getDateInvoiced(), matchQty);
-					if (!po.save(get_TrxName()))
-					{
-						m_processMsg = "Could not create PO Matching";
-						return DocAction.STATUS_Invalid;
-					}
-					else
-					{
-						matchPO++;
-					}
+					po.saveEx(get_TrxName());
+					matchPO++;
 				}
 			}
 
@@ -1760,11 +1746,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					rmaLine.setQtyInvoiced(rmaLine.getQtyInvoiced().add(line.getQtyInvoiced()));
 				else
 					rmaLine.setQtyInvoiced(line.getQtyInvoiced());
-				if (!rmaLine.save(get_TrxName()))
-				{
-					m_processMsg = "Could not update RMA Line";
-					return DocAction.STATUS_Invalid;
-				}
+				
+				rmaLine.saveEx(get_TrxName());
 			}
 			//
 
@@ -1853,11 +1836,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					+ ") Project " + project.getName()
 					+ " - Invoiced=" + project.getInvoicedAmt() + "->" + newAmt);
 			project.setInvoicedAmt(newAmt);
-			if (!project.save(get_TrxName()))
-			{
-				m_processMsg = "Could not update Project";
-				return DocAction.STATUS_Invalid;
-			}
+			project.saveEx(get_TrxName());
 		} 	// project
 
 		// User Validation
@@ -1897,7 +1876,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)

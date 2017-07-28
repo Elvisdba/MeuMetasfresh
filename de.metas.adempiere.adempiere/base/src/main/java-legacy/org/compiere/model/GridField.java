@@ -26,8 +26,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.function.Supplier;
 
 import javax.swing.SwingUtilities;
 
@@ -56,12 +58,10 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Supplier;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessDefaultParameter;
 
 /**
  * Grid Field Model.
@@ -85,11 +85,17 @@ import de.metas.logging.LogManager;
 public class GridField
 		implements Serializable, Evaluatee
 		, ICalloutField
+		, IProcessDefaultParameter
 {
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1124123543602986028L;
+	
+	public static GridField extractFrom(IProcessDefaultParameter parameter)
+	{
+		return (GridField)parameter;
+	}
 
 	/**
 	 * Field Constructor. requires initField for complete instantiation
@@ -458,17 +464,17 @@ public class GridField
 
 		//
 		// Tab or field is R/O (staticly configured in application dictionary)
-		if (m_vo.tabReadOnly || m_vo.IsReadOnly)
+		if (m_vo.tabReadOnly || m_vo.isReadOnly())
 		{
-			log.trace(m_vo.getColumnName() + " NO - TabRO=" + m_vo.tabReadOnly + ", FieldRO=" + m_vo.IsReadOnly);
+			log.trace(m_vo.getColumnName() + " NO - TabRO=" + m_vo.tabReadOnly + ", FieldRO=" + m_vo.isReadOnly());
 			return false;
 		}
 
 		//
 		// Not Updateable - only editable if new updateable row
-		if (!m_vo.IsUpdateable && !m_inserting)
+		if (!m_vo.isUpdateable() && !m_inserting)
 		{
-			log.trace(m_vo.getColumnName() + " NO - FieldUpdateable=" + m_vo.IsUpdateable);
+			log.trace(m_vo.getColumnName() + " NO - FieldUpdateable=" + m_vo.isUpdateable());
 			return false;
 		}
 
@@ -534,7 +540,7 @@ public class GridField
 		// If parent tab (if any) is processed or Not Active
 		// => consider this field as readonly
 		if (checkContext
-				&& !m_vo.IsAlwaysUpdateable // allow editing AlwaysUpdateable fields, even if parent is processed or not active
+				&& !m_vo.isAlwaysUpdateable() // allow editing AlwaysUpdateable fields, even if parent is processed or not active
 				&& isParentTabProcessedOrNotActive(rowCtx))
 		{
 			return false; // not editable
@@ -543,7 +549,7 @@ public class GridField
 		//
 		// Check if THIS tab is Processed or Not Active
 		if (checkContext
-				&& !m_vo.IsAlwaysUpdateable // 03375 don't return false here, if IsAlwaysUpdateable
+				&& !m_vo.isAlwaysUpdateable() // 03375 don't return false here, if IsAlwaysUpdateable
 				&& isProcessed(rowCtx))
 		{
 			return false;
@@ -1107,7 +1113,7 @@ public class GridField
 	{
 		if (isVirtualColumn())
 			return true;
-		return m_vo.IsReadOnly;
+		return m_vo.isReadOnly();
 	}
 
 	/**
@@ -1119,7 +1125,7 @@ public class GridField
 	{
 		if (isVirtualColumn())
 			return false;
-		return m_vo.IsUpdateable;
+		return m_vo.isUpdateable();
 	}
 
 	/**
@@ -1149,9 +1155,9 @@ public class GridField
 	 */
 	public boolean isAlwaysUpdateable()
 	{
-		if (isVirtualColumn() || !m_vo.IsUpdateable)
+		if (isVirtualColumn() || !m_vo.isUpdateable())
 			return false;
-		return m_vo.IsAlwaysUpdateable;
+		return m_vo.isAlwaysUpdateable();
 	}
 
 	/**
@@ -1302,7 +1308,7 @@ public class GridField
 	 */
 	public boolean isParentColumn()
 	{
-		return m_vo.IsParent;
+		return m_vo.isParentLink();
 	}
 
 	/**
@@ -1443,14 +1449,15 @@ public class GridField
 		final Properties ctx = getGridFieldContextRW();
 		final int displayType = m_vo.getDisplayType();
 		// Set Context
-		if (displayType == DisplayType.Text
-				|| displayType == DisplayType.Memo
-				|| displayType == DisplayType.TextLong
-				|| displayType == DisplayType.Binary
+		if (displayType == DisplayType.Binary
 				|| displayType == DisplayType.RowID
+				// || displayType == DisplayType.Text
+				// || displayType == DisplayType.Memo
+				// || displayType == DisplayType.TextLong
 				|| isEncrypted())
 		{
-			;	// ignore
+			// ignore
+			log.trace("Skip updating context for {} because displayType={}", this, displayType);
 		}
 		else if (m_value instanceof Boolean)
 		{
@@ -1508,7 +1515,7 @@ public class GridField
 	{
 		final Object valueOld = getOldValue();
 		final Object value = getValue();
-		return Objects.equal(value, valueOld);
+		return Objects.equals(value, valueOld);
 	}
 
 	/**
@@ -1744,7 +1751,7 @@ public class GridField
 		{
 			final Properties ctx = getGridFieldContext();
 			m_backupValue = Env.getContext(ctx, m_vo.WindowNo, m_vo.getColumnName());
-			if (LogManager.isLevelFinest())
+			if (log.isTraceEnabled())
 				log.trace("Backup " + m_vo.WindowNo + "|" + m_vo.getColumnName() + "=" + m_backupValue);
 			m_isBackupValue = true;
 		}
@@ -1969,10 +1976,13 @@ public class GridField
 
 		//
 		// No IsActive flag found => assume true, but log a message, so we can fix it
-		log.warn("No IsActive flag found on WindowNo=" + m_vo.WindowNo + ", TabNo=" + m_vo.TabNo
-				+ ", WindowName=" + Services.get(IADWindowDAO.class).retrieveWindowName(getAD_Window_ID())
-				+ ", TableName=" + Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID())
-				+ ". Considering IsActive=Y");
+		if(log.isWarnEnabled())
+		{
+			log.warn("No IsActive flag found on WindowNo=" + m_vo.WindowNo + ", TabNo=" + m_vo.TabNo
+					+ ", WindowName=" + Services.get(IADWindowDAO.class).retrieveWindowName(getAD_Window_ID())
+					+ ", TableName=" + Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID())
+					+ ". Considering IsActive=Y");
+		}
 		return true;
 	}
 
@@ -2149,15 +2159,6 @@ public class GridField
 	}
 
 	@Override
-	public <T> T getModel(final Class<T> modelClass)
-	{
-		final ICalloutRecord calloutRecord = getCalloutRecord();
-		final T model = calloutRecord.getModel(modelClass);
-		Check.assumeNotNull(model, "model not null");
-		return model;
-	}
-
-	@Override
 	public int getTabNo()
 	{
 		return m_vo.TabNo;
@@ -2243,5 +2244,11 @@ public class GridField
 		final GridTab gridTab = getGridTab();
 		Check.assumeNotNull(gridTab, "gridTab not null");
 		return gridTab;
+	}
+	
+	@Override
+	public int getContextAsInt(String name)
+	{
+		return Env.getContextAsInt(getCtx(), getWindowNo(), name);
 	}
 }

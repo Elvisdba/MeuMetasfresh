@@ -10,36 +10,37 @@ package org.adempiere.ad.trx.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 
 /**
- * This config is used by {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} to decide the particular behavior.
- * 
+ * This config is used by {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} to decide the particular behavior.<br>
+ * Use {@link ITrxManager#newTrxRunConfigBuilder()} to obtain an instance.
+ *
  * @author ts
- * 
+ *
  */
 public interface ITrxRunConfig
 {
 	public enum TrxPropagation
 	{
 		/**
-		 * The run method creates its own local transaction which is closed at the end.
-		 * 
-		 * If a not-NULL <code>trxName</code>is given to the run method, then that trxName is used as prefix for the local transaction's name.
+		 * The run method creates its own local transaction which is closed at the end.<br>
+		 * This implies that the transaction is also committed, no matter what {@link OnRunnableSuccess} value was selected.
+		 *
+		 * If a not-NULL <code>trxName</code> is given to the run method, then that trxName is used as prefix for the local transaction's name.
 		 */
 		REQUIRES_NEW,
 
@@ -54,16 +55,21 @@ public interface ITrxRunConfig
 	public enum OnRunnableSuccess
 	{
 		/**
-		 * If the {@link TrxRunnable}'s run method succeeds, then the transaction is committed
+		 * If the {@link TrxRunnable}'s run method succeeds, then the transaction is committed.
 		 */
 		COMMIT,
 
+		/**
+		 * Don't commit on success.
+		 * <p>
+		 * <b>IMORTANT:</b> even with {@link #DONT_COMMIT} the transaction will be committed if {@link TrxPropagation#REQUIRES_NEW} was selected.
+		 */
 		DONT_COMMIT
 	}
 
 	/**
 	 * Decides what to do if the {@link TrxRunnable}'s run() method throws an Exception.
-	 * 
+	 *
 	 */
 	public enum OnRunnableFail
 	{
@@ -79,13 +85,20 @@ public interface ITrxRunConfig
 
 		/**
 		 * Don't rollback even if the runnable failed.
-		 * 
+		 *
 		 * If this option it's used the transaction won't be rolled back but also NO SAVEPOINT will be created (which can improve performances a lot).
 		 */
 		DONT_ROLLBACK
 	}
 
-	TrxPropagation getTrxMode();
+	/**
+	 * Decide if the connection should perform an auto-commit after each statement.
+	 * Makes e.g. sense with long-running transactions that only do selects (yes, also a select acquires a lock).
+	 * The default is <code>false</code>.
+	 */
+	public boolean isAutoCommit();
+
+	TrxPropagation getTrxPropagation();
 
 	OnRunnableSuccess getOnRunnableSuccess();
 

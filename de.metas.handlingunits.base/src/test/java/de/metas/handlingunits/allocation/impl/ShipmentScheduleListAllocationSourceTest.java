@@ -37,14 +37,14 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -158,7 +158,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		//
 		// Allocation Destination: IFCO hu producer
-		final HUProducerDestination destination = new HUProducerDestination(huDefIFCO);
+		final HUProducerDestination destination = HUProducerDestination.of(huDefIFCO);
 
 		//
 		// Allocation Request
@@ -166,8 +166,8 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		//
 		// Execute HU Load
-		final HULoader loader = new HULoader(source, destination);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(source, destination)
+				.load(request);
 		// NOTE: transactions are already processed at this point
 
 		Assert.assertTrue("Request shall be completelly allocated: " + result, result.isCompleted());

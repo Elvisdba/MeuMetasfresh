@@ -24,10 +24,11 @@ package de.metas.printing.api.impl;
 
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,12 +36,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.MSession;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Session;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintJobLinesAggregator;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintPackageCtx;
@@ -132,7 +132,7 @@ public class PrintPackageBL implements IPrintPackageBL
 			final String trxName)
 	{
 		final String jobInstructionsTrxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
-		Check.assume(Check.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
+		Check.assume(Objects.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
 				trxName, jobInstructionsTrxName, jobInstructions);
 
 		printPackage.setCopies(jobInstructions.getCopies());
@@ -165,14 +165,14 @@ public class PrintPackageBL implements IPrintPackageBL
 	{
 		final PrintPackageCtx printCtx = new PrintPackageCtx();
 
-		final I_AD_Session session = Services.get(IPrintingDAO.class).retrieveCurrentSession(ctx);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Session_ID@");
 		}
 		logger.debug("Session: {}", session);
 
-		final String hostKey = session.getHostKey();
+		final String hostKey = session.getHostKey(ctx);
 		Check.assumeNotEmpty(hostKey, "{} has a hostKey", session);
 
 		printCtx.setHostKey(hostKey);
@@ -184,20 +184,13 @@ public class PrintPackageBL implements IPrintPackageBL
 	@Override
 	public String getHostKeyOrNull(final Properties ctx)
 	{
-		// Check context
-		String hostKey = Env.getContext(ctx, MSession.CTX_Prefix + I_AD_Session.COLUMNNAME_HostKey);
-		if (!Check.isEmpty(hostKey, true))
-		{
-			return hostKey;
-		}
-
 		// Check session
-		final I_AD_Session session = Services.get(IPrintingDAO.class).retrieveCurrentSession(ctx);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session != null)
 		{
-			hostKey = session.getHostKey();
+			return session.getHostKey(ctx);
 		}
 
-		return hostKey;
+		return null;
 	}
 }

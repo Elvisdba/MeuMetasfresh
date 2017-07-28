@@ -13,11 +13,11 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,7 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 public interface IHUAssignmentDAO extends ISingletonService
 {
 	/**
-	 * Retrieve single top-level handling unit assignment. If none is found, return null.
+	 * Retrieve single top-level handling unit assignment. "Top-level" means that both {@code M_LU_HU_ID} and {@code M_TU_HU_ID} are null. If no such record is found, return null.
 	 *
 	 * @param ctx
 	 * @param huId
@@ -170,7 +170,9 @@ public interface IHUAssignmentDAO extends ISingletonService
 	boolean hasDerivedTradingUnitAssignments(Properties ctx, Object model, I_M_HU topLevelHU, I_M_HU luHU, I_M_HU tuHU, String trxName);
 
 	/**
-	 * Checks if the LU from given assignment: <lu> <li>is assigned to a model from same table as the model from this assignment is <li>that model on which it could be assigned is created BEFORE the
+	 * Checks if the LU from given assignment: <lu>
+	 * <li>is assigned to a model from same table as the model from this assignment is
+	 * <li>that model on which it could be assigned is created BEFORE the
 	 * model from this assignment </lu>
 	 *
 	 * @param luAssignment
@@ -208,4 +210,26 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * @return
 	 */
 	<T> List<T> retrieveModelsForHU(I_M_HU hu, Class<T> clazz, boolean topLevel);
+
+	/**
+	 * Retrieve the table hu assignments for the given HU even if they have LU and/or TU set. This is useful in the shipment hu assignments.
+	 * 
+	 * @param contextProvider
+	 * @param adTableId
+	 * @param hu
+	 * @return
+	 */
+	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(IContextAware contextProvider, int adTableId, I_M_HU hu);
+
+	/**
+	 * Retrieve the hu assignments for the given table and HU.
+	 * Do not force to be top level
+	 * Make sure the tu is set
+	 * 
+	 * @param contextProvider
+	 * @param adTableId
+	 * @param hu
+	 * @return
+	 */
+	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilterTUMandatory(IContextAware contextProvider, int adTableId, I_M_HU hu);
 }

@@ -1,5 +1,9 @@
 package de.metas.handlingunits.inout;
 
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,22 +17,23 @@ package de.metas.handlingunits.inout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -67,7 +72,13 @@ public interface IHUInOutBL extends ISingletonService
 
 	HUShipmentPackingMaterialLinesBuilder createHUShipmentPackingMaterialLinesBuilder(I_M_InOut shipment);
 
-	IEmptiesInOutProducer createEmptiesInOutProducer(Properties ctx);
+	/**
+	 * Create an instance <code>of de.metas.handlingunits.inout.impl.EmptiesInOutProducer</code>
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	IReturnsInOutProducer createEmptiesInOutProducer(Properties ctx);
 
 	/**
 	 * Gets TU PI from inout line.
@@ -90,5 +101,54 @@ public interface IHUInOutBL extends ISingletonService
 	 * @param shipmentLine
 	 */
 	void updateEffectiveValues(I_M_InOutLine shipmentLine);
+
+	/**
+	 * Create vendor return inouts for products of precarious quality based on the details of the given HUs
+	 * 
+	 * @param hus
+	 * @param movementDate
+	 * @return
+	 */
+	List<de.metas.handlingunits.model.I_M_InOut> createVendorReturnInOutForHUs(List<I_M_HU> hus, Timestamp movementDate);
+
+	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines);
+
+	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_InOutLine inOutLine);
+
+	/**
+	 * @param inOut
+	 * @return True if the given inOut is a Customer Return, False otherwise
+	 */
+	boolean isCustomerReturn(I_M_InOut inOut);
+
+	/**
+	 * @param inOut
+	 * @return True if the given inOut is a Vendor Return, False otherwise
+	 */
+	boolean isVendorReturn(I_M_InOut inOut);
+
+	/**
+	 * Create HUs for manual customer return inout.
+	 * 
+	 * @param customerReturn
+	 * @return
+	 */
+	List<I_M_HU> createHUsForCustomerReturn(final de.metas.handlingunits.model.I_M_InOut customerReturn);
+
+	/**
+	 * Create Return From Vendor documents for the given HUs
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	List<de.metas.handlingunits.model.I_M_InOut> createCustomerReturnInOutForHUs(Collection<I_M_HU> hus);
+
+	/**
+	 * Create movements to QualityIssue warehouse for the given hus
+	 * 
+	 * @param ctx
+	 * @param husToReturn
+	 */
+	void moveHUsForCustomerReturn(Properties ctx, List<I_M_HU> husToReturn);
 
 }

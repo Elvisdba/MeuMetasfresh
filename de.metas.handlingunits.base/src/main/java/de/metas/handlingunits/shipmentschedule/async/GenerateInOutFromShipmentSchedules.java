@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -38,12 +39,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -68,9 +71,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -122,7 +127,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (candidates.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			getLoggable().addLog("No unprocessed candidates were found");
+			Loggables.get().addLog("No unprocessed candidates were found");
 		}
 
 		//
@@ -179,7 +184,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private final List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext, final I_C_Queue_WorkPackage workpackage, final String trxName)
 	{
-		final List<IShipmentScheduleWithHU> candidates = new ArrayList<IShipmentScheduleWithHU>();
+		final List<IShipmentScheduleWithHU> candidates = new ArrayList<>();
 
 		final Iterator<I_M_ShipmentSchedule> schedules = retriveShipmentSchedules(workpackage, trxName);
 		while (schedules.hasNext())
@@ -257,10 +262,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	{
 		//
 		// Load all QtyPicked records that have no InOutLine yet
-		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 
 		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
-
 		if (qtyPickedRecords.isEmpty())
 		{
 			if (isUseQtyPicked)
@@ -273,10 +277,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				final boolean wereDelivered = shipmentScheduleAllocDAO.retrievePickedAndDeliveredRecordsQuery(schedule).create().match();
 				if (wereDelivered)
 				{
-					getLoggable().addLog("Skipped shipment schedule because it was already delivered: " + schedule);
+					Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", schedule);
 					return Collections.emptyList();
 				}
-
+				Loggables.get().withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", schedule);
 				final String errorMsg = Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(schedule), MSG_NoQtyPicked);
 				throw new AdempiereException(errorMsg);
 			}
@@ -292,18 +296,19 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		createLUs(schedule);
 
 		// retrieve the qty picked entries again, some new ones might have been created on LU creation
-		qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
-		final List<IShipmentScheduleWithHU> candidates = new ArrayList<IShipmentScheduleWithHU>(qtyPickedRecords.size());
+		final List<IShipmentScheduleWithHU> candidates = new ArrayList<>(qtyPickedRecords.size());
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
 		{
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
 
-			// guard: Skip inactive records
+			// guard: Skip inactive records.
 			if (!qtyPickedRecordHU.isActive())
 			{
+				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
 				continue;
 			}
 
@@ -314,6 +319,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			{
 				final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
 				logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
+				Loggables.get().addLog("WARN: {} [Skipped]", ex.getLocalizedMessage());
 				continue;
 			}
 
@@ -324,6 +330,67 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		}
 
 		return candidates;
+	}
+
+	/**
+	 *
+	 * @param schedule
+	 * @return records that do not have an {@link I_M_InOutLine} assigned to them and that also have
+	 *         <ul>
+	 *         <li>either no HU assigned to them, or</li>
+	 *         <li>non-destroyed HUs assigned</li>
+	 *         </ul>
+	 * 
+	 *         Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/759
+	 * @task https://github.com/metasfresh/metasfresh/issues/1174
+	 */
+	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final I_M_ShipmentSchedule schedule)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
+				.stream()
+				.filter(r -> isPickedOrShippedOrNoHU(r))
+				.collect(Collectors.toList());
+
+		return unshippedHUs;
+	}
+
+	/**
+	 * Returns {@code true} if there is either no HU assigned to the given {@code schedQtyPicked} or if that HU is either picked or shipped.
+	 * If you don't see what it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
+	 * 
+	 * @param schedQtyPicked
+	 * @return
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1174
+	 */
+	private boolean isPickedOrShippedOrNoHU(final I_M_ShipmentSchedule_QtyPicked schedQtyPicked)
+	{
+		final I_M_HU huToVerify;
+		if (schedQtyPicked.getVHU_ID() >= 0)
+		{
+			huToVerify = schedQtyPicked.getVHU();
+		}
+		else if (schedQtyPicked.getM_TU_HU_ID() >= 0)
+		{
+			huToVerify = schedQtyPicked.getM_TU_HU();
+		}
+		else if (schedQtyPicked.getM_LU_HU_ID() >= 0)
+		{
+			huToVerify = schedQtyPicked.getM_LU_HU();
+		}
+		else
+		{
+			return true;
+		}
+
+		if (huToVerify == null)
+		{
+			return true; // this *might* happen with our "minidumps" there we don't have the HU data in our DB
+		}
+		
+		return X_M_HU.HUSTATUS_Picked.equals(huToVerify.getHUStatus()) || X_M_HU.HUSTATUS_Shipped.equals(huToVerify.getHUStatus());
 	}
 
 	/**
@@ -459,10 +526,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Execute transfer
-		final HULoader loader = new HULoader(allocationSource, allocationDestination);
-		loader.setAllowPartialLoads(false);
-		loader.setAllowPartialUnloads(false);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(allocationSource, allocationDestination)
+				.setAllowPartialLoads(false)
+				.setAllowPartialUnloads(false)
+				.load(request);
 		Check.assume(result.isCompleted(), "Result shall be completed: {}", result);
 
 		// NOTE: at this point we shall have QtyPicked records with M_LU_HU_ID set

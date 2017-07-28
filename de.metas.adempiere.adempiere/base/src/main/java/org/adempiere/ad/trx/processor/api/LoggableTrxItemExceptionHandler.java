@@ -1,6 +1,7 @@
 package org.adempiere.ad.trx.processor.api;
 
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 
 /**
  * An {@link ITrxItemProcessorExecutor}'s exception handler which just logs the exception to {@link ILoggable} and does nothing else.
@@ -18,32 +19,32 @@ public final class LoggableTrxItemExceptionHandler implements ITrxItemExceptionH
 	}
 
 	@Override
-	public void onNewChunkError(final Exception e, final Object item)
+	public void onNewChunkError(final Throwable e, final Object item)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("Error while trying to create a new chunk for item: " + item, e);
+		Loggables.get().addLog("Error while trying to create a new chunk for item={}; exception={}", item, e);
 	}
 
 	@Override
-	public void onItemError(final Exception e, final Object item)
+	public void onItemError(final Throwable e, final Object item)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("Error while trying to process item: " + item, e);
+		Loggables.get().addLog("Error while trying to process item={}; exception={}", item, e);
 	}
 
 	@Override
-	public void onCompleteChunkError(final Exception e)
+	public void onCompleteChunkError(final Throwable e)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("Error while completing current chunk", e);
+		Loggables.get().addLog("Error while completing current chunk; exception={}", e);
 	}
 
 	@Override
-	public void onCommitChunkError(final Exception e)
+	public void onCommitChunkError(final Throwable e)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("Processor failed to commit current chunk => rollback transaction", e);
+		Loggables.get().addLog("Processor failed to commit current chunk => rollback transaction; exception={}", e);
 	}
 
 	@Override
-	public void onCancelChunkError(Exception e)
+	public void onCancelChunkError(final Throwable e)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("Error while cancelling current chunk. Ignored.", e);
+		Loggables.get().addLog("Error while cancelling current chunk. Ignored; exception={}", e);
 	}
 }

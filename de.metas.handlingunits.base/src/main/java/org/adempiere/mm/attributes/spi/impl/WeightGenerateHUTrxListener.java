@@ -30,11 +30,11 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxDAO;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.impl.HUTrxListenerAdapter;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -46,7 +46,7 @@ import de.metas.product.IProductBL;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/06936_Packtischdialog_weights_%28103796014800%29
  */
-public class WeightGenerateHUTrxListener extends HUTrxListenerAdapter
+public class WeightGenerateHUTrxListener implements IHUTrxListener
 {
 	public static final transient WeightGenerateHUTrxListener instance = new WeightGenerateHUTrxListener();
 	

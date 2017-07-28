@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_PackingMaterial
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1217725822L;
+	private static final long serialVersionUID = 1569342263L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (Properties ctx, int M_HU_PackingMaterial_ID, String trxName)
@@ -24,8 +23,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
       super (ctx, M_HU_PackingMaterial_ID, trxName);
       /** if (M_HU_PackingMaterial_ID == 0)
         {
-			setIsClosed (false);
-// N
+			setIsClosed (false); // N
 			setM_HU_PackingMaterial_ID (0);
 			setName (null);
         } */
@@ -64,7 +62,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AllowedPackingVolume);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -86,7 +84,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AllowedPackingWeight);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -195,7 +193,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ExcessVolumeTolerance);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -217,7 +215,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ExcessWeightTolerance);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -239,7 +237,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FillingLevel);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -258,7 +256,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Height);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -309,7 +307,7 @@ Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Length);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -428,7 +426,7 @@ Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Width);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

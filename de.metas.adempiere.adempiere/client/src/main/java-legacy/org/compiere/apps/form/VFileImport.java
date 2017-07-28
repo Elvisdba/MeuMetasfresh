@@ -28,8 +28,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -49,7 +47,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
@@ -63,16 +60,17 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.ListComboBoxModel;
 import org.compiere.swing.ToStringListCellRenderer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.jdesktop.swingx.JXTable;
+import org.slf4j.Logger;
 
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  * Fixed length file import
@@ -341,10 +339,10 @@ public class VFileImport extends CPanel
 			}
 		}
 		
-		// Default: use the ADEMPIERE_HOME/data/import directory
+		// Default: use the METASFRESH_HOME/data/import directory
 		if (directory == null)
 		{
-			directory = org.compiere.Adempiere.getAdempiereHome()
+			directory = org.compiere.Adempiere.getMetasfreshHome()
 					+ File.separator + "data"
 					+ File.separator + "import";
 			fileToSelect = null;
@@ -629,7 +627,7 @@ public class VFileImport extends CPanel
 		}
 		catch (Exception e)
 		{
-			throw new AdempiereException("Failed to schedules lines to be imported");
+			throw new AdempiereException("Failed to schedules lines to be imported", e);
 		}
 	}
 }

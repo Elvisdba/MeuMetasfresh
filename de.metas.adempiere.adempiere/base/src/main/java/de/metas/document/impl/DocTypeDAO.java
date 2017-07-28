@@ -38,6 +38,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -108,6 +109,39 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	public I_C_DocType getDocTypeOrNullForSOTrx(
+			final Properties ctx,
+			final String docBaseType,
+			final String docSubType,
+			final boolean isSOTrx,
+			final int adClientId,
+			final int adOrgId,
+			final String trxName)
+	{
+		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
+				.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, isSOTrx)
+				.create().first(I_C_DocType.class);
+	}
+
+	@Override
+	public I_C_DocType getDocType(
+			final String docBaseType,
+			final String docSubType,
+			final int adClientId,
+			final int adOrgId)
+	{
+		final I_C_DocType docType = getDocTypeOrNull(Env.getCtx(), docBaseType, docSubType, adClientId, adOrgId, ITrx.TRXNAME_None);
+		if(docType == null)
+		{
+			final String additionalInfo = "@DocSubType@: " + docSubType
+					+ ", @AD_Client_ID@: " + adClientId
+					+ ", @AD_Org_ID@: " + adOrgId;
+			throw new DocTypeNotFoundException(docBaseType, additionalInfo);
+		}
+		return docType;
+	}
+
+	@Override
 	public I_C_DocType getDocTypeOrNull(final Properties ctx,
 			final String docBaseType,
 			final String docSubType,
@@ -119,7 +153,7 @@ public class DocTypeDAO implements IDocTypeDAO
 				.create()
 				.first(I_C_DocType.class);
 	}
-
+	
 	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(
 			final Properties ctx,
 			final String docBaseType,
@@ -136,10 +170,15 @@ public class DocTypeDAO implements IDocTypeDAO
 		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, adClientId);
-		filters.addInArrayFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
+		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
 
-		if (docSubType != DOCSUBTYPE_Any)
+		if (docSubType == DOCSUBTYPE_NONE)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+
+		else if (docSubType != DOCSUBTYPE_Any)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}
@@ -154,7 +193,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public List<I_C_DocType> retrieveDocTypesByBaseType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final String trxName)
 	{
-		final String docSubType = null;
+		final String docSubType = DOCSUBTYPE_Any;
 		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
 				.create()
 				.list(I_C_DocType.class);

@@ -31,6 +31,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 
+import de.metas.quantity.Quantity;
+
 public interface IUOMConversionBL extends ISingletonService
 {
 	/**
@@ -63,6 +65,8 @@ public interface IUOMConversionBL extends ISingletonService
 	 */
 	BigDecimal convertQty(IUOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
 
+	Quantity convertQuantityTo(Quantity quantity, IUOMConversionContext conversionCtx, I_C_UOM uomTo);
+	
 	/**
 	 * Convert quantity from <code>uomFrom</code> to product's stocking UOM.
 	 * 
@@ -125,8 +129,9 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uomTo The targeted UOM
 	 * @param useStdPrecision if true, standard precision, if false costing precision
 	 * @return amount
-	 * @depreciated should not be used
+	 * @deprecated should not be used
 	 */
+	@Deprecated
 	BigDecimal convert(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty, boolean useStdPrecision);
 
 	/**

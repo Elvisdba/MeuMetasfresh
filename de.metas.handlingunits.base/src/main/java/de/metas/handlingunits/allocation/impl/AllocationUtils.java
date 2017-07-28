@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -39,14 +38,15 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.quantity.Quantity;
 
 public final class AllocationUtils
 {
@@ -67,7 +67,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Creates initial {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
+	 * Creates initial/empty {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
 	 *
 	 * @param request
 	 * @return initial mutable result
@@ -212,6 +212,13 @@ public final class AllocationUtils
 				.create();
 	}
 
+	/**
+	 * This method creates a new request that represents the portion of the given {@code request} that is not yet covered by the given {@code result}.
+	 * 
+	 * @param request
+	 * @param status
+	 * @return
+	 */
 	public static IAllocationRequest createQtyRequestForRemaining(final IAllocationRequest request, final IMutableAllocationResult status)
 	{
 		return deriveAsQtyRequestForRemaining(request, status)
@@ -259,7 +266,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * For cross-package use.
+	 * Creates an immutable allocation result. For cross-package use.
 	 *
 	 * @param qtyToAllocate
 	 * @param qtyAllocated
@@ -345,7 +352,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Creates and configures an {@link IHUBuilder} based on given <code>request</code>
+	 * Creates and configures an {@link IHUBuilder} based on the given <code>request</code> (bPartner and date).
 	 *
 	 * @param request
 	 * @return HU builder

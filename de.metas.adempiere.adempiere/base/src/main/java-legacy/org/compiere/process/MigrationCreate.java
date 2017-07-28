@@ -22,14 +22,18 @@ import java.util.List;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MSession;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
-public class MigrationCreate extends SvrProcess
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
+public class MigrationCreate extends JavaProcess
 {
 
 	private I_AD_Migration migrationFrom;
@@ -42,7 +46,7 @@ public class MigrationCreate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] params = getParameter();
+		ProcessInfoParameter[] params = getParametersAsArray();
 		for (ProcessInfoParameter p : params)
 		{
 			String para = p.getParameterName();
@@ -92,7 +96,7 @@ public class MigrationCreate extends SvrProcess
 			pos = table.createQuery(where, get_TrxName()).list();
 		}
 
-		final MSession session = MSession.get(getCtx(), false);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
 		final POInfo info = POInfo.getPOInfo(getCtx(), tableId, get_TrxName());
 		for (PO po : pos)
 		{

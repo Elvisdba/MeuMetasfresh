@@ -29,6 +29,8 @@ import de.metas.async.spi.IWorkpackageProcessor;
 
 public final class Async_Constants
 {
+	public static final String MSG_WORKPACKAGES_CREATED = "de.metas.async.C_QueueC_WorkPackages_Created_1P";
+
 	public static final String ENTITY_TYPE = "de.metas.async";
 	
 	/**
@@ -37,4 +39,6 @@ public final class Async_Constants
 	 * 
 	 */
 	public static final int DEFAULT_RETRY_TIMEOUT_MILLIS = 5000;
+	
+	public static final String C_Async_Batch = "C_Async_Batch";
 }

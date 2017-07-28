@@ -23,6 +23,7 @@ package de.metas.handlingunits.shipmentschedule.api;
  */
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -35,10 +36,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
 import org.compiere.util.TrxRunnableAdapter;
@@ -50,6 +49,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -115,7 +115,7 @@ public class ShipmentScheduleEnqueuer
 				try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(localTrxName))
 				{
 					final Result result0 = createWorkpackages0(
-							new PlainContextAware(_ctx, localTrxName),
+							PlainContextAware.newWithTrxName(_ctx, localTrxName),
 							queryFilters,
 							useQtyPickedRecords,
 							completeShipments,
@@ -153,6 +153,7 @@ public class ShipmentScheduleEnqueuer
 
 		if (!shipmentSchedules.hasNext())
 		{
+			// TODO: the the query which was used to understand why there were no results
 			throw new AdempiereException("@NoSelection@");
 		}
 
@@ -181,7 +182,7 @@ public class ShipmentScheduleEnqueuer
 			//
 			// Check if we shall close our current workpackage (if any)
 			final String headerAggregationKey = shipmentSchedule.getHeaderAggregationKey();
-			if (!Check.equals(headerAggregationKey, lastHeaderAggregationKey))
+			if (!Objects.equals(headerAggregationKey, lastHeaderAggregationKey))
 			{
 				handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
 				workpackageBuilder = null;
@@ -244,7 +245,7 @@ public class ShipmentScheduleEnqueuer
 		}
 		else
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog(Services.get(IMsgBL.class).parseTranslation(
+			Loggables.get().addLog(Services.get(IMsgBL.class).parseTranslation(
 					_ctx,
 					"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
 							+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));

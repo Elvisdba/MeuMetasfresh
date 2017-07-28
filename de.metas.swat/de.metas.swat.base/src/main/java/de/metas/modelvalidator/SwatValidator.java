@@ -51,15 +51,12 @@ import org.adempiere.model.tree.spi.impl.MElementValueTreeSupport;
 import org.adempiere.model.tree.spi.impl.MenuTreeSupport;
 import org.adempiere.model.tree.spi.impl.OrgTreeSupport;
 import org.adempiere.model.tree.spi.impl.ProductTreeSupport;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.api.IMsgDAO;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
@@ -83,7 +80,6 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.impl.JasperService;
 import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -95,16 +91,19 @@ import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
 import de.metas.adempiere.modelvalidator.C_CountryArea_Assign;
+import de.metas.adempiere.modelvalidator.M_Inventory;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
-import de.metas.adempiere.modelvalidator.ProcessValidator;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
+import de.metas.inout.model.validator.M_QualityNote;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
@@ -114,9 +113,6 @@ import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
-import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
-import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
-import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
 import de.metas.request.model.validator.R_Request;
 import de.metas.request.service.IRequestCreator;
 import de.metas.request.service.impl.AsyncRequestCreator;
@@ -194,7 +190,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new M_InOut(), client); // 03771
 		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
-		engine.addModelValidator(new ProcessValidator(), client);
 		engine.addModelValidator(new C_InvoiceLine(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
@@ -223,6 +218,9 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
 
+		//task #1064
+		engine.addModelValidator(new M_Inventory(), client);
+
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);
 		engine.addModelValidator(counterDocHandlerInterceptor, null);
@@ -230,13 +228,13 @@ public class SwatValidator implements ModelValidator
 		// pricing
 		{
 			engine.addModelValidator(new de.metas.pricing.modelvalidator.M_ProductPrice(), client); // 06931
-
-			// task 07286: a replacement for the former jboss-aop aspect <code>de.metas.adempiere.aop.PriceListCreate</code>.
-			Services.get(IPriceListBL.class).addPlvCreationListener(new AttributePlvCreationListener());
 		}
 
-		// FRESH-636: Request
+		// #361: Request
 		engine.addModelValidator(new R_Request(), client);
+
+		// #548: QualityNote
+		engine.addModelValidator(new M_QualityNote(), client);
 
 		// AD_Tree UI support
 		{
@@ -312,7 +310,7 @@ public class SwatValidator implements ModelValidator
 		{
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final IMsgDAO msgDAO = Services.get(IMsgDAO.class);
+			final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 
 			final boolean throwException = sysConfigBL.getBooleanValue(SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION, true);
 			Check.setThrowException(throwException);
@@ -365,18 +363,15 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
-
-		final CacheMgt cacheMgt = CacheMgt.get();
-
-		// task 09509: changes in the pricing data shall also be propagated to other hosts
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice_Attribute.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice_Attribute_Line.Table_Name);
 	}
 
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
+		if(Ini.isClient())
+		{
 		configDatabase(); // run it again here because ModelValidator.initialize is run only once
+		}
 
 		final Properties ctx = Env.getCtx();
 

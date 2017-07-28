@@ -25,7 +25,6 @@ package de.metas.fresh.picking.service.impl;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -33,7 +32,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.time.SystemTime;
@@ -59,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.NonNull;
 
 public class PackingService implements IPackingService
 {
@@ -75,7 +74,7 @@ public class PackingService implements IPackingService
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final IContextAware contextProvider = new PlainContextAware(ctx, localTrxName);
+				final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 				final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
 				for (final Map.Entry<I_M_ShipmentSchedule, BigDecimal> e : schedules2qty.entrySet())
@@ -109,12 +108,12 @@ public class PackingService implements IPackingService
 
 		//
 		// Allocation Source
-		final IAllocationSource source = new HUListAllocationSourceDestination(Collections.singletonList(hu));
+		final IAllocationSource source = HUListAllocationSourceDestination.of(hu);
 
 		//
 		// Move Qty from HU to shipment schedule (i.e. un-pick)
-		final HULoader loader = new HULoader(source, destination);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(source, destination)
+				.load(request);
 
 		// Make sure result is completed
 		// NOTE: this issue could happen if we want to take out more then we have in our HU
@@ -132,14 +131,12 @@ public class PackingService implements IPackingService
 	}
 
 	@Override
-	public void packItem(final IPackingContext packingContext,
-			final IFreshPackingItem itemToPack,
-			final BigDecimal qtyToPack,
-			final IPackingHandler packingHandler)
+	public void packItem(
+			@NonNull final IPackingContext packingContext,
+			@NonNull final IFreshPackingItem itemToPack,
+			@NonNull final BigDecimal qtyToPack,
+			@NonNull final IPackingHandler packingHandler)
 	{
-		Check.assumeNotNull(packingContext, "packingContext not null");
-		Check.assumeNotNull(packingHandler, "packingHandler not null");
-
 		final int key = packingContext.getPackingItemsMapKey();
 
 		// Packing items

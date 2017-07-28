@@ -523,8 +523,6 @@ public final class LogManager
 	 */
 	public static void dumpAllLevelsUpToRoot(final Logger logger)
 	{
-		System.out.println("\nDumping all log levels starting from " + logger);
-
 		final Consumer<Logger> dumpLevel = (currentLogger) -> {
 			final String currentLoggerInfo;
 			if (currentLogger instanceof ch.qos.logback.classic.Logger)
@@ -538,12 +536,18 @@ public final class LogManager
 			}
 			System.out.println(" * " + currentLogger.getName() + "(" + System.identityHashCode(currentLogger) + "): " + currentLoggerInfo);
 		};
+		
+		System.out.println("\nDumping all log levels starting from " + logger);
+		forAllLevelsUpToRoot(logger, dumpLevel);
+	}
 
+	public static void forAllLevelsUpToRoot(final Logger logger, final Consumer<Logger> consumer)
+	{
 		Logger currentLogger = logger;
 		String currentLoggerName = currentLogger.getName();
 		while (currentLogger != null)
 		{
-			dumpLevel.accept(currentLogger);
+			consumer.accept(currentLogger);
 
 			final int idx = currentLoggerName.lastIndexOf(".");
 			if (idx < 0)
@@ -555,7 +559,7 @@ public final class LogManager
 			currentLogger = getLogger(currentLoggerName);
 		}
 
-		dumpLevel.accept(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME));
+		consumer.accept(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME));
 	}
 
 	private LogManager()

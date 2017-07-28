@@ -32,7 +32,6 @@ import javax.swing.JLabel;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ALayout;
@@ -47,7 +46,9 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 
 /**
  *	Generic Table Search

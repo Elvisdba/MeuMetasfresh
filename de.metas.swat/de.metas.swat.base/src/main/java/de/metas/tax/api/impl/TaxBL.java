@@ -145,7 +145,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 						shipC_BPartner_Location_ID,
 						isSOTrx,
 						trxName));
-		log.warn(ex.getLocalizedMessage());
+		log.warn("getTax - error: ", ex);
 
 		// 07814
 		// If we got here, it means that no tax was found to satisfy the conditions
@@ -190,7 +190,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final StringBuilder sql = new StringBuilder();
 
 		final List<Object> params = new ArrayList<Object>();
-		sql.append("validFrom < ? ");
+		sql.append(I_C_Tax.COLUMNNAME_ValidFrom + " < ? ");
 		params.add(date);
 
 		if (countryFromId > 0)
@@ -262,12 +262,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		if (taxId <= 0)
 		{
-			final AdempiereException ex = new AdempiereException("@NotFound@ @C_Tax_ID@" + "\nQuery: " + query);
-			if(throwEx)
-			{
-				throw ex;
-			}
-			log.warn("Tax not found. Return -1.", ex);
+			TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(isSOTrx)
+					.billDate(date)
+					.billToC_Location_ID(locationTo.getC_Location_ID())
+					.build()
+					.throwOrLogWarning(throwEx, log);
 			return -1;
 		}
 
@@ -292,12 +293,12 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		if (Services.get(ITaxDAO.class).retrieveIsTaxExempt(orgBPartner, billDate))
 		{
 			final int taxExemptId = getExemptTax(ctx, org_ID);
-			log.debug("Org is tax exempted => C_Tax_ID=", taxExemptId);
+			log.debug("Org is tax exempted => C_Tax_ID={}", taxExemptId);
 			return taxExemptId;
 		}
 
 		// Check Partner/Location
-		log.debug("Ship BP_Location=" + shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
 
 		int taxId = 0;
 
@@ -399,7 +400,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		sql += " ORDER BY t.AD_Org_ID DESC, t.To_Country_ID, t.validFrom DESC ";
-		log.debug(sql);
+		log.debug("getGermanTax - sql={}", sql);
 
 		// get tax id
 		PreparedStatement pstmt = null;
@@ -430,7 +431,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 		catch (final SQLException e)
 		{
-			log.error("getGermanTax", e);
+			log.error("getGermanTax - error: ", e);
 			throw new DBException(e, sql, new Object[] { billDate, productId != 0 ? productId : chargeId });
 		}
 		finally
@@ -440,12 +441,17 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		if (taxId <= 0)
 		{
-			throw new TaxNotFoundException(productId, chargeId,
-					// metas start: rc: 03083: call the TaxNotFoundException with parameter C_TaxCategory, too.
-					taxCategoryID,
-					// metas end: rc: 03083
-					isSOTrx, shipDate, 0, shipBPLocation.getC_Location_ID(), billDate, 0,
-					new MBPartnerLocation(ctx, billC_BPartner_Location_ID, null).getC_Location_ID());
+			throw TaxNotFoundException.builder()
+					.productId(productId).chargeId(chargeId)
+					.taxCategoryId(taxCategoryID)
+					.isSOTrx(isSOTrx)
+					.shipDate(shipDate)
+					.shipFromC_Location_ID(0)
+					.shipToC_Location_ID(shipBPLocation.getC_Location_ID())
+					.billDate(billDate)
+					.billFromC_Location_ID(0)
+					.billToC_Location_ID(InterfaceWrapperHelper.loadOutOfTrx(billC_BPartner_Location_ID, I_C_BPartner_Location.class).getC_Location_ID())
+					.build();
 		}
 		return taxId;
 	}
@@ -493,7 +499,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			+ "WHERE t.IsTaxExempt='Y' AND o.AD_Org_ID=? "
 			+ "ORDER BY t.Rate DESC";
 		int C_Tax_ID = DB.getSQLValueEx(null, sql, AD_Org_ID);
-		log.debug("getExemptTax - TaxExempt=Y - C_Tax_ID=" + C_Tax_ID);
+		log.debug("getExemptTax - TaxExempt=Y - C_Tax_ID={}", C_Tax_ID);
 		if (C_Tax_ID <= 0)
 		{
 			throw new TaxNoExemptFoundException(AD_Org_ID);
@@ -535,9 +541,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, BigDecimal.ROUND_HALF_UP);
 
-		log.debug("calculateTax " + amount
-				+ " (incl=" + taxIncluded + ",mult=" + multiplier + ",scale=" + scale
-				+ ") = " + taxAmtFinal + " [" + taxAmt + "]");
+		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}]", amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt);
 
 		return taxAmtFinal;
 	}	// calculateTax

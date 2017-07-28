@@ -13,37 +13,37 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.slf4j.Logger;
+
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.logging.LogManager;
 
 /**
  * Base class which provides both the features of {@link IAllocationSource} and {@link IAllocationDestination}.
@@ -140,7 +140,9 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 			final IAllocationRequest requestActual,
 			final boolean outTrx)
 	{
+		
 		final IHUTransaction trx = createHUTransaction(requestActual, outTrx);
+		
 		return AllocationUtils.createQtyAllocationResult(
 				request.getQty(), // qtyToAllocate
 				requestActual.getQty(), // qtyAllocated
@@ -188,22 +190,10 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 				storage.getQty(), // qty
 				storage.getC_UOM(), // uom
 				huContext.getDate() // date
-				);
+		);
 
 		final IAllocationResult result = unload(request);
 
 		return Collections.singletonList(ImmutablePair.of(request, result));
-	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext) // --NOPMD
-	{
-		// Do nothing on this level.
-	}
-
-	@Override
-	public void unloadComplete(final IHUContext huContext) // --NOPMD
-	{
-		// Do nothing on this level.
 	}
 }

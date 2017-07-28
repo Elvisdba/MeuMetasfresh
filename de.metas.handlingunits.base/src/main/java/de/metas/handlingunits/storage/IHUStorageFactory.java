@@ -13,33 +13,33 @@ package de.metas.handlingunits.storage;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 
 /**
- * Factory for HU related quantities
- *
- * @author ts
+ * Factory for HU related quantities.<br>
+ * Use {@link IHandlingUnitsBL#getStorageFactory()}, unless you have a {@link IHUContext} to get it from.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IHUStorageFactory
 {
-	// void addHUStorageListener(IHUStorageListener listener);
-
 	IHUStorage getStorage(I_M_HU hu);
 
 	IHUItemStorage getStorage(I_M_HU_Item item);
@@ -47,13 +47,14 @@ public interface IHUStorageFactory
 	IHUStorageDAO getHUStorageDAO();
 
 	/**
-	 * Iterates all <code>hus</code> and collects the {@link IHUProductStorage} storages from them.
+	 * Iterate all <code>hus</code> and collect the {@link IHUProductStorage} storages from them.
 	 *
-	 * NOTE: this method will collect the product storages directly from given HUs. It will not navigate them to collect the product storages from possible included HUs.
+	 * NOTE: Collect the product storages directly from given HUs. Don't navigate them to collect the product storages from possible included HUs.
+	 * 
 	 *
 	 * @param hus
 	 * @param product
-	 * @return product storages
+	 * @return product storages; never return {@code null}. Only return items for existing storages. E.g. if none of the given {@code hus} has a storage, return an empty list.
 	 */
 	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, I_M_Product product);
 }

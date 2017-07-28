@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,13 +31,13 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -47,6 +46,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -110,7 +110,12 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 */
 	protected abstract IHUContext createHUContextInitial();
 
-	public final void setFromHUs(final Collection<I_M_HU> fromHUs)
+	/**
+	 * 
+	 * @param fromHUs the HUs to assign to the shipment schedule. The all need be !out of transaction", i.e. have {@link InterfaceWrapperHelper#getTrxName(Object)} {@code ==} {@link ITrx#TRXNAME_None} 
+	 * @return
+	 */
+	public final AbstractShipmentScheduleQtyPickedBuilder setFromHUs(final Collection<I_M_HU> fromHUs)
 	{
 		assertConfigurable();
 
@@ -122,6 +127,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		{
 			_fromHUs = new ArrayList<>(fromHUs);
 		}
+		return this;
 	}
 
 	protected final List<I_M_HU> getFromHUs()
@@ -430,12 +436,12 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		final I_M_HU targetHU = getTargetHU();
 		if (targetHU != null)
 		{
-			final HUListAllocationSourceDestination source = new HUListAllocationSourceDestination(vhu);
-			final HUListAllocationSourceDestination destination = new HUListAllocationSourceDestination(targetHU);
+			final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(vhu);
+			final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(targetHU);
 
-			final HULoader loader = new HULoader(source, destination);
-			loader.setAllowPartialUnloads(false);
-			loader.setAllowPartialLoads(true);
+			final HULoader loader = HULoader.of(source, destination)
+					.setAllowPartialUnloads(false)
+					.setAllowPartialLoads(true);
 
 			final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyPicked, uom);
 
@@ -461,8 +467,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 				uom,
 				huContext.getDate(), // date
 				sched, // referenceModel,
-				forceQtyAllocation
-				);
+				forceQtyAllocation);
 
 		return request;
 	}

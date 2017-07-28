@@ -28,12 +28,12 @@ import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.Msg;
 
 /**
  *	RMA Model
@@ -444,7 +444,7 @@ public class MRMA extends X_M_RMA implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)

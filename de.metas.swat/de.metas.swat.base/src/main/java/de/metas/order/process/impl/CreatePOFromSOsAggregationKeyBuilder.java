@@ -4,14 +4,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
@@ -25,12 +26,12 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,13 +82,13 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 		final I_C_BPartner soPartner = salesOrderLine.getC_BPartner();
 		final I_M_Product product = salesOrderLine.getM_Product();
-		
+
 		//FRESH-334 the bp product should be of the products' organization or of the org 0
 		final int orgId = product.getAD_Org_ID();
-		
+
 		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, orgId);
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
+		final ILoggable loggable = Loggables.get();
 
 		if (bpProduct == null)
 		{

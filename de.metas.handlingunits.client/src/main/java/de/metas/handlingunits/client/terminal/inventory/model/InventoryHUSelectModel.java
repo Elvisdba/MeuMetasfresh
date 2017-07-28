@@ -43,6 +43,7 @@ import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -83,6 +84,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 
 	// services
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 
 	private IHUDocumentLineFinder huDocumentLineFinder = NullHUDocumentLineFinder.instance; // no document line available by default
 
@@ -279,6 +281,10 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		//
 		// Exclude Planning HUs (08544)
 		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Destroyed);
+		
+		//
+		// #1062: Do not display shipped hus.
+		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Shipped);
 
 		//
 		// We check for additional filters (set from the frame).
@@ -393,7 +399,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		// * set the result as a dynamic property on target I_C_BPartner_Location models
 		bpLocationsAggregate.countIf(DYNATTR_CountLockedHUs)
 				.filter()
-				.addEqualsFilter(I_M_HU.COLUMN_Locked, true);
+				.addFilter(huLockBL.isLockedFilter());
 
 		//
 		// Aggregate the HUs to their M_HU.C_BPartner_Location

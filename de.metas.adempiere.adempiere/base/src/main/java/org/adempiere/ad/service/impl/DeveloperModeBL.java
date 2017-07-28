@@ -26,10 +26,12 @@ package org.adempiere.ad.service.impl;
 import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
-import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,7 +48,6 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 
 /**
  * Developer Model BL Implementation

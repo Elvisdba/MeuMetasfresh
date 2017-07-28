@@ -31,12 +31,14 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
+
+import de.metas.i18n.Msg;
 
 
 /**
@@ -320,7 +322,7 @@ public class InfoInOut extends Info
 		if (M_InOut_ID == null)
 			return;
 		MQuery query = new MQuery("M_InOut");
-		query.addRestriction("M_InOut_ID", MQuery.EQUAL, M_InOut_ID);
+		query.addRestriction("M_InOut_ID", Operator.EQUAL, M_InOut_ID);
 		query.setRecordCount(1);
 		int AD_WindowNo = getAD_Window_ID("M_InOut", fIsSOTrx.isSelected());
 		zoom (AD_WindowNo, query);

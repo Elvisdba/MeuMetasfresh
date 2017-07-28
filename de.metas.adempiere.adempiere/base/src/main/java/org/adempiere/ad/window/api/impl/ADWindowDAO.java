@@ -15,11 +15,11 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,33 +44,36 @@ import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 public class ADWindowDAO implements IADWindowDAO
 {
 
 	@Override
-	public String retrieveWindowName(final int adWindowId)
+	public ITranslatableString retrieveWindowName(final int adWindowId)
 	{
-		final Properties ctx = Env.getCtx();
-		final I_AD_Window window = retrieveWindow(ctx, adWindowId); // using a simple DB call would be faster, but this way it's less coupled and after all we have caching
-		return window.getName();
+		return retrieveWindowNameCached(adWindowId);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	public I_AD_Window retrieveWindow(
-			@CacheCtx final Properties ctx,
-			final int adWindowId)
+	public ITranslatableString retrieveWindowNameCached(final int adWindowId)
 	{
+		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
+		
 		final I_AD_Window window = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Window.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Window.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
 				.firstOnly(I_AD_Window.class);
-
-		return window;
+		
+		if(window == null)
+		{
+			return ImmutableTranslatableString.empty();
+		}
+		
+		return InterfaceWrapperHelper.getModelTranslationMap(window).getColumnTrl(I_AD_Window.COLUMNNAME_Name, window.getName());
 	}
 
 	@Override
@@ -274,4 +277,15 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.save(uiElement);
 	}
 
+	@Override
+	public I_AD_Tab retrieveFirstTab(final I_AD_Window window)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Tab.class, window)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, window.getAD_Window_ID())
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
+				.create()
+				.firstOnly(I_AD_Tab.class);
+	}
 }

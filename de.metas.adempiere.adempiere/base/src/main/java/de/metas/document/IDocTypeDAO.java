@@ -31,7 +31,9 @@ import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeDAO extends ISingletonService
 {
-	String DOCSUBTYPE_Any = null;
+	String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
+
+	String DOCSUBTYPE_NONE = null;
 
 	/**
 	 *
@@ -71,6 +73,8 @@ public interface IDocTypeDAO extends ISingletonService
 
 	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
+	I_C_DocType getDocType(String docBaseType, String docSubType, int adClientId, int adOrgId);
+
 	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
 
 	/**
@@ -93,4 +97,18 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return
 	 */
 	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType);
+
+	/**
+	 * Retrieve the doctype based on the given basetype, subtype and IsSOTrx
+	 * 
+	 * @param ctx
+	 * @param docBaseType
+	 * @param docSubType
+	 * @param isSOTrx
+	 * @param adClientId
+	 * @param adOrgId
+	 * @param trxName
+	 * @return
+	 */
+	I_C_DocType getDocTypeOrNullForSOTrx(Properties ctx, String docBaseType, String docSubType, boolean isSOTrx, int adClientId, int adOrgId, String trxName);
 }

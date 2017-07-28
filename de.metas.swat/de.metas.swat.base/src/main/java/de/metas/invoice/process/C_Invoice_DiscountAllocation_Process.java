@@ -35,22 +35,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.process.JavaProcess;
 
 /**
  * 
  * Process to batch-create discount allocations for invoices that only have a very small remaining open amount left.<br>
  * See task 09135.
  */
-public class C_Invoice_DiscountAllocation_Process extends SvrProcess
+public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 {
 	public static final String MSG_AllocationLinesCreated = "MSG_AllocationLinesCreated";
 

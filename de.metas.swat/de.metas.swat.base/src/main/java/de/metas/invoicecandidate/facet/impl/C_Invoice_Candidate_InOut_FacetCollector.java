@@ -34,10 +34,10 @@ import org.adempiere.facet.impl.Facet;
 import org.adempiere.facet.impl.FacetCategory;
 import org.adempiere.facet.impl.SingleFacetCategoryCollectorTemplate;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
@@ -90,7 +90,7 @@ public class C_Invoice_Candidate_InOut_FacetCollector extends SingleFacetCategor
 		return Facet.<I_C_Invoice_Candidate> builder()
 				.setFacetCategory(facetCategory)
 				.setDisplayName(documentNo)
-				.setFilter(new TypedSqlQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID + "=" + inoutId))
+				.setFilter(TypedSqlQueryFilter.of(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID + "=" + inoutId))
 				.build();
 	}
 

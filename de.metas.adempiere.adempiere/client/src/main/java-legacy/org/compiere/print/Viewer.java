@@ -43,8 +43,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -67,19 +65,13 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.miginfocom.layout.AC;
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
-
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -93,29 +85,33 @@ import org.compiere.apps.search.Find;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTreeNode;
-import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *	Print View Frame
@@ -559,16 +555,6 @@ public class Viewer extends CFrame
 		//      Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		AEnv.addMenuItem("Calculator", null, null, mTools, this);
-//		AEnv.addMenuItem("Calendar", null, null, mTools, this);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			AEnv.addMenuItem("Editor", null, null, mTools, this);
-//		AEnv.addMenuItem("Script", null, null, mTools, this);
-//		mTools.addSeparator();
-		//@formatter:on
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
 			AEnv.addMenuItem("Preference", null, null, mTools, this);
@@ -934,7 +920,7 @@ public class Viewer extends CFrame
 	private void cmd_sendMail()
 	{
 		String to = "";
-		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		String subject = m_reportEngine.getName();
 		String message = "";
 		File attachment = null;
@@ -1277,12 +1263,7 @@ public class Viewer extends CFrame
 	private void cmd_translate()
 	{
 		final List<ValueNamePair> availableLanguageNames = new ArrayList<>();
-		final List<I_AD_Language> availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages(m_ctx);
-		for (final I_AD_Language language : availableLanguages)
-		{
-			final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
-			availableLanguageNames.add(languageVNP);
-		}
+		availableLanguageNames.addAll(Services.get(ILanguageBL.class).getAvailableLanguages().toValueNamePairs());
 		if (availableLanguageNames.isEmpty())
 		{
 			ADialog.warn(m_WindowNo, this, "NoTranslation");

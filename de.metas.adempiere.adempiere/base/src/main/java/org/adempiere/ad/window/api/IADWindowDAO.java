@@ -15,11 +15,11 @@ import java.util.List;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,6 +35,8 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
+import de.metas.i18n.ITranslatableString;
+
 public interface IADWindowDAO extends ISingletonService
 {
 
@@ -44,16 +46,7 @@ public interface IADWindowDAO extends ISingletonService
 	 * @param adWindowId
 	 * @return the name for the given <code>AD_Window_ID</code> or <code>null</code> if the given ID is less or equal zero.
 	 */
-	String retrieveWindowName(int adWindowId);
-
-	/**
-	 * Loads and returns the given window (cached).
-	 * 
-	 * @param ctx
-	 * @param adWindowId whe window's <code>AD_Window_ID</code>.
-	 * @return
-	 */
-	I_AD_Window retrieveWindow(Properties ctx, int adWindowId);
+	ITranslatableString retrieveWindowName(int adWindowId);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 
@@ -74,5 +67,13 @@ public interface IADWindowDAO extends ISingletonService
 	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
 
 	void moveElement(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup toUIElementGroup);
+
+	/**
+	 * Retrieve the first tab of the given window (seqNo = 10)
+	 * 
+	 * @param window
+	 * @return
+	 */
+	I_AD_Tab retrieveFirstTab(I_AD_Window window);
 
 }

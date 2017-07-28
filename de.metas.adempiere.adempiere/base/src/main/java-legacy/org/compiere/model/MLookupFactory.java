@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -33,13 +33,13 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 
@@ -94,13 +94,18 @@ public class MLookupFactory
 	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
 			String ColumnName, int AD_Reference_Value_ID,
 			boolean IsParent, int AD_Val_Rule_ID)
-					throws AdempiereException
+			throws AdempiereException
 	{
-		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
-		if (info == null)
-			throw new AdempiereException("MLookup.create - no LookupInfo");
-		return new MLookup(ctx, Column_ID, info, 0);
+		final MLookupInfo lookupInfo = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+		return ofLookupInfo(ctx, lookupInfo, Column_ID);
 	}   // create
+
+	public static final MLookup ofLookupInfo(final Properties ctx, final MLookupInfo lookupInfo, final int AD_Column_ID)
+	{
+		Check.assumeNotNull(lookupInfo, "Parameter lookupInfo is not null");
+		final int tabNo = 0;
+		return new MLookup(ctx, AD_Column_ID, lookupInfo, tabNo);
+	}
 
 	public static MLookupInfo getLookupInfo(final int WindowNo, final int Column_ID, final int AD_Reference_ID)
 	{
@@ -196,6 +201,12 @@ public class MLookupFactory
 		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID > 0)
 		{
 			info = getLookup_Table(WindowNo, AD_Reference_Value_ID);
+		}
+		// Account
+		else if (AD_Reference_ID == DisplayType.Account)
+		{
+			final ITableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
+			info = getLookupInfo(WindowNo, accountTableRefInfo);
 		}
 		// TableDir, Search, ID, ...
 		else
@@ -323,13 +334,15 @@ public class MLookupFactory
 				.append(" ORDER BY ").append(sqlOrderBy);
 
 		//
+		final int AD_REFERENCE_WINDOW_ID = 101;
 		final MLookupInfo lookupInfo = new MLookupInfo(
 				realSQL_BaseLang.toString(),   // Query_BaseLang
 				realSQL_Trl.toString(),   // Query_Trl
-				"AD_Ref_List",   // TableName
-				"AD_Ref_List.Value",   // KeyColumn
-				101,   // zoomWindow
-				101,   // zoomWindowPO
+				I_AD_Ref_List.Table_Name, // TableName
+				I_AD_Ref_List.Table_Name + "." + I_AD_Ref_List.COLUMNNAME_Value,   // KeyColumn
+				AD_REFERENCE_WINDOW_ID,   // zoomSO_Window_ID
+				AD_REFERENCE_WINDOW_ID,   // zoomPO_Window_ID
+				-1, // zoomAD_Window_ID_Override
 				MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID) // Zoom Query
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
@@ -432,10 +445,10 @@ public class MLookupFactory
 		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
 
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
-		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, ()->buildLookupInfo(windowNo, tableRefInfo));
+		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefInfo));
 		return lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
 	}
-	
+
 	private static final MLookupInfo buildLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)
 	{
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
@@ -605,23 +618,23 @@ public class MLookupFactory
 
 		//
 		// Zoom AD_Window_IDs
-		int ZoomWindow = tableRefInfo.getZoomWindow();
+		int zoomSO_Window_ID = tableRefInfo.getZoomSO_Window_ID();
 		if (lookupDisplayInfo.getZoomWindow() > 0)
 		{
-			ZoomWindow = lookupDisplayInfo.getZoomWindow();
+			zoomSO_Window_ID = lookupDisplayInfo.getZoomWindow();
 		}
 
-		int ZoomWindowPO = tableRefInfo.getZoomWindowPO();
+		int zoomPO_Window_ID = tableRefInfo.getZoomPO_Window_ID();
 		if (lookupDisplayInfo.getZoomWindowPO() > 0)
 		{
-			ZoomWindowPO = lookupDisplayInfo.getZoomWindowPO();
+			zoomPO_Window_ID = lookupDisplayInfo.getZoomWindowPO();
 		}
 
-		final int overrideZoomWindow = tableRefInfo.getOverrideZoomWindow();
-		if (overrideZoomWindow > 0)
+		final int zoomAD_Window_ID_Override = tableRefInfo.getZoomAD_Window_ID_Override();
+		if (zoomAD_Window_ID_Override > 0)
 		{
-			ZoomWindow = overrideZoomWindow;
-			ZoomWindowPO = 0;
+			zoomSO_Window_ID = zoomAD_Window_ID_Override;
+			zoomPO_Window_ID = 0;
 		}
 
 		//
@@ -629,7 +642,7 @@ public class MLookupFactory
 		final MLookupInfo lookupInfo = new MLookupInfo(
 				sqlQueryFinal_BaseLang.toString(), sqlQueryFinal_Trl.toString() //
 				, TableName, keyColumnFQ //
-				, ZoomWindow, ZoomWindowPO, zoomQuery //
+				, zoomSO_Window_ID, zoomPO_Window_ID, zoomAD_Window_ID_Override, zoomQuery //
 		);
 		lookupInfo.setWindowNo(windowNo);
 		lookupInfo.setDisplayColumns(displayColumns);
@@ -644,7 +657,7 @@ public class MLookupFactory
 
 		return lookupInfo;
 	}
-	
+
 	private static String joinDisplayColumnSqls(final List<String> displayColumnSqlList, final String keyColumnFQ)
 	{
 		if (displayColumnSqlList.isEmpty())
@@ -679,6 +692,18 @@ public class MLookupFactory
 		// date
 		else if (DisplayType.isDate(ldc.getDisplayType()))
 		{
+			if (ldc.getDisplayType() == DisplayType.Date)
+			{
+				// #1046
+				// Make sure the date doesn't have time too
+				final StringBuilder stringForDate = new StringBuilder()
+						.append(columnSQL)
+						.append("::")
+						.append("date");
+				return DB.TO_CHAR(stringForDate.toString(), ldc.getDisplayType());
+			}
+
+			// if the display type is not Date, let it work as before
 			return DB.TO_CHAR(columnSQL, ldc.getDisplayType());
 		}
 		// TableDir

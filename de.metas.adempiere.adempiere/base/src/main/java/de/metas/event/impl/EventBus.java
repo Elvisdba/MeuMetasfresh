@@ -25,11 +25,12 @@ package de.metas.event.impl;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
@@ -39,6 +40,7 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
+import lombok.NonNull;
 
 final class EventBus implements IEventBus
 {
@@ -82,6 +84,17 @@ final class EventBus implements IEventBus
 			eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
 		}
 	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("name", name)
+				.add("type", type)
+				.add("destroyed", destroyed ? Boolean.TRUE : null)
+				.toString();
+	}
 
 	@Override
 	public final String getName()
@@ -109,6 +122,7 @@ final class EventBus implements IEventBus
 	{
 		this.destroyed = true;
 		this.eventBus = null;
+		logger.trace("{} - Destroyed");
 	}
 
 	@Override
@@ -125,7 +139,16 @@ final class EventBus implements IEventBus
 
 		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
 		eventBus.register(listenerAdapter);
+		logger.trace("{} - Registered: {}", this, listener);
 	}
+	
+	@Override
+	public void subscribe(@NonNull Consumer<Event> eventConsumer)
+	{
+		final IEventListener eventListener = (eventBus, event) -> eventConsumer.accept(event);
+		subscribe(eventListener);
+	}
+
 
 	@Override
 	public void subscribeWeak(final IEventListener listener)
@@ -141,6 +164,7 @@ final class EventBus implements IEventBus
 
 		final WeakGuavaEventListenerAdapter listenerAdapter = new WeakGuavaEventListenerAdapter(listener);
 		eventBus.register(listenerAdapter);
+		logger.trace("{} - Registered(weak): {}", this, listener);
 	}
 
 	@Override
@@ -155,7 +179,7 @@ final class EventBus implements IEventBus
 			return;
 		}
 
-		logger.debug("Posting event: {}", event);
+		logger.debug("{} - Posting event: {}", this, event);
 		eventBus.post(event);
 	}
 
@@ -174,7 +198,9 @@ final class EventBus implements IEventBus
 		@Override
 		public String toString()
 		{
-			return ObjectUtils.toString(this);
+			return MoreObjects.toStringHelper(this)
+					.addValue(eventListener)
+					.toString();
 		}
 
 		@Subscribe
@@ -199,7 +225,9 @@ final class EventBus implements IEventBus
 		@Override
 		public String toString()
 		{
-			return ObjectUtils.toString(this);
+			return MoreObjects.toStringHelper(this)
+					.addValue(eventListenerRef)
+					.toString();
 		}
 
 		@Subscribe

@@ -28,16 +28,17 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.KeyStroke;
 
-import net.miginfocom.swing.MigLayout;
-
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
 import org.compiere.apps.AppsAction;
-import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
+import net.miginfocom.swing.MigLayout;
 
 public class PosLogin extends CDialog implements ActionListener {
 	
@@ -96,7 +97,7 @@ public class PosLogin extends CDialog implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if ( e.getSource().equals(bProcess) )
 		{
-			MUser.get(posPanel.getCtx(), username.getText(), pin.getText());
+			Services.get(IUserDAO.class).retrieveLoginUserByUserIdAndPassword(username.getText(), pin.getText());
 		}
 		
 		dispose();

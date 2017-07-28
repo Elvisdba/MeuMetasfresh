@@ -26,7 +26,6 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -44,7 +43,7 @@ import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.HUExpectation;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -53,6 +52,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
+import de.metas.quantity.Quantity;
 
 /**
  * Tests for {@link FIFOAllocationStrategy} and {@link FIFODeallocationStrategy}.

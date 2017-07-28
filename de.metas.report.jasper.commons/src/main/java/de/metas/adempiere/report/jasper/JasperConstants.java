@@ -32,6 +32,7 @@ package de.metas.adempiere.report.jasper;
  */
 public final class JasperConstants
 {
+	public static final String PROFILE_JasperServer = "metasfresh-jasper-server";
 
 	public static final String SYSCONFIG_JRServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
 	public static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
@@ -55,4 +56,5 @@ public final class JasperConstants
 	 * If the jasper report does not support this parameter, it will be ignored.
 	 */
 	public static final String REPORT_PARAM_SQL_QUERY = "REPORT_SQL_QUERY";
+	public static final String REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder = "@AD_PInstance_ID@";
 }

@@ -37,8 +37,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.terminal.IContainer;
@@ -55,12 +55,14 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.TerminalDialogListenerAdapter;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUFilterPropertiesModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
+import de.metas.handlingunits.client.terminal.editor.model.impl.ReturnsWarehouseModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssignTULUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
@@ -73,6 +75,7 @@ import de.metas.handlingunits.client.terminal.report.model.HUReportModel;
 import de.metas.handlingunits.client.terminal.report.view.HUReportPanel;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.IMsgBL;
 
 public class HUEditorPanel
 		extends TerminalDialogListenerAdapter
@@ -168,6 +171,23 @@ public class HUEditorPanel
 	 */
 	private final ITerminalButton bPrintLabel;
 	private static final String ACTION_PrintLabel = "PrintLabel";
+
+	/**
+	 * button for moving HUs to quality Warehouse (task #1065)
+	 */
+	protected ITerminalButton bMoveToQualityWarehouse;
+	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; 
+
+	/**
+	 * button to create Vendor Return inout (task #1062)
+	 */
+	protected ITerminalButton bCreateVendorReturn;
+	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; 
+	/**
+	 * boton to move HUs + products to garbage (task #1064)
+	 */
+	protected ITerminalButton bMoveToGarbage;
+	private static final String ACTION_MoveToGarbage = "MoveToGarbage"; 
 
 	/**
 	 * Barcode search field
@@ -346,6 +366,7 @@ public class HUEditorPanel
 					@Override
 					public void propertyChange(final PropertyChangeEvent evt)
 					{
+
 						doBarcodeScan();
 					}
 				});
@@ -367,27 +388,139 @@ public class HUEditorPanel
 					}
 				});
 			}
-		}
 
-		modelListener = new PropertyChangeListener()
+			// task #1065
+			// MoveToQualityWarehouse button
+			{
+				this.bMoveToQualityWarehouse = factory.createButton(ACTION_MoveToQualityWarehouse);
+
+				this.bMoveToQualityWarehouse.setTextAndTranslate(ACTION_MoveToQualityWarehouse);
+				bMoveToQualityWarehouse.setEnabled(true);
+				bMoveToQualityWarehouse.setVisible(true);
+				bMoveToQualityWarehouse.addListener(new UIPropertyChangeListener(factory, bMoveToQualityWarehouse)
+				{
+					@Override
+					public void propertyChangeEx(final PropertyChangeEvent evt)
+					{
+						doMoveToQualityWarehouse();
+					}
+				});
+
+			}
+
+			// task #1062
+			// CreateVendorReturn button
+			{
+				this.bCreateVendorReturn = factory.createButton(ACTION_CreateVendorReturn);
+
+				this.bCreateVendorReturn.setTextAndTranslate(ACTION_CreateVendorReturn);
+				bCreateVendorReturn.setEnabled(true);
+				bCreateVendorReturn.setVisible(true);
+				bCreateVendorReturn.addListener(new UIPropertyChangeListener(factory, bCreateVendorReturn)
+				{
+					@Override
+					public void propertyChangeEx(final PropertyChangeEvent evt)
+					{
+						doCreateVendorReturn();
+					}
+				});
+
+			}
+
+			// task #1064
+			// Create MoveToGarbage button
+			{
+				this.bMoveToGarbage = factory.createButton(ACTION_MoveToGarbage);
+
+				this.bMoveToGarbage.setTextAndTranslate(ACTION_MoveToGarbage);
+				bMoveToGarbage.setEnabled(true);
+				bMoveToGarbage.setVisible(true);
+				bMoveToGarbage.addListener(new UIPropertyChangeListener(factory, bMoveToGarbage)
+				{
+
+					@Override
+					protected void propertyChangeEx(PropertyChangeEvent evt)
+					{
+						doMoveToGarbage();
+
+					}
+				});
+
+			}
+
+			modelListener = new PropertyChangeListener()
+			{
+				@Override
+				public void propertyChange(final PropertyChangeEvent evt)
+				{
+					load();
+				}
+			};
+			model.addPropertyChangeListener(HUEditorModel.PROPERTY_CurrentKey, modelListener);
+
+			//
+			// Init Layout
+			initLayout();
+
+			//
+			// Load from model (initially)
+			load();
+
+			terminalContext.addToDisposableComponents(this);
+		}
+	}
+
+	/**
+	 * task #1062
+	 * Create vendor return for the selected HUs
+	 */
+	private void doCreateVendorReturn()
+	{
+		getHUEditorModel().createVendorReturn();
+
+	}
+
+	/**
+	 * #1064
+	 * Move products to garbage (waste disposal). Internal use M_Inventory will be created
+	 */
+	protected void doMoveToGarbage()
+	{
+		getHUEditorModel().doMoveToGarbage(getCurrentWarehouse());
+	}
+
+	/**
+	 * #1065
+	 * Move the HUs to a quality warehouse
+	 */
+	protected void doMoveToQualityWarehouse()
+	{
+		model.doMoveToQualityWarehouse(new Predicate<ReturnsWarehouseModel>()
 		{
 			@Override
-			public void propertyChange(final PropertyChangeEvent evt)
+			public boolean evaluate(final ReturnsWarehouseModel returnWarehouseModel)
 			{
-				load();
+				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
+
+				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final ITerminalDialog selectWarehouseDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_MoveToQualityWarehouse, returnsWarehousePanel);
+
+				//
+				// Activate TU->LU Assignment Dialog and wait for user answer
+				selectWarehouseDialog.activate();
+
+				//
+				// Return true if user really pressed OK
+				final boolean edited = !selectWarehouseDialog.isCanceled();
+				return edited;
 			}
-		};
-		model.addPropertyChangeListener(HUEditorModel.PROPERTY_CurrentKey, modelListener);
+		},
+				getCurrentWarehouse());
 
-		//
-		// Init Layout
-		initLayout();
-
-		//
-		// Load from model (initially)
-		load();
-
-		terminalContext.addToDisposableComponents(this);
 	}
 
 	protected final ITerminalFactory getTerminalFactory()
@@ -496,6 +629,12 @@ public class HUEditorPanel
 		// nothing on this level
 	}
 
+	protected I_M_Warehouse getCurrentWarehouse()
+	{
+		// nothing on this level
+		return null;
+	}
+
 	/**
 	 * Load from model
 	 */
@@ -588,8 +727,7 @@ public class HUEditorPanel
 				// The dialog can't maintain its own context references, because its model is basically this editor's model.
 				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
 				// For that reason we don't want to dispose them once the split editor is closed.
-				final boolean maintainOwnContextReferences = false;
-				final ITerminalDialog assignTULUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_AssignTULU, assignTULUPanel, maintainOwnContextReferences);
+				final ITerminalDialog assignTULUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_AssignTULU, assignTULUPanel);
 
 				//
 				// Activate TU->LU Assignment Dialog and wait for user answer
@@ -619,8 +757,7 @@ public class HUEditorPanel
 				// The dialog can't maintain its own context references, because its model is basically this editor's model.
 				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
 				// For that reason we don't want to dispose them once the split editor is closed.
-				final boolean maintainOwnContextReferences = false;
-				final ITerminalDialog distributeCUTUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_DistributeCUTU, distributeCUTUPanel, maintainOwnContextReferences);
+				final ITerminalDialog distributeCUTUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_DistributeCUTU, distributeCUTUPanel);
 
 				//
 				// Activate CU->TU Distribution Dialog and wait for user answer
@@ -650,8 +787,7 @@ public class HUEditorPanel
 				// The dialog can't maintain its own context references, because its model is basically this editor's model.
 				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
 				// For that reason we don't want to dispose them once the split editor is closed.
-				final boolean maintainOwnContextReferences = false;
-				final ITerminalDialog splitDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Split, splitPanel, maintainOwnContextReferences);
+				final ITerminalDialog splitDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Split, splitPanel);
 
 				//
 				// Activate Split Dialog and wait for user answer
@@ -682,8 +818,7 @@ public class HUEditorPanel
 				// The dialog can't maintain its own context references, because its model is basically this editor's model.
 				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
 				// For that reason we don't want to dispose them once the split editor is closed.
-				final boolean maintainOwnContextReferences = false;
-				final ITerminalDialog joinDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Join, joinPanel, maintainOwnContextReferences);
+				final ITerminalDialog joinDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Join, joinPanel);
 
 				//
 				// Activate Join Dialog and wait for user answer
@@ -748,7 +883,7 @@ public class HUEditorPanel
 		for (final IHUKey child : children)
 		{
 			if (!model.isSelected(child) && selectAll // SelectAll
-					|| model.isSelected(child) && !selectAll)  // DeselectAll
+					|| model.isSelected(child) && !selectAll)    // DeselectAll
 			{
 				model.toggleSelected(child);
 			}
@@ -786,24 +921,24 @@ public class HUEditorPanel
 			currentHU = ((HUKey)currentHUKey).getM_HU();
 		}
 
-		final HUReportModel reportModel = new HUReportModel(getTerminalContext(), currentHU, selectedHUs);
-		final HUReportPanel reportPanel = new HUReportPanel(reportModel);
-
-		final String reportDialogTitle = msgBL.translate(getTerminalContext().getCtx(), HUEditorPanel.ACTION_PrintLabel);
-		final ITerminalDialog reportDialog = getTerminalFactory().createModalDialog(this, reportDialogTitle, reportPanel);
-
-		try
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			reportDialog.activate();
-		}
-		catch (final Exception e)
-		{
-			if (reportDialog != null)
+			final HUReportModel reportModel = new HUReportModel(getTerminalContext(), currentHU, selectedHUs);
+			final HUReportPanel reportPanel = new HUReportPanel(reportModel);
+
+			final String reportDialogTitle = msgBL.translate(getTerminalContext().getCtx(), HUEditorPanel.ACTION_PrintLabel);
+
+			// this dialog works with the reportModel and reportPanel which we just created and which we will want to dispose after the dialog closed, to avoid memory issues.
+			final ITerminalDialog reportDialog = getTerminalFactory().createModalDialog(this, reportDialogTitle, reportPanel);
+
+			try
 			{
-				reportDialog.dispose();
+				reportDialog.activate();
 			}
-
-			throw new AdempiereException("@Error@: " + reportDialogTitle, e);
+			catch (final Exception e)
+			{
+				throw new AdempiereException("@Error@: " + reportDialogTitle, e);
+			}
 		}
 	}
 
@@ -823,7 +958,7 @@ public class HUEditorPanel
 			return;
 		}
 
-		final HUKeysByBarcodeCollector huKeysCollector = new HUKeysByBarcodeCollector(barcode);
+		final HUKeysByBarcodeCollector huKeysCollector = new HUKeysByBarcodeCollector(getTerminalContext().getCtx(), barcode);
 		model.getRootHUKey().iterate(huKeysCollector);
 
 		final List<IHUKey> collectedHUKeys = huKeysCollector.getCollectedHUKeys();
@@ -837,7 +972,11 @@ public class HUEditorPanel
 		{
 			for (final IHUKey huKey : collectedHUKeys)
 			{
-				model.setSelected(huKey);
+				// task #827 Do not try to select a huKey if it was already selected or it has selected ancestors
+				if (!model.isSelectedOrParentSelected(huKey))
+				{
+					model.setSelected(huKey);
+				}
 			}
 
 			load();
@@ -923,6 +1062,7 @@ public class HUEditorPanel
 	 *
 	 * @param dialog
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
 	{
 		if (!model.hasSelectedKeys())
@@ -984,14 +1124,7 @@ public class HUEditorPanel
 	{
 		// NOTE: we are doing it in a long operation because it could take a while
 		// and we want to prevent user from clicking other things or user to believe the interface is frozen
-		getTerminalFactory().executeLongOperation(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				model.save();
-			}
-		});
+		getTerminalFactory().executeLongOperation(this, model::save);
 	}
 
 	@Override
@@ -1171,4 +1304,5 @@ public class HUEditorPanel
 
 		updateMarkAsQualityInspectionButton();
 	}
+
 }

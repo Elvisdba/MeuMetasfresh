@@ -36,7 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
@@ -49,6 +48,7 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 
 public interface IInvoiceCandDAO extends ISingletonService
@@ -82,8 +82,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @param recomputeTag
 	 * @param trxName
 	 * @return
-	 *
-	 * @see #tagRecomputeMarkers(I_AD_PInstance, String)
 	 */
 	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, InvoiceCandRecomputeTag recomputeTag, String trxName);
 
@@ -274,14 +272,20 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(Properties ctx, String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid, String trxName);
 
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidate(I_C_Invoice_Candidate invoiceCandidate);
-
 	/**
+	 * Returns the list of {@link I_C_InvoiceCandidate_InOutLine}s that
+	 * <ul>
+	 * <li>belong to the given {@code invoiceCandidate}</li>
+	 * <li>are active</li>
+	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
+	 * </ul>
 	 *
 	 * @param invoiceCandidate
-	 * @return also returns inactive records (intended use is for deletion)
+	 * @return
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidateInclInactive(I_C_Invoice_Candidate invoiceCandidate);
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);
 
 	/**
 	 *
@@ -412,4 +416,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return
 	 */
 	String getSQLDefaultFilter(Properties ctx);
+
+	/**
+	 * Retrieve all the invoice candidates for the given inventoryLine
+	 * 
+	 * @param inventoryLine
+	 * @return
+	 */
+	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
 }

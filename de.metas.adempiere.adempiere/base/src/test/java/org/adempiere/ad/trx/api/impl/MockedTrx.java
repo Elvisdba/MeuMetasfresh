@@ -48,9 +48,9 @@ public class MockedTrx extends PlainTrx
 
 	private final List<ITrxSavepoint> releasedSavepoints = new ArrayList<ITrxSavepoint>();
 
-	public MockedTrx(final ITrxManager trxManager, final String trxName)
+	public MockedTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super(trxManager, trxName);
+		super(trxManager, trxName, autoCommit);
 	}
 
 	@Override
@@ -136,14 +136,16 @@ public class MockedTrx extends PlainTrx
 		return true;
 	}
 
-	public void setOnCommitException(final Throwable onCommitException)
+	public MockedTrx setOnCommitException(final Throwable onCommitException)
 	{
 		this.onCommitException = onCommitException;
+		return this;
 	}
 
-	public void setOnRollbackException(final Throwable onRollbackException)
+	public MockedTrx setOnRollbackException(final Throwable onRollbackException)
 	{
 		this.onRollbackException = onRollbackException;
+		return this;
 	}
 
 	/**

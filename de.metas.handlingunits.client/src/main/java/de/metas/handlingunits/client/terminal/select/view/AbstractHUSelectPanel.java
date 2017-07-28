@@ -25,13 +25,10 @@ package de.metas.handlingunits.client.terminal.select.view;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
@@ -52,6 +49,7 @@ import de.metas.handlingunits.client.terminal.misc.model.WebCamReceiptScheduleMo
 import de.metas.handlingunits.client.terminal.misc.view.swing.WebCamReceiptSchedulePanel;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.model.AbstractHUSelectModel;
+import de.metas.i18n.IMsgBL;
 
 public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> implements IHUSelectPanel
 {
@@ -307,16 +305,14 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 	 * @return <code>true</code> if editor was closed with OK; false if editor was closed with Cancel.
 	 */
 	@Override
-	@OverridingMethodsMustInvokeSuper
 	public boolean editHUs(final HUEditorModel huEditorModel)
 	{
 		final HUEditorPanel editorPanel = createHUEditorPanelInstance(huEditorModel);
 
-		// we already have our own terminal context ref that was created when 'huEditorModel' was created
-		final boolean maintainOwnContextReferences = false;
+		// we already have our own terminal context ref that was created when 'huEditorModel' was created in AbstractHUSelectModel.doProcessSelectedLines()
 
 		final ITerminalDialog editorDialog = getTerminalFactory()
-				.createModalDialog(this, "Edit", editorPanel, maintainOwnContextReferences); // TODO ts: Hardcoded ?!?
+				.createModalDialog(this, "Edit", editorPanel); // TODO ts: Hardcoded ?!?
 
 		editorDialog.setSize(getTerminalContext().getScreenResolution());
 
@@ -353,22 +349,22 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 			return;
 		}
 
-		final WebCamReceiptScheduleModel webcamModel = new WebCamReceiptScheduleModel(getTerminalContext(), selectedRecord);
-		final WebCamReceiptSchedulePanel webcamPanel = new WebCamReceiptSchedulePanel(webcamModel);
-		final ITerminalDialog webCamDialog = getTerminalFactory().createModalDialog(this, "Web Photo", webcamPanel);
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
+		{
+			final WebCamReceiptScheduleModel webcamModel = new WebCamReceiptScheduleModel(getTerminalContext(), selectedRecord);
+			final WebCamReceiptSchedulePanel webcamPanel = new WebCamReceiptSchedulePanel(webcamModel);
 
-		try
-		{
-			webCamDialog.activate();
-		}
-		catch (final Exception e)
-		{
-			if (webCamDialog != null)
+			// we maintain our context references right here so that we can also dispose WebCamReceiptScheduleModel and ..Panel to avoid memory problems
+			final ITerminalDialog webCamDialog = getTerminalFactory().createModalDialog(this, "Web Photo", webcamPanel);
+
+			try
 			{
-				webCamDialog.dispose();
+				webCamDialog.activate();
 			}
-
-			throw new AdempiereException("@" + MSG_ErrorOpeningWebcamDialog + "@", e);
+			catch (final Exception e)
+			{
+				throw new AdempiereException("@" + MSG_ErrorOpeningWebcamDialog + "@", e);
+			}
 		}
 	}
 

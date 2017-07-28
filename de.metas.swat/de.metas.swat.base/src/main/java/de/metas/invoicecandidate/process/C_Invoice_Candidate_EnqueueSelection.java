@@ -36,25 +36,26 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
-import org.compiere.process.SvrProcess;
+import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
-import de.metas.invoicecandidate.form.InvoiceGenerate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
 
 /**
  * @author cg
  *
  */
-public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
+public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
 	//
@@ -86,7 +87,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		if (selectionCount <= 0)
 		{
 			final Properties ctx = getCtx();
-			throw new AdempiereException(msgBL.getMsg(ctx, InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException(msgBL.getMsg(ctx, IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
 		}
 
 		//
@@ -108,11 +109,20 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		{
 			return;
 		}
-		final boolean performEnqueuing = Services.get(IClientUI.class).ask()
-				.setParentWindowNo(getProcessInfo().getWindowNo())
-				.setAD_Message(MSG_InvoiceCandidate_PerformEnqueuing, selectionCount, bpartnerCount)
-				.setDefaultAnswer(false)
-				.getAnswer();
+		final boolean performEnqueuing;
+		if (Ini.isClient())
+		{
+			performEnqueuing = Services.get(IClientUI.class).ask()
+					.setParentWindowNo(getProcessInfo().getWindowNo())
+					.setAD_Message(MSG_InvoiceCandidate_PerformEnqueuing, selectionCount, bpartnerCount)
+					.setDefaultAnswer(false)
+					.getAnswer();
+		}
+		else
+		{
+			performEnqueuing = true;
+		}
+		
 		// if the enqueuing was not accepted by the user, do nothing
 		if (!performEnqueuing)
 		{
@@ -170,7 +180,20 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder()
 	{
 		// Get the user selection filter (i.e. what user filtered in his window)
-		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter;
+		if(Ini.isClient())
+		{
+			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all 
+			userSelectionFilter = getProcessInfo().getQueryFilter();
+		}
+		else
+		{
+			userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
+			if(userSelectionFilter == null)
+			{
+				throw new AdempiereException("@NoSelection@");
+			}
+		}
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)

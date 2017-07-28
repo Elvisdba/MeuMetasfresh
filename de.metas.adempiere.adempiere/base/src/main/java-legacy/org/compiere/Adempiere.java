@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere;
 
@@ -35,7 +35,6 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
@@ -71,8 +70,6 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
-	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
-
 	public static final transient Adempiere instance = new Adempiere();
 
 	/**
@@ -81,9 +78,11 @@ public class Adempiere
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
 	/**
-	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project <code>pom.xml</code>.<br>
+	 * The version string set by maven if run locally (as opposed to the CI system). Please keep it in sync with the <code>build-version-env-missing</code> profile de.metas.parent project <code>pom.xml</code>.
 	 */
-	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
+	public static final String CLIENT_VERSION_LOCAL_BUILD = "1.0.0";
+
+	public static final String CLIENT_BRANCH_LOCAL_BUILD = "LOCAL-BUILD";
 
 	/** Main Version String */
 	private static String _mainVersion = "";
@@ -121,10 +120,11 @@ public class Adempiere
 	// Product License
 	private static String _productLicenseURL = null;
 	private static final String DEFAULT_ProductLicenseResourceName = "org/adempiere/license.html";
+
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
 	/** Logging */
-	private static Logger logger = null;
+	private static final transient Logger logger = LogManager.getLogger(Adempiere.class);
 
 	private ApplicationContext applicationContext;
 
@@ -134,8 +134,9 @@ public class Adempiere
 	}
 
 	/**
-	 * Inject the application context from outside.
-	 * currently seems to be requried because currently the client startup procedure needs to be decomposed more.
+	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
+	 * 
+	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 *
 	 * @param applicationContext
@@ -143,6 +144,11 @@ public class Adempiere
 	public void setApplicationContext(final ApplicationContext applicationContext)
 	{
 		this.applicationContext = applicationContext;
+		logger.info("Set application context: {}", applicationContext);
+
+		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
+		// we will call it when the spring context was loaded.
+
 	}
 
 	/**
@@ -152,11 +158,29 @@ public class Adempiere
 	 */
 	public static final void autowire(final Object bean)
 	{
-		if (getSpringApplicationContext() == null)
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		if (springApplicationContext == null)
 		{
 			return;
 		}
-		getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
+	}
+
+	/**
+	 * When running this method from within a junit test, we need to fire up spring
+	 * 
+	 * @param requiredType
+	 * @return
+	 */
+	public static final <T> T getBean(final Class<T> requiredType)
+	{
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		if (springApplicationContext == null)
+		{
+			throw new IllegalStateException("springApplicationContext not configured yet");
+		}
+
+		return springApplicationContext.getBean(requiredType);
 	}
 
 	//
@@ -382,7 +406,7 @@ public class Adempiere
 		return System.getProperty("java.vm.name") // e.g. Java HotSpot(TM) 64-Bit Server VM
 				+ " " + System.getProperty("java.version") // e.g. 1.7.0_21
 				+ "/" + System.getProperty("java.vm.version") // e.g. 23.21-b01
-				;
+		;
 	}	// getJavaInfo
 
 	/**
@@ -395,7 +419,7 @@ public class Adempiere
 		return System.getProperty("os.name") // e.g. Windows 7
 				+ " " + System.getProperty("os.version") // e.g. 6.1
 				+ " " + System.getProperty("sun.os.patch.level") // e.g. Service Pack 1
-				;
+		;
 	}	// getJavaInfo
 
 	/**
@@ -494,9 +518,9 @@ public class Adempiere
 	 *
 	 * @return Home directory
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
-		return Ini.getAdempiereHome();
+		return Ini.getMetasfreshHome();
 	}
 
 	/**
@@ -602,10 +626,6 @@ public class Adempiere
 		// which will lead us to weird behaviour
 		// So, instead of manually instantiating and registering here the services, it's much more safer to use AutodetectServices.
 		Services.setAutodetectServices(true);
-		// Services.registerService(ISysConfigBL.class, new SysConfigBL()); // metas 02367
-		// Services.registerService(ITrxManager.class, new TrxManager());
-		// Services.registerService(ITrxConstraintsBL.class, new TrxConstraintsBL()); // metas 02367
-		// Services.registerService(IOpenTrxBL.class, new OpenTrxBL()); // metas 02367
 		Services.registerService(IDeveloperModeBL.class, DeveloperModeBL.instance); // we need this during AIT
 
 		final boolean runmodeClient = runMode == RunMode.SWING_CLIENT;
@@ -618,8 +638,6 @@ public class Adempiere
 		LogManager.initialize(runmodeClient);
 		Ini.setRunMode(runMode);
 
-		// Init Log
-		logger = LogManager.getLogger(Adempiere.class);
 		// Greeting
 		logger.info(getSummaryAscii());
 
@@ -710,9 +728,9 @@ public class Adempiere
 			String className = system.getEncryptionKey();
 			if (className == null || className.length() == 0)
 			{
-				className = System.getProperty(SecureInterface.ADEMPIERE_SECURE);
+				className = System.getProperty(SecureInterface.METASFRESH_SECURE);
 				if (className != null && className.length() > 0
-						&& !className.equals(SecureInterface.ADEMPIERE_SECURE_DEFAULT))
+						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
 				{
 					SecureEngine.init(className);	// test it
 					system.setEncryptionKey(className);
@@ -761,19 +779,10 @@ public class Adempiere
 		// task 06295
 		if (runMode == RunMode.BACKEND)
 		{
-			final boolean skipHouseKeeping = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
-			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
-			if (!skipHouseKeeping)
-			{
-				// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
-				Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
-			}
+			// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
+			Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
 		}
 
-		if (runMode == RunMode.BACKEND)
-		{
-			DB.updateMail();
-		}
 		return true;
 	}	// startupEnvironment
 

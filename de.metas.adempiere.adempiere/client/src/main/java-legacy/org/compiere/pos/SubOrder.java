@@ -30,32 +30,29 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerInfo;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MUser;
-import org.compiere.print.ReportCtl;
-import org.compiere.print.ReportEngine;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 
 /**
@@ -487,9 +484,8 @@ public class SubOrder extends PosSubPanel
 		Vector<KeyNamePair> userVector = new Vector<KeyNamePair>();
 		if (m_bpartner != null)
 		{
-			MUser[] users = m_bpartner.getContacts(false);
-			for (int i = 0; i < users.length; i++)
-				userVector.add(new KeyNamePair(users[i].getAD_User_ID(), users[i].getName()));
+			for (final I_AD_User user : m_bpartner.getContacts(false))
+				userVector.add(new KeyNamePair(user.getAD_User_ID(), user.getName()));
 		}
 		DefaultComboBoxModel userModel = new DefaultComboBoxModel(userVector); 
 		f_user.setModel(userModel);
@@ -603,13 +599,15 @@ public class SubOrder extends PosSubPanel
 		{
 			try 
 			{
-				//TODO: to incorporate work from Posterita
-				/*
-				if (p_pos.getAD_PrintLabel_ID() != 0)
-					PrintLabel.printLabelTicket(order.getC_Order_ID(), p_pos.getAD_PrintLabel_ID());
-				*/ 
-				//print standard document
-				ReportCtl.startDocumentPrint(ReportEngine.ORDER, order.getC_Order_ID(), null, Env.getWindowNo(this), true);
+				// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
+				throw new UnsupportedOperationException();
+				
+//				/*
+//				if (p_pos.getAD_PrintLabel_ID() != 0)
+//					PrintLabel.printLabelTicket(order.getC_Order_ID(), p_pos.getAD_PrintLabel_ID());
+//				*/ 
+//				//print standard document
+//				ReportCtl.startDocumentPrint(ReportEngine.ORDER, order.getC_Order_ID(), null, Env.getWindowNo(this), true);
 				
 			}
 			catch (Exception e) 

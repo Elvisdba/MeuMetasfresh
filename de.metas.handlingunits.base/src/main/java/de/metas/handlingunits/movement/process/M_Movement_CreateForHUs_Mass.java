@@ -24,6 +24,7 @@ package de.metas.handlingunits.movement.process;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,7 +35,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.SvrProcess;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -42,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 
 /**
@@ -50,7 +51,7 @@ import de.metas.process.RunOutOfTrx;
  * @author tsa
  *
  */
-public class M_Movement_CreateForHUs_Mass extends SvrProcess
+public class M_Movement_CreateForHUs_Mass extends JavaProcess
 {
 	// services
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
@@ -121,7 +122,7 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 		// Only for given SQL where clause
 		if (!Check.isEmpty(p_huWhereClause, true))
 		{
-			huQueryBuilder.addFilter(new TypedSqlQueryFilter<I_M_HU>(p_huWhereClause));
+			huQueryBuilder.addFilter(TypedSqlQueryFilter.of(p_huWhereClause));
 		}
 
 		// Fetch the HUs iterator
@@ -144,7 +145,7 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 
 		try
 		{
-			final IContextAware context = PlainContextAware.createUsingOutOfTransaction(getCtx());
+			final IContextAware context = PlainContextAware.newOutOfTrx(getCtx());
 			final HUMovementBuilder movementBuilder = new HUMovementBuilder()
 					.setContextInitial(context)
 					.setWarehouseFrom(hu.getM_Locator().getM_Warehouse())

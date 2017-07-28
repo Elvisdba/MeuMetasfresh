@@ -40,6 +40,8 @@ import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.ad.migration.util.DefaultDataConverter;
 import org.adempiere.ad.migration.util.IDataConverter;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -48,23 +50,27 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Form_Access;
+import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Ref_Table;
-import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task_Access;
-import org.compiere.model.MSession;
+import org.compiere.model.I_AD_Window_Access;
+import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class MigrationLogger implements IMigrationLogger
 {
@@ -105,6 +111,7 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_PACKAGE_IMP_DETAIL",
 				"AD_PACKAGE_IMP_INST",
 				"AD_PACKAGE_IMP_PROC",
+				I_AD_Process_Stats.Table_Name.toUpperCase(),
 				"AD_PINSTANCE",
 				"AD_PINSTANCE_LOG",
 				"AD_PINSTANCE_PARA",
@@ -155,14 +162,14 @@ public class MigrationLogger implements IMigrationLogger
 		// Do not log *Access records - teo_Sarca BF [ 2782095 ]
 		// NOTE: Only if we are running as system. If user is logged in regular Tenant, we want to log them (07122)
 		_tablesIgnoreSystem.addAll(Arrays.asList(
-				"AD_PROCESS_ACCESS",
-				"AD_WINDOW_ACCESS",
-				"AD_WORKFLOW_ACCESS",
-				"AD_FORM_ACCESS",
+				I_AD_Window_Access.Table_Name.toUpperCase(),
+				I_AD_Process_Access.Table_Name.toUpperCase(),
+				I_AD_Workflow_Access.Table_Name.toUpperCase(),
+				I_AD_Form_Access.Table_Name.toUpperCase(),
+				I_AD_Task_Access.Table_Name.toUpperCase(),
 				I_AD_Document_Action_Access.Table_Name.toUpperCase(),
 				I_AD_Table_Access.Table_Name.toUpperCase(),
-				I_AD_Column_Access.Table_Name.toUpperCase(),
-				I_AD_Task_Access.Table_Name.toUpperCase()
+				I_AD_Column_Access.Table_Name.toUpperCase()
 				));
 	}
 
@@ -209,7 +216,7 @@ public class MigrationLogger implements IMigrationLogger
 	}
 
 	@Override
-	public void logMigration(I_AD_Session session, PO po, POInfo info, String event)
+	public void logMigration(MFSession session, PO po, POInfo info, String event)
 	{
 		final IMigrationLoggerContext migrationCtx = getSessionMigrationLoggerContext(session);
 		logMigration(migrationCtx, po, info, event);
@@ -511,7 +518,7 @@ public class MigrationLogger implements IMigrationLogger
 	public void logMigrationSQL(PO contextPO, String sql)
 	{
 		final Properties ctx = contextPO == null ? Env.getCtx() : contextPO.getCtx();
-		final I_AD_Session session = MSession.get(ctx, false);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session == null)
 		{
 			logger.warn("AD_Session not found");
@@ -620,14 +627,14 @@ public class MigrationLogger implements IMigrationLogger
 		return dict ? "D" : "U";
 	}
 
-	protected IMigrationLoggerContext getSessionMigrationLoggerContext(final I_AD_Session session)
+	protected IMigrationLoggerContext getSessionMigrationLoggerContext(final MFSession session)
 	{
 		final String key = getClass().getCanonicalName();
-		IMigrationLoggerContext mctx = (IMigrationLoggerContext)InterfaceWrapperHelper.getDynAttribute(session, key);
+		IMigrationLoggerContext mctx = session.getTransientProperty(key); 
 		if (mctx == null)
 		{
 			mctx = new SessionMigrationLoggerContext();
-			InterfaceWrapperHelper.setDynAttribute(session, key, mctx);
+			session.putTransientProperty(key, mctx);
 		}
 
 		return mctx;

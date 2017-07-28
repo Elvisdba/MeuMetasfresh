@@ -10,23 +10,24 @@ package org.adempiere.ad.security.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,10 +40,12 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.security.ISecurityRuleEngine;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsBuilder;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.permissions.Access;
 import org.adempiere.ad.security.permissions.Constraint;
 import org.adempiere.ad.security.permissions.Constraints;
+import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.security.permissions.ElementPermissions;
 import org.adempiere.ad.security.permissions.GenericPermissions;
 import org.adempiere.ad.security.permissions.LoginOrgConstraint;
@@ -54,6 +57,7 @@ import org.adempiere.ad.security.permissions.StartupWindowConstraint;
 import org.adempiere.ad.security.permissions.TableColumnPermissions;
 import org.adempiere.ad.security.permissions.TablePermissions;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
+import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -61,10 +65,9 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
-import org.compiere.model.MPrivateAccess;
+import org.compiere.model.I_AD_Private_Access;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -80,6 +83,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
@@ -87,6 +91,8 @@ import de.metas.logging.MetasfreshLastError;
 class UserRolePermissions implements IUserRolePermissions
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
+
+	private static final Set<Integer> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<Integer>()); // NOTE: new instance to make sure it's unique
 
 	/** Permissions name (i.e. role name) */
 	private final String name;
@@ -123,55 +129,57 @@ class UserRolePermissions implements IUserRolePermissions
 	private final ElementPermissions formPermissions;
 
 	private final GenericPermissions miscPermissions;
-	
+
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
 	/** Permission constraints */
 	private final Constraints constraints;
-	
-	private final int menu_AD_Tree_ID;
+
+	private final UserMenuInfo menuInfo;
 
 	UserRolePermissions(final UserRolePermissionsBuilder builder)
 	{
 		super();
-		this.name = builder.getName();
-		this.AD_Role_ID = builder.getAD_Role_ID();
-		this.includes = builder.getUserRolePermissionsIncluded();
-		this.all_AD_Role_IDs = ImmutableSet.copyOf(includes.getAllRoleIdsIncluding(AD_Role_ID));
-		this.AD_User_ID = builder.getAD_User_ID();
+		name = builder.getName();
+		AD_Role_ID = builder.getAD_Role_ID();
+		includes = builder.getUserRolePermissionsIncluded();
+		all_AD_Role_IDs = ImmutableSet.copyOf(includes.getAllRoleIdsIncluding(AD_Role_ID));
+		AD_User_ID = builder.getAD_User_ID();
 
-		this.AD_Client_ID = builder.getAD_Client_ID();
+		AD_Client_ID = builder.getAD_Client_ID();
 		Check.assume(AD_Client_ID >= 0, "AD_Client_ID shall be set but it was {}", AD_Client_ID);
 
-		this.userLevel = builder.getUserLevel();
+		userLevel = builder.getUserLevel();
 
-		this.orgPermissions = builder.getOrgPermissions();
+		orgPermissions = builder.getOrgPermissions();
 
-		this.tablePermissions = builder.getTablePermissions();
-		this.columnPermissions = builder.getColumnPermissions();
-		this.recordPermissions = builder.getRecordPermissions();
-		this.windowPermissions = builder.getWindowPermissions();
-		this.processPermissions = builder.getProcessPermissions();
-		this.taskPermissions = builder.getTaskPermissions();
-		this.workflowPermissions = builder.getWorkflowPermissions();
-		this.formPermissions = builder.getFormPermissions();
+		tablePermissions = builder.getTablePermissions();
+		columnPermissions = builder.getColumnPermissions();
+		recordPermissions = builder.getRecordPermissions();
+		windowPermissions = builder.getWindowPermissions();
+		processPermissions = builder.getProcessPermissions();
+		taskPermissions = builder.getTaskPermissions();
+		workflowPermissions = builder.getWorkflowPermissions();
+		formPermissions = builder.getFormPermissions();
 
-		this.miscPermissions = builder.getMiscPermissions();
-		this.constraints = builder.getConstraints();
-		
-		this.menu_AD_Tree_ID = builder.getMenu_Tree_ID();
+		miscPermissions = builder.getMiscPermissions();
+		constraints = builder.getConstraints();
+
+		menuInfo = builder.getMenuInfo();
 	}
 
 	@Override
 	public IUserRolePermissionsBuilder asNewBuilder()
 	{
-		return new UserRolePermissionsBuilder()
+		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		
+		return new UserRolePermissionsBuilder(userRolePermissionsDAO.isAccountingModuleActive())
 				.setAD_Role_ID(getAD_Role_ID())
 				.setAlreadyIncludedRolePermissions(includes)
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
 				.setUserLevel(userLevel)
-				.setMenu_AD_Tree_ID(getMenu_Tree_ID())
+				.setMenuInfo(getMenuInfo())
 				//
 				.setOrgPermissions(orgPermissions)
 				.setTablePermissions(tablePermissions)
@@ -185,8 +193,8 @@ class UserRolePermissions implements IUserRolePermissions
 				.setMiscPermissions(miscPermissions)
 				//
 				.setConstraints(constraints)
-		//
-		;
+				//
+				;
 	}
 
 	@Override
@@ -207,7 +215,7 @@ class UserRolePermissions implements IUserRolePermissions
 		sb.append("@AD_Role_ID@").append("=").append(getName())
 				.append(" - ").append("@IsCanExport@").append("=@").append(DisplayType.toBooleanString(isCanExport())).append("@")
 				.append(" - ").append("@IsCanReport@").append("=@").append(DisplayType.toBooleanString(isCanReport())).append("@") //
-		;
+				;
 
 		// All included roles
 		if (!includes.isEmpty())
@@ -222,20 +230,14 @@ class UserRolePermissions implements IUserRolePermissions
 		sb.append(Env.NL).append(Env.NL);
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
-				.appendTo(sb
-						, miscPermissions
-						, constraints
-						, orgPermissions
-						, tablePermissions
-						, columnPermissions
-						, recordPermissions
-				// don't show followings because they could be to big, mainly when is not a manual role:
-				// , windowPermissions
-				// , processPermissions
-				// , taskPermissions
-				// , formPermissions
-				// , workflowPermissions
-				);
+				.appendTo(sb, miscPermissions, constraints, orgPermissions, tablePermissions, columnPermissions, recordPermissions
+		// don't show followings because they could be to big, mainly when is not a manual role:
+		// , windowPermissions
+		// , processPermissions
+		// , taskPermissions
+		// , formPermissions
+		// , workflowPermissions
+		);
 
 		return sb.toString();
 	}
@@ -258,8 +260,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return all_AD_Role_IDs;
 	}
 
-	@Override
-	public boolean isAccessAllOrgs()
+	private boolean isAccessAllOrgs()
 	{
 		return hasPermission(PERMISSION_AccessAllOrgs);
 	}
@@ -308,8 +309,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return userLevel;
 	}
 
-	@Override
-	public boolean isPersonalAccess()
+	private boolean isPersonalAccess()
 	{
 		return hasPermission(PERMISSION_PersonalAccess);
 	}
@@ -331,6 +331,22 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return AD_User_ID;
 	}	// getAD_User_ID
+
+	@Override
+	public boolean isSystemAdministrator()
+	{
+		if (getAD_Role_ID() != SYSTEM_ROLE_ID)
+		{
+			return false;
+		}
+
+		// Shall have at access to system organization
+		if (!isOrgAccess(OrgPermission.AD_Org_ID_System, true))
+		{
+			return false;
+		}
+		return true;
+	}
 
 	/**************************************************************************
 	 * Get Client Where Clause Value
@@ -362,8 +378,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param rw read write access
 	 * @return true if access
 	 */
-	@Override
-	public boolean isClientAccess(final int AD_Client_ID, final boolean rw)
+	private boolean isClientAccess(final int AD_Client_ID, final boolean rw)
 	{
 		if (AD_Client_ID == 0 && !rw)
 		{
@@ -379,11 +394,11 @@ class UserRolePermissions implements IUserRolePermissions
 		//
 		return orgPermissions.isClientAccess(AD_Client_ID, rw);
 	}
-	
+
 	@Override
-	public int getMenu_Tree_ID()
+	public UserMenuInfo getMenuInfo()
 	{
-		return menu_AD_Tree_ID;
+		return menuInfo;
 	}
 
 	@Override
@@ -500,7 +515,7 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return orgPermissions.getAD_Org_IDs_AsString();
 	}
-	
+
 	@Override
 	public Set<Integer> getAD_Org_IDs_AsSet()
 	{
@@ -516,7 +531,7 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean isCanReport(final int AD_Table_ID)
 	{
-		if (!isCanReport())						// Role Level block
+		if (!isCanReport())   						// Role Level block
 		{
 			logger.warn("Role denied");
 			return false;
@@ -538,12 +553,12 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean isCanExport(final int AD_Table_ID)
 	{
-		if (!isCanExport())						// Role Level block
+		if (!isCanExport())   						// Role Level block
 		{
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, true)) // ro=true
+		if (!isTableAccess(AD_Table_ID, true))    // ro=true
 		{
 			return false;
 		}
@@ -565,36 +580,24 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean isTableAccess(final int AD_Table_ID, final boolean ro)
 	{
-		if (!isTableAccessLevel(AD_Table_ID, ro))
+		if (!ro)
 		{
-			return false;
+			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
+			if (roleAccessLevel == null)
+			{
+				logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
+				return false;
+			}
+			
+			final TableAccessLevel userLevel = getUserLevel();
+			if(!roleAccessLevel.hasCommonLevels(userLevel))
+			{
+				return false;
+			}
 		}
+
+		//
 		return tablePermissions.isTableAccess(AD_Table_ID, ro);
-	}
-
-	/**
-	 * Access to Table based on Role User Level Table Access Level
-	 *
-	 * @param AD_Table_ID table
-	 * @param ro check read only access otherwise read write access level
-	 * @return has RO/RW access to table
-	 */
-	private boolean isTableAccessLevel(final int AD_Table_ID, final boolean ro)
-	{
-		if (ro)
-		{
-			return true;
-		}
-
-		final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
-		if (roleAccessLevel == null)
-		{
-			logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
-			return false;
-		}
-
-		final TableAccessLevel userLevel = getUserLevel();
-		return roleAccessLevel.hasCommonLevels(userLevel);
 	}
 
 	/**
@@ -624,8 +627,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param ro read only
 	 * @return boolean
 	 */
-	@Override
-	public boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final boolean ro)
+	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final boolean ro)
 	{
 		// if (!isTableAccess(AD_Table_ID, ro)) // No Access to Table
 		// return false;
@@ -649,8 +651,14 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Boolean checkWindowAccess(final int AD_Window_ID)
 	{
-		Boolean retValue = windowPermissions.getReadWritePermission(AD_Window_ID);
+		final Boolean retValue = windowPermissions.getReadWritePermission(AD_Window_ID);
 		return retValue;
+	}
+	
+	@Override
+	public ElementPermission checkWindowPermission(final int AD_Window_ID)
+	{
+		return windowPermissions.getPermission(AD_Window_ID);
 	}
 
 	/**
@@ -744,7 +752,10 @@ class UserRolePermissions implements IUserRolePermissions
 	public String addAccessSQL(final String sql, final String TableNameIn, final boolean fullyQualified, final boolean rw)
 	{
 		// Cut off last ORDER BY clause
+		
+		// contains "SELECT .. FROM .. WHERE .." without ORDER BY
 		final String sqlSelectFromWhere;
+		
 		final String sqlOrderByAndOthers;
 		final int idxOrderBy = sql.lastIndexOf(" ORDER BY ");
 		if (idxOrderBy >= 0)
@@ -757,35 +768,35 @@ class UserRolePermissions implements IUserRolePermissions
 			sqlSelectFromWhere = sql;
 			sqlOrderByAndOthers = null;
 		}
-		
+
 		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, TableNameIn, fullyQualified, rw);
-		if(Check.isEmpty(sqlAccessSqlWhereClause, true))
+		if (Check.isEmpty(sqlAccessSqlWhereClause, true))
 		{
 			logger.trace("Final SQL (no access sql applied): {}", sql);
 			return sql;
 		}
-		
+
 		final String sqlFinal;
-		if(sqlOrderByAndOthers == null)
+		if (sqlOrderByAndOthers == null)
 		{
-			sqlFinal = sqlSelectFromWhere + " "+sqlAccessSqlWhereClause;
+			sqlFinal = sqlSelectFromWhere + " " + sqlAccessSqlWhereClause;
 		}
 		else
 		{
-			sqlFinal = sqlSelectFromWhere + " "+sqlAccessSqlWhereClause + sqlOrderByAndOthers;
+			sqlFinal = sqlSelectFromWhere + " " + sqlAccessSqlWhereClause + sqlOrderByAndOthers;
 		}
-		
+
 		logger.trace("Final SQL: {}", sqlFinal);
 		return sqlFinal;
 	}	// addAccessSQL
-	
+
 	private final String buildAccessSQL(final String sqlSelectFromWhere, final String TableNameIn, final boolean fullyQualified, final boolean rw)
 	{
-		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder(); 
+		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
 
 		// Parse SQL
 		final AccessSqlParser asp = new AccessSqlParser(sqlSelectFromWhere);
-		final AccessSqlParser.TableInfo[] ti = asp.getTableInfo(asp.getMainSqlIndex());
+		final AccessSqlParser.TableInfo[] aspTableInfos = asp.getTableInfo(asp.getMainSqlIndex());
 
 		// Do we have to add WHERE or AND
 		if (asp.getMainSql().indexOf(" WHERE ") == -1)
@@ -799,20 +810,20 @@ class UserRolePermissions implements IUserRolePermissions
 
 		// Use First Table
 		String tableName = "";
-		if (ti.length > 0)
+		if (aspTableInfos.length > 0)
 		{
-			tableName = ti[0].getSynonym();
+			tableName = aspTableInfos[0].getSynonym();
 			if (tableName.length() == 0)
 			{
-				tableName = ti[0].getTableName();
+				tableName = aspTableInfos[0].getTableName();
 			}
 		}
 		if (TableNameIn != null && !tableName.equals(TableNameIn))
 		{
 			String msg = "TableName not correctly parsed - TableNameIn=" + TableNameIn + " - " + asp;
-			if (ti.length > 0)
+			if (aspTableInfos.length > 0)
 			{
-				msg += " - #1 " + ti[0];
+				msg += " - #1 " + aspTableInfos[0];
 			}
 			msg += "\n SQL=" + sqlSelectFromWhere;
 			final AdempiereException ex = new AdempiereException(msg);
@@ -821,7 +832,8 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		if (!tableName.equals(I_AD_PInstance_Log.Table_Name))
-		{ // globalqss, bug 1662433
+		{ 
+			// globalqss, bug 1662433
 			// Client Access
 			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
 			if (fullyQualified)
@@ -848,9 +860,9 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// ** Data Access **
-		for (int i = 0; i < ti.length; i++)
+		for (int i = 0; i < aspTableInfos.length; i++)
 		{
-			final String TableName = ti[i].getTableName();
+			final String TableName = aspTableInfos[i].getTableName();
 
 			// [ 1644310 ] Rev. 1292 hangs on start
 			if (TableName.toUpperCase().endsWith("_TRL"))
@@ -877,7 +889,7 @@ class UserRolePermissions implements IUserRolePermissions
 			String keyColumnNameFQ = "";
 			if (fullyQualified)
 			{
-				keyColumnNameFQ = ti[i].getSynonym();	// table synonym
+				keyColumnNameFQ = aspTableInfos[i].getSynonym();	// table synonym
 				if (keyColumnNameFQ.length() == 0)
 				{
 					keyColumnNameFQ = TableName;
@@ -899,16 +911,13 @@ class UserRolePermissions implements IUserRolePermissions
 				sqlAcessSqlWhereClause.append("\n /* security-record */ AND ").append(recordWhere);
 				logger.trace("Record access: {}", recordWhere);
 			}
-		}	// for all table info
+		}   	// for all table info
 
 		// Dependent Records (only for main SQL)
 		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, asp, tableName, rw);
-		
+
 		return sqlAcessSqlWhereClause.toString();
 	}
-
-	
-	
 
 	/**
 	 * VIEW - Can I view record in Table with given TableLevel. <code>
@@ -919,7 +928,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * 						_C_	011		2	Client shared info
 	 * 						__O	001		1	Organization info
 	 *  </code>
-	 * 
+	 *
 	 * @param ctx context
 	 * @param tableAcessLevel AccessLevel
 	 * @return true/false
@@ -937,102 +946,111 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// Notification
+		// TODO: consider deleting it because it's not used
 		final String tableAcessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), tableAcessLevel.getAD_Message());
 		final String userAccessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), userAccessLevel.getAD_Message());
 		MetasfreshLastError.saveWarning(logger, "AccessTableNoView", "Required=" + tableAcessLevel + "(" + tableAcessLevelTrl + ") != UserLevel=" + userAccessLevelTrl);
 		return false;
 	}	// canView
 
-	/**
-	 * UPADATE - Can I Update the record.
-	 * Access error info (AccessTableNoUpdate) is saved in the log
-	 *
-	 * @param AD_Client_ID comntext to derive client/org/user level
-	 * @param AD_Org_ID number of the current window to retrieve context
-	 * @param AD_Table_ID table
-	 * @param Record_ID record id
-	 * @param createError boolean
-	 * @return true if you can update
-	 *         see org.compiere.model.MTable#dataSave(boolean)
-	 **/
 	@Override
-	public boolean canUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID, final boolean createError)
+	public boolean canView(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
 	{
-		final TableAccessLevel userLevel = getUserLevel();
+		final boolean accessReadWrite = false;
+		final String errmsg = checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+		return errmsg == null;
+	}
 
-		if (userLevel.isSystem())
+	@Override
+	public String checkCanView(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
+	{
+		final boolean accessReadWrite = false;
+		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+	}
+
+	@Override
+	public String checkCanUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
+	{
+		final boolean accessReadWrite = true;
+		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+	}
+
+	@Override
+	public boolean canUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID, final boolean saveWarning)
+	{
+		final String errmsg = checkCanUpdate(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID);
+		if(errmsg == null)
 		{
 			return true;
 		}
-
-		boolean retValue = true;
-		String whatMissing = "";
-
-		// System == Client=0 & Org=0
-		if (AD_Client_ID == 0 && AD_Org_ID == 0
-				&& !userLevel.isSystem())
+		else
 		{
-			retValue = false;
-			whatMissing += "S";
-		}
-
-		// Client == Client!=0 & Org=0
-		else if (AD_Client_ID != 0 && AD_Org_ID == 0
-				&& !userLevel.isClient())
-		{
-			if (userLevel.isOrganization() && isOrgAccess(AD_Org_ID, true))
+			if(saveWarning)
 			{
-				;	// Client+Org with access to *
+				MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate", errmsg);
+				logger.warn("No update access: {}, {}", errmsg, this);			
 			}
-			else
-			{
-				retValue = false;
-				whatMissing += "C";
-			}
+			return false;
 		}
+	}
 
-		// Organization == Client!=0 & Org!=0
-		else if (AD_Client_ID != 0 && AD_Org_ID != 0
-				&& !userLevel.isOrganization())
+	/** @return error message or <code>null</code> if OK */
+	private final String checkCanAccessRecord(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID, final boolean accessReadWrite)
+	{
+		final TableAccessLevel userLevel = getUserLevel();
+
+		// If user level is system then it can access anything
+		// TODO: check if we really need this rule here
+		if (userLevel.isSystem())
 		{
-			retValue = false;
-			whatMissing += "O";
+			return null; // OK
 		}
 
+		final List<String> missingAccesses = new ArrayList<>();
+
+		// Check user level vs required level (based on AD_Client_ID/AD_Org_ID)
+		if(accessReadWrite)
+		{
+			final TableAccessLevel requiredLevel = TableAccessLevel.forClientOrg(AD_Client_ID, AD_Org_ID);
+			if(!requiredLevel.canBeAccessedBy(userLevel))
+			{
+				missingAccesses.add(requiredLevel.toString());
+			}
+		}
+		
+		//
 		// Client Access: Verify if the role has access to the given client - teo_sarca, BF [ 1982398 ]
-		if (retValue)
+		if (missingAccesses.isEmpty() && !isClientAccess(AD_Client_ID, accessReadWrite))
 		{
-			retValue = isClientAccess(AD_Client_ID, true); // r/w access
+			missingAccesses.add("client access");
 		}
 
 		// Org Access: Verify if the role has access to the given organization - teo_sarca, patch [ 1628050 ]
-		if (retValue)
+		if (missingAccesses.isEmpty() && !isOrgAccess(AD_Org_ID, accessReadWrite))
 		{
-			retValue = isOrgAccess(AD_Org_ID, true); // r/w access
-			whatMissing = "W";
+			missingAccesses.add("organization access");
 		}
 
-		// Data Access
-		if (retValue)
+		// Table Access
+		if (missingAccesses.isEmpty() && !isTableAccess(AD_Table_ID, !accessReadWrite))
 		{
-			retValue = isTableAccess(AD_Table_ID, false);
+			missingAccesses.add("table access");
 		}
 
-		if (retValue && Record_ID > 0)
+		// Record Access
+		if (Record_ID > 0 && missingAccesses.isEmpty() && !isRecordAccess(AD_Table_ID, Record_ID, !accessReadWrite))
 		{
-			retValue = isRecordAccess(AD_Table_ID, Record_ID, false);
+			missingAccesses.add("record access");
 		}
 
-		if (!retValue && createError)
+		if(!missingAccesses.isEmpty())
 		{
-			MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate",
-					"AD_Client_ID=" + AD_Client_ID
-							+ ", AD_Org_ID=" + AD_Org_ID + ", UserLevel=" + userLevel
-							+ " => missing=" + whatMissing);
-			logger.warn(toString());
+			final String adMessage = accessReadWrite ? "AccessTableNoUpdate" : "AccessTableNoView";
+			return "@" + adMessage + "@: " + Joiner.on(", ").join(missingAccesses);
 		}
-		return retValue;
-	}	// canUpdate
+		
+		return null; // OK
+	}
 
 	/**
 	 * Return Where clause for Record Access
@@ -1049,15 +1067,13 @@ class UserRolePermissions implements IUserRolePermissions
 		// Don't ignore Privacy Access
 		if (!isPersonalAccess())
 		{
-			final String lockedIDs = MPrivateAccess.getLockedRecordWhere(AD_Table_ID, getAD_User_ID());
-			if (lockedIDs != null)
+			final String lockedIDs = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
+					+ " WHERE AD_Table_ID = " + AD_Table_ID + " AND AD_User_ID <> " + getAD_User_ID() + " AND IsActive = 'Y' )";
+			if (sb.length() > 0)
 			{
-				if (sb.length() > 0)
-				{
-					sb.append(" AND ");
-				}
-				sb.append(keyColumnName).append(lockedIDs);
+				sb.append(" AND ");
 			}
+			sb.append(keyColumnName).append(lockedIDs);
 		}
 		//
 		return sb.toString();
@@ -1083,15 +1099,15 @@ class UserRolePermissions implements IUserRolePermissions
 	private void retainDocActionsWithAccess(final IDocActionOptionsContext optionsCtx)
 	{
 		final Set<String> docActions = optionsCtx.getDocActions();
-		
+
 		// Do nothing if there are no options to filter
-		if(docActions.isEmpty())
+		if (docActions.isEmpty())
 		{
 			return;
 		}
 
 		final int docTypeId = optionsCtx.getC_DocType_ID();
-		if(docTypeId <= 0)
+		if (docTypeId <= 0)
 		{
 			return;
 		}
@@ -1102,13 +1118,13 @@ class UserRolePermissions implements IUserRolePermissions
 		docActionsAllowed.retainAll(allDocActionsAllowed);
 		optionsCtx.setDocActions(docActionsAllowed);
 	}
-	
+
 	private final Set<String> getAllowedDocActions(final int adClientId, final int docTypeId)
 	{
 		final ArrayKey key = Util.mkKey(adClientId, docTypeId);
-		return docActionsAllowed.computeIfAbsent(key, (k)->retrieveAllowedDocActions(adClientId, docTypeId));
+		return docActionsAllowed.computeIfAbsent(key, (k) -> retrieveAllowedDocActions(adClientId, docTypeId));
 	}
-	
+
 	private final Set<String> retrieveAllowedDocActions(final int adClientId, final int docTypeId)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
@@ -1118,7 +1134,7 @@ class UserRolePermissions implements IUserRolePermissions
 				+ " INNER JOIN AD_Ref_List rl ON (rl.AD_Reference_ID=135 and rl.AD_Ref_List_ID=a.AD_Ref_List_ID)"
 				+ " WHERE a.IsActive='Y' AND a.AD_Client_ID=? AND a.C_DocType_ID=?" // #1,2
 				+ " AND " + getIncludedRolesWhereClause("a.AD_Role_ID", sqlParams);
-		
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1133,7 +1149,7 @@ class UserRolePermissions implements IUserRolePermissions
 				final String op = rs.getString(1);
 				options.add(op);
 			}
-			
+
 			return options.build();
 		}
 		catch (final SQLException e)
@@ -1170,7 +1186,7 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 			Services.get(IRolePermLoggingBL.class).logDocActionAccess(getAD_Role_ID(), optionsCtx.getC_DocType_ID(), targetDocAction, access);
 		}
-		
+
 		optionsCtx.setDocActionToUse(targetDocAction);
 	}
 

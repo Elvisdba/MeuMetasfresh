@@ -24,20 +24,21 @@ package de.metas.printing.model.validator;
 
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MSession;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.printing.model.I_AD_User_Login;
 
@@ -93,17 +94,17 @@ public class AD_User_Login
 		final String loginUsername = loginRequest.getUserName();
 		final String loginPassword = loginRequest.getPassword();
 		final Login login = new Login(loginCtx);
-		final KeyNamePair[] userRoles = login.getRoles(loginUsername, loginPassword);
-		if (userRoles == null || userRoles.length == 0)
+		final Set<KeyNamePair> userRoles = login.authenticate(loginUsername, loginPassword);
+		if (userRoles.isEmpty())
 		{
 			throw new AdempiereException("User has no roles assigned: " + loginUsername);
 		}
-		else if (userRoles.length != 1)
+		else if (userRoles.size() != 1)
 		{
 			// NOTE: don't show which roles are there because this message goes to client and it could be a security issue.
 			throw new AdempiereException("User has more than one role assigned.");
 		}
-		final KeyNamePair userRole = userRoles[0];
+		final KeyNamePair userRole = userRoles.iterator().next();
 		Check.assume(userRole != null && userRole.getKey() > 0, "Role shall exist: {}", userRole);
 		final int adSessionId = Env.getAD_Session_ID(loginCtx);
 		if (adSessionId <= 0)
@@ -124,35 +125,35 @@ public class AD_User_Login
 		//
 		// 2. Get AD_Clients
 		// => Context update: AD_Role_ID
-		final KeyNamePair[] userADClients = login.getClients(userRole);
-		if (userADClients == null || userADClients.length == 0)
+		final Set<KeyNamePair> userADClients = login.setRoleAndGetClients(userRole);
+		if (userADClients == null || userADClients.isEmpty())
 		{
 			throw new AdempiereException("User is not assigned to an AD_Client");
 		}
-		else if (userADClients.length != 1)
+		else if (userADClients.size() != 1)
 		{
 			throw new AdempiereException("User is assigned to more than one AD_Client");
 		}
-		final KeyNamePair userADClient = userADClients[0];
+		final KeyNamePair userADClient = userADClients.iterator().next();
 		Check.assumeNotNull(userADClient, "userADClient not null");
 
 		//
 		// 3. Get AD_Orgs
 		// => Context update: AD_Client_ID
-		final KeyNamePair[] userOrgs = login.getOrgs(userADClient);
+		final Set<KeyNamePair> userOrgs = login.setClientAndGetOrgs(userADClient);
 		final KeyNamePair userOrg;
-		if (userOrgs == null || userOrgs.length == 0)
+		if (userOrgs == null || userOrgs.isEmpty())
 		{
 			throw new AdempiereException("User is not assigned to an AD_Org");
 		}
-		else if (userOrgs.length != 1)
+		else if (userOrgs.size() != 1)
 		{
 			// if there are more then Orgs, we are going with organization "*"
 			userOrg = new KeyNamePair(0, "*");
 		}
 		else
 		{
-			userOrg = userOrgs[0];
+			userOrg = userOrgs.iterator().next();
 		}
 
 		//
@@ -167,10 +168,10 @@ public class AD_User_Login
 
 		//
 		// Update newly create AD_Session
-		final I_AD_Session session = InterfaceWrapperHelper.create(MSession.get(ctx, adSessionId), I_AD_Session.class);
+		final MFSession session = Services.get(ISessionBL.class).getSessionById(ctx, adSessionId);
 		Check.assumeNotNull(session, "session not null");
-		session.setHostKey(hostKey);
-		InterfaceWrapperHelper.save(session);
+		session.setHostKey(hostKey, loginCtx);
+		session.updateContext(loginCtx);
 
 		//
 		// Update the login request

@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -47,9 +49,9 @@ import org.compiere.model.MPriceList;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 
 /**
@@ -59,7 +61,7 @@ import de.metas.interfaces.I_C_OrderLine;
  * @author t.schoeneberg@metas.de: invoices are never consolidated if {@link CustomColNames#C_BPartner_ALLOW_CONSOLIDATE_INVOICE} is 'N'
  */
 // metas: synched with rev. 9749
-public class InvoiceGenerate extends SvrProcess
+public class InvoiceGenerate extends JavaProcess
 {
 
 	final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -96,7 +98,7 @@ public class InvoiceGenerate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

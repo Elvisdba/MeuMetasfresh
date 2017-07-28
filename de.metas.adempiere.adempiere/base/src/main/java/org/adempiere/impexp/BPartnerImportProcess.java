@@ -25,9 +25,11 @@ package org.adempiere.impexp;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
@@ -42,7 +44,6 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MContactInterest;
 import org.compiere.model.MLocation;
-import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BPartner;
 import org.compiere.util.DB;
@@ -242,7 +243,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		// 
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		if (previousImportRecord == null || !Check.equals(importRecord.getValue(), previousBPValue))
+		if (previousImportRecord == null || !Objects.equals(importRecord.getValue(), previousBPValue))
 		{
 			bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 			createUpdateBPartner(importRecord);
@@ -373,6 +374,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			location.setPostal_Add(importRecord.getPostal_Add());
 			InterfaceWrapperHelper.save(location);
 			bpartnerLocation.setC_Location(location);
+			
+			// also set isBillTo and IsShipTo flags
+			
+			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
+			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
 
 			if (importRecord.getPhone() != null)
 				bpartnerLocation.setPhone(importRecord.getPhone());
@@ -381,6 +387,9 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			if (importRecord.getFax() != null)
 				bpartnerLocation.setFax(importRecord.getFax());
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
+			
+			
+			
 			InterfaceWrapperHelper.save(bpartnerLocation);
 		}
 		else 	// New Location
@@ -403,6 +412,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			bpartnerLocation.setPhone(importRecord.getPhone());
 			bpartnerLocation.setPhone2(importRecord.getPhone2());
 			bpartnerLocation.setFax(importRecord.getFax());
+			
+			// set isShipTo and isBillTo
+			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
+			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
+			
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpartnerLocation);
 			log.trace("Insert BP Location - " + bpartnerLocation.getC_BPartner_Location_ID());
@@ -463,7 +477,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		if (!Check.isEmpty(importContactName, true)
 				|| !Check.isEmpty(importRecord.getEMail(), true))
 		{
-			user = new MUser(bpartner);
+			user = Services.get(IBPartnerBL.class).createDraftContact(bpartner);
 			if (importRecord.getC_Greeting_ID() > 0)
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 

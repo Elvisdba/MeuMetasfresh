@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Attribute_Snapshot
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1855003729L;
+	private static final long serialVersionUID = 1213728625L;
 
     /** Standard Constructor */
     public X_M_HU_Attribute_Snapshot (Properties ctx, int M_HU_Attribute_Snapshot_ID, String trxName)
@@ -25,6 +24,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
       /** if (M_HU_Attribute_Snapshot_ID == 0)
         {
 			setM_Attribute_ID (0);
+			setM_HU_Attribute_Snapshot_ID (0);
 			setM_HU_ID (0);
 			setSnapshot_UUID (null);
         } */
@@ -111,6 +111,28 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	public int getM_HU_Attribute_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Attribute_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Handling Units Attribute.
+		@param M_HU_Attribute_Snapshot_ID Handling Units Attribute	  */
+	@Override
+	public void setM_HU_Attribute_Snapshot_ID (int M_HU_Attribute_Snapshot_ID)
+	{
+		if (M_HU_Attribute_Snapshot_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Attribute_Snapshot_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Attribute_Snapshot_ID, Integer.valueOf(M_HU_Attribute_Snapshot_ID));
+	}
+
+	/** Get Handling Units Attribute.
+		@return Handling Units Attribute	  */
+	@Override
+	public int getM_HU_Attribute_Snapshot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Attribute_Snapshot_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -256,7 +278,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -278,7 +300,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumberInitial);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

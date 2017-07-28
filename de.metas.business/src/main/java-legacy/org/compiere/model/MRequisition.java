@@ -24,14 +24,15 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.Msg;
 
 /**
  *	Requisition Model
@@ -382,7 +383,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
@@ -605,7 +606,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 */
 	public String getUserName()
 	{
-		return MUser.get(getCtx(), getAD_User_ID()).getName();
+		return Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getAD_User_ID()).getName();
 	}	//	getUserName
 
 	/**

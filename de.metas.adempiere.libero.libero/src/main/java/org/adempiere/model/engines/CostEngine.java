@@ -26,12 +26,12 @@ package org.adempiere.model.engines;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,6 +57,7 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
 import org.compiere.model.MCost;
@@ -75,18 +76,19 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Cost;
 import org.eevolution.model.MPPCostCollector;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.product.IProductBL;
 
 /**
  * Cost Engine
- * 
+ *
  * @author victor.perez@e-evolution.com http://www.e-evolution.com
  *
  */
@@ -102,8 +104,12 @@ public class CostEngine
 
 	public BigDecimal getResourceStandardCostRate(I_PP_Cost_Collector cc, int S_Resource_ID, CostDimension d, String trxName)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
-		final I_M_Product resourceProduct = MProduct.forS_Resource_ID(ctx, S_Resource_ID, ITrx.TRXNAME_None);
+		
+		final I_S_Resource resource = InterfaceWrapperHelper.create(ctx, S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
+		
+		final I_M_Product resourceProduct =resourceProductService.retrieveProductForResource(resource);
 		return getProductStandardCostPrice(
 				cc,
 				resourceProduct,
@@ -114,8 +120,14 @@ public class CostEngine
 	public BigDecimal getResourceActualCostRate(I_PP_Cost_Collector cc, int S_Resource_ID, CostDimension d, String trxName)
 	{
 		if (S_Resource_ID <= 0)
-			return Env.ZERO;
-		final MProduct resourceProduct = MProduct.forS_Resource_ID(Env.getCtx(), S_Resource_ID, null);
+		{
+			return BigDecimal.ZERO;
+		}
+		
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		final I_S_Resource resource = InterfaceWrapperHelper.create(Env.getCtx(), S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
+		
+		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(resource);
 		return getProductActualCostPrice(
 				cc,
 				resourceProduct,
@@ -152,7 +164,7 @@ public class CostEngine
 	}
 
 	/**
-	 * 
+	 *
 	 * @param cc
 	 * @param product
 	 * @param as
@@ -198,7 +210,7 @@ public class CostEngine
 	public BigDecimal getProductStandardCostPrice(I_PP_Cost_Collector cc, I_M_Product product, I_C_AcctSchema as, I_M_CostElement element)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(cc);
-		
+
 		final CostDimension d = new CostDimension(product,
 				as, as.getM_CostType_ID(),
 				0, // AD_Org_ID,
@@ -213,7 +225,7 @@ public class CostEngine
 		{
 			return BigDecimal.ZERO;
 		}
-		
+
 		final BigDecimal costs = oc.getCurrentCostPrice().add(oc.getCurrentCostPriceLL());
 		return roundCost(costs, as.getC_AcctSchema_ID());
 	}
@@ -243,7 +255,7 @@ public class CostEngine
 
 	/**
 	 * Get Cost Detail
-	 * 
+	 *
 	 * @param model Model Inventory Line
 	 * @param as Account Schema
 	 * @param M_CostElement_ID Cost Element
@@ -276,7 +288,7 @@ public class CostEngine
 
 	/**
 	 * Create Cost Detail (Material Issue, Material Receipt)
-	 * 
+	 *
 	 * @param model
 	 * @param mtrx Material Transaction
 	 */
@@ -402,7 +414,7 @@ public class CostEngine
 				|| MCostElement.COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType);
 	}
 
-	private Collection<MCostElement> getCostElements(Properties ctx)
+	private Collection<I_M_CostElement> getCostElements(Properties ctx)
 	{
 		return MCostElement.getByCostingMethod(ctx, getCostingMethod());
 	}
@@ -424,7 +436,7 @@ public class CostEngine
 	{
 		final String whereClause = MCostDetail.COLUMNNAME_PP_Cost_Collector_ID + "=?"
 				+ " AND " + MCostDetail.COLUMNNAME_M_CostElement_ID + "=?";
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(cc);
 		MCostDetail cd = new Query(ctx, MCostDetail.Table_Name, whereClause, trxName)
@@ -451,7 +463,7 @@ public class CostEngine
 
 	/**
 	 * Create & Proce Cost Detail for Variances
-	 * 
+	 *
 	 * @param ccv
 	 * @param amt
 	 * @param qty
@@ -497,20 +509,26 @@ public class CostEngine
 	public void createActivityControl(MPPCostCollector cc)
 	{
 		if (!cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl))
+		{
 			return;
+		}
+		
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
+		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(cc.getS_Resource());
+		
 		//
-		final I_M_Product product = MProduct.forS_Resource_ID(cc.getCtx(), cc.getS_Resource_ID(), null);
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(cc.getAD_Client_ID());
 		final BigDecimal qty = routingService.getResourceBaseValue(cc.getS_Resource_ID(), cc);
 		for (MAcctSchema as : getAcctSchema(cc))
 		{
-			for (MCostElement element : getCostElements(cc.getCtx()))
+			for (I_M_CostElement element : getCostElements(cc.getCtx()))
 			{
 				if (!isActivityControlElement(element))
 				{
 					continue;
 				}
-				final CostDimension d = new CostDimension(product,
+				final CostDimension d = new CostDimension(resourceProduct,
 						as,
 						as.getM_CostType_ID(),
 						0, // AD_Org_ID,
@@ -554,7 +572,9 @@ public class CostEngine
 		}
 		else
 		{
-			product = MProduct.forS_Resource_ID(ccuv.getCtx(), ccuv.getS_Resource_ID(), null);
+			final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+			product = resourceProductService.retrieveProductForResource(ccuv.getS_Resource());
+			
 			final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ccuv.getAD_Client_ID());
 			qty = routingService.getResourceBaseValue(ccuv.getS_Resource_ID(), ccuv);
 		}
@@ -583,7 +603,9 @@ public class CostEngine
 		if (cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl))
 		{
 			final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
-			product = MProduct.forS_Resource_ID(cc.getCtx(), node.getS_Resource_ID(), null);
+			
+			final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+			product = resourceProductService.retrieveProductForResource(node.getS_Resource());
 		}
 		else if (cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue))
 		{
@@ -598,14 +620,14 @@ public class CostEngine
 		I_PP_Cost_Collector ccrv = null; // Cost Collector - Rate Variance
 		for (MAcctSchema as : getAcctSchema(cc))
 		{
-			for (MCostElement element : getCostElements(cc.getCtx()))
+			for (I_M_CostElement element : getCostElements(cc.getCtx()))
 			{
 				final MCostDetail cd = getCostDetail(cc, element.getM_CostElement_ID());
 				if (cd == null)
 				{
 					continue;
 				}
-				
+
 				//
 				final BigDecimal qty = cd.getQty();
 				final BigDecimal priceStd = getProductStandardCostPrice(cc, product, as, element);
@@ -616,7 +638,7 @@ public class CostEngine
 				{
 					continue;
 				}
-				
+
 				//
 				if (ccrv == null)
 				{
@@ -656,8 +678,11 @@ public class CostEngine
 		{
 			for (I_M_CostElement element : getCostElements(cc.getCtx()))
 			{
-				final I_M_Product resourcePStd = MProduct.forS_Resource_ID(cc.getCtx(), std_resource_id, null);
-				final I_M_Product resourcePActual = MProduct.forS_Resource_ID(cc.getCtx(), actual_resource_id, null);
+				final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+				
+				final I_M_Product resourcePStd = resourceProductService.retrieveProductForResource(cc.getPP_Order_Node().getAD_WF_Node().getS_Resource()); // std_resource;
+				final I_M_Product resourcePActual = resourceProductService.retrieveProductForResource(cc.getS_Resource()); // actual_resource;
+				
 				final BigDecimal priceStd = getProductActualCostPrice(cc, resourcePStd, as, element, cc.get_TrxName());
 				final BigDecimal priceActual = getProductActualCostPrice(cc, resourcePActual, as, element, cc.get_TrxName());
 				if (priceStd.compareTo(priceActual) == 0)
@@ -692,7 +717,7 @@ public class CostEngine
 	public void createReversals(final I_PP_Cost_Collector reversalCostCollector)
 	{
 		Check.assumeNotNull(reversalCostCollector, "reversalCostCollector not null");
-		
+
 		//
 		// Get the original cost collector
 		final I_PP_Cost_Collector costCollector = reversalCostCollector.getReversal();
@@ -701,13 +726,13 @@ public class CostEngine
 		//
 		// Get the original cost details
 		final List<I_M_CostDetail> costDetails = Services.get(IPPCostCollectorDAO.class).retrieveCostDetails(costCollector);
-		
+
 		for (final I_M_CostDetail cd : costDetails)
 		{
 			createReversal(cd, reversalCostCollector);
 		}
 	}
-	
+
 	private final void createReversal(final I_M_CostDetail costDetail, final I_PP_Cost_Collector reversalCostCollector)
 	{
 		final I_M_CostDetail costDetailReversal = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class, costDetail);
@@ -719,7 +744,7 @@ public class CostEngine
 		costDetailReversal.setDeltaAmt(costDetail.getDeltaAmt().negate());
 		costDetailReversal.setProcessed(false);
 		InterfaceWrapperHelper.save(costDetailReversal);
-		
+
 		processCostDetail(costDetailReversal);
 	}
 

@@ -3,6 +3,9 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
+import java.awt.image.BufferedImage;
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -32,6 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -43,6 +47,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IInOutProducer;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
@@ -50,6 +55,30 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  */
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
+	/**
+	 * @param receiptSchedule
+	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
+	 */
+	BigDecimal getQtyOrderedTUOrNull(I_M_ReceiptSchedule receiptSchedule);
+
+	/**
+	 * Same as {@link #getQtyOrderedTUOrNull(I_M_ReceiptSchedule)} but it will return zero instead of <code>null</code>.
+	 */
+	BigDecimal getQtyOrderedTUOrZero(I_M_ReceiptSchedule receiptSchedule);
+
+	/**
+	 * 
+	 * @param receiptSchedule
+	 * @return qty ordered minus qty moved (TU)
+	 */
+	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
+	
+	default BigDecimal getQtyToMoveCU(I_M_ReceiptSchedule receiptSchedule)
+	{
+		return Services.get(IReceiptScheduleBL.class).getQtyMoved(receiptSchedule);
+	}
+
+	
 	/**
 	 * Create Receipts Producer.
 	 *
@@ -119,4 +148,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 * @see #setInitialAttributeValueDefaults(IAllocationRequest, List)
 	 */
 	IAllocationRequest setInitialAttributeValueDefaults(IAllocationRequest request, de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule);
+
+	void attachPhoto(I_M_ReceiptSchedule receiptSchedule, String filename, BufferedImage image);
 }

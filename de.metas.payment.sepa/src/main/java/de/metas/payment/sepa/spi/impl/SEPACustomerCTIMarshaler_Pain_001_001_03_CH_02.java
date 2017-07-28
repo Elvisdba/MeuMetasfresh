@@ -50,12 +50,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.jaxb.DynamicObjectFactory;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SepaMarshallerException;
@@ -97,7 +97,7 @@ import de.metas.payment.sepa.spi.ISEPAMarshaller;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
- * <a href=http://www.six-interbank-clearing.com/en/home/standardization/iso-payments/customer-bank/implementation-guidelines.html">here</a>.
+ * <a href="http://www.six-interbank-clearing.com/en/home/standardization/iso-payments/customer-bank/implementation-guidelines.html">here</a>.
  * <p>
  * Important note:<b>This is a partial implementation!!</b> The above-mentioned document specifies 9 different mayment modes ("Zahlarten") for different business case, ranging from scanned ESR-String,
  * domestic transaction to "dowhat you want, it's the banks problem" arbitrary currencies and ways to specify the accounts and banks</b>

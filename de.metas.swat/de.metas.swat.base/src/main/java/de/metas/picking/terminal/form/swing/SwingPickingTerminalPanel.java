@@ -36,7 +36,6 @@ import java.util.List;
 import javax.swing.JFrame;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -57,6 +56,7 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.PickingTerminalPanel;
@@ -273,13 +273,13 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 		}
 	}
 
-	protected final IComponent createPanel(IContainer content, IComponent component, Object constraints)
+	protected final IComponent createPanel(final IContainer content, final IComponent component, final Object constraints)
 	{
 		content.add(component, constraints);
 
-		ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(content);
+		final ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(content);
 		scroll.setUnitIncrementVSB(16);
-		IContainer card = getTerminalFactory().createContainer();
+		final IContainer card = getTerminalFactory().createContainer();
 		card.add(scroll, "growx, growy");
 		return card;
 	}

@@ -30,12 +30,13 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.compiere.util.Ini.IsNotSwingClient;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 
 import com.google.common.base.Optional;
+
+import de.metas.ServerBoot;
 
 /**
  * Servlet used to server images directly from our database
@@ -53,8 +54,8 @@ import com.google.common.base.Optional;
  * @author tsa
  *
  */
-@Conditional(IsNotSwingClient.class)
 @WebServlet("/images/*")
+@Profile(ServerBoot.PROFILE)
 public class ImagesServlet extends HttpServlet
 {
 
@@ -63,7 +64,8 @@ public class ImagesServlet extends HttpServlet
 	 */
 	private static final long serialVersionUID = 6310297538246786722L;
 
-	public static final String PARAM_Width = WebEnv.IMAGE_PARAM_Width;
+	private static final String PARAM_Width = org.compiere.util.WebEnv.IMAGE_PARAM_Width;
+	private static final String LOGO = org.compiere.util.WebEnv.LOGO;
 
 	private final int cacheExpireMinutes = 60;
 	private final CCache<ArrayKey, Optional<byte[]>> imagesCache = new CCache<>(getClass().getName() + "#ImagesCache", 2, cacheExpireMinutes);
@@ -135,7 +137,7 @@ public class ImagesServlet extends HttpServlet
 
 	private final BufferedImage retrieveImageByName(final String imageName)
 	{
-		if (WebEnv.LOGO.equals(imageName))
+		if (LOGO.equals(imageName))
 		{
 			BufferedImage image = retrieveLogoImage();
 			if (image == null)

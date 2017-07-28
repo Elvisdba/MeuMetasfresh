@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Storage_Snapshot
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 619835881L;
+	private static final long serialVersionUID = 134855987L;
 
     /** Standard Constructor */
     public X_M_HU_Storage_Snapshot (Properties ctx, int M_HU_Storage_Snapshot_ID, String trxName)
@@ -26,8 +25,9 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
         {
 			setC_UOM_ID (0);
 			setM_HU_ID (0);
+			setM_HU_Storage_Snapshot_ID (0);
 			setM_Product_ID (0);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
 			setSnapshot_UUID (null);
         } */
     }
@@ -152,6 +152,28 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** Set Handling Units Storage Snapshot.
+		@param M_HU_Storage_Snapshot_ID Handling Units Storage Snapshot	  */
+	@Override
+	public void setM_HU_Storage_Snapshot_ID (int M_HU_Storage_Snapshot_ID)
+	{
+		if (M_HU_Storage_Snapshot_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Storage_Snapshot_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Storage_Snapshot_ID, Integer.valueOf(M_HU_Storage_Snapshot_ID));
+	}
+
+	/** Get Handling Units Storage Snapshot.
+		@return Handling Units Storage Snapshot	  */
+	@Override
+	public int getM_HU_Storage_Snapshot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Storage_Snapshot_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -207,7 +229,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

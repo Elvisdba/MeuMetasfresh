@@ -47,6 +47,8 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -88,7 +90,6 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReplicationStrategy;
-import org.compiere.model.MSession;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -285,16 +286,16 @@ public class ImportHelper implements IImportHelper
 		catch (final AdempiereException e)
 		{
 			throw new ReplicationException(MSG_EXPValueFormatNotResolved, e)
-					.addParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
-					.addParameter(I_AD_Client.COLUMNNAME_Value, EXP_Format_Value)
-					.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
+					.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
+					.setParameter(I_AD_Client.COLUMNNAME_Value, EXP_Format_Value)
+					.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
 		}
 
 		if (expFormatPO == null || expFormatPO.getEXP_Format_ID() <= 0)
 		{
 			throw new ReplicationException(MSG_EXPFormatNotFound)
-					.addParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
-					.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
+					.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
+					.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
 		}
 		log.info("expFormat = " + expFormatPO.toString());
 
@@ -338,7 +339,7 @@ public class ImportHelper implements IImportHelper
 		catch (final Exception e)
 		{
 			throw new ReplicationException(MSG_CantImport, e)
-					.addParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, rootElement);
+					.setParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, rootElement);
 		}
 
 		Check.assumeNotNull(po, "po not null");
@@ -390,8 +391,8 @@ public class ImportHelper implements IImportHelper
 				catch (final Exception e)
 				{
 					throw new ReplicationException(MSG_CantExport, e)
-							.addParameter(I_AD_ReplicationTable.COLUMNNAME_ReplicationType, X_AD_ReplicationTable.REPLICATIONTYPE_Broadcast)
-							.addParameter("PO", po);
+							.setParameter(I_AD_ReplicationTable.COLUMNNAME_ReplicationType, X_AD_ReplicationTable.REPLICATIONTYPE_Broadcast)
+							.setParameter("PO", po);
 				}
 
 			}
@@ -406,8 +407,8 @@ public class ImportHelper implements IImportHelper
 				catch (final AdempiereException e)
 				{
 					throw new ReplicationException(MSG_CantExport, e)
-							.addParameter(I_AD_ReplicationTable.COLUMNNAME_ReplicationType, X_AD_ReplicationTable.REPLICATIONTYPE_Merge)
-							.addParameter("PO", po);
+							.setParameter(I_AD_ReplicationTable.COLUMNNAME_ReplicationType, X_AD_ReplicationTable.REPLICATIONTYPE_Merge)
+							.setParameter("PO", po);
 				}
 			}
 			/*
@@ -421,7 +422,7 @@ public class ImportHelper implements IImportHelper
 			{
 				// Replication Type is not one of the possible values...ERROR
 				throw new ReplicationException(MSG_EXPReplicationTypeNonValidType)
-						.addParameter(I_AD_ReplicationTable.COLUMNNAME_ReplicationType, ReplicationType);
+						.setParameter(I_AD_ReplicationTable.COLUMNNAME_ReplicationType, ReplicationType);
 			}
 		}
 	}
@@ -440,7 +441,7 @@ public class ImportHelper implements IImportHelper
 		catch (final Exception e)
 		{
 			throw new ReplicationException(MSG_CantProcessDoc, e)
-					.addParameter(I_AD_ReplicationDocument.COLUMNNAME_C_DocType_ID, document);
+					.setParameter(I_AD_ReplicationDocument.COLUMNNAME_C_DocType_ID, document);
 		}
 
 		InterfaceWrapperHelper.save(po);
@@ -585,7 +586,7 @@ public class ImportHelper implements IImportHelper
 		if (po.get_KeyColumns().length < 1)
 		{
 			throw new ReplicationException(MSG_EDIMultiColumnNotSupported)
-					.addParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName());
+					.setParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName());
 		}
 
 		// this is the "modern" comparator.
@@ -618,7 +619,7 @@ public class ImportHelper implements IImportHelper
 			catch (final Exception e)
 			{
 				throw new ReplicationException(MSG_EXPValueFormatNotResolved, e)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine);
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine);
 			}
 		}
 
@@ -711,7 +712,7 @@ public class ImportHelper implements IImportHelper
 			catch (final XPathExpressionException e)
 			{
 				throw new ReplicationException(MSG_CantGetUniqueFormatLine, e)
-						.addParameter(X_EXP_FormatLine.TYPE_XMLElement, line.getValue());
+						.setParameter(X_EXP_FormatLine.TYPE_XMLElement, line.getValue());
 			}
 			log.info("value=[" + value + "]");
 
@@ -734,7 +735,7 @@ public class ImportHelper implements IImportHelper
 			catch (final XPathExpressionException e)
 			{
 				throw new ReplicationException(MSG_CantGetRefferenceNode, e)
-						.addParameter(X_EXP_FormatLine.TYPE_XMLElement, valueXPath);
+						.setParameter(X_EXP_FormatLine.TYPE_XMLElement, valueXPath);
 			}
 
 			log.info("referencedNode = " + referencedNode);
@@ -758,8 +759,8 @@ public class ImportHelper implements IImportHelper
 				catch (final Exception e)
 				{
 					throw new ReplicationException(MSG_CantGetRecordID, e)
-							.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, referencedExpFormat)
-							.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, line.getValue());
+							.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, referencedExpFormat)
+							.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, line.getValue());
 				}
 				// log.info("refRecord_ID = " + refRecord_ID);
 				// value = new Integer(refRecord_ID);
@@ -792,7 +793,7 @@ public class ImportHelper implements IImportHelper
 			catch (final XPathExpressionException e)
 			{
 				throw new ReplicationException(MSG_CantGetNodeList, e)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, line.getValue());
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, line.getValue());
 			}
 			for (int j = 0; j < nodeList.getLength(); j++)
 			{
@@ -814,8 +815,8 @@ public class ImportHelper implements IImportHelper
 				catch (final Exception e)
 				{
 					throw new ReplicationException(MSG_CantImport, e)
-							.addParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, referencedElement)
-							.addParameter(I_AD_Element.COLUMNNAME_PO_Name, po);
+							.setParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, referencedElement)
+							.setParameter(I_AD_Element.COLUMNNAME_PO_Name, po);
 				}
 				log.debug("embeddedPo = " + embeddedPo);
 				embeddedPo.saveExReplica(true);
@@ -832,7 +833,7 @@ public class ImportHelper implements IImportHelper
 			catch (final XPathExpressionException e)
 			{
 				throw new ReplicationException(MSG_CantGetUniqueFormatLine, e)
-						.addParameter(X_EXP_FormatLine.TYPE_XMLElement, line.getValue());
+						.setParameter(X_EXP_FormatLine.TYPE_XMLElement, line.getValue());
 			}
 			log.info("value=[" + value + "]");
 		}
@@ -1016,7 +1017,7 @@ public class ImportHelper implements IImportHelper
 				catch (final ClassCastException ex)
 				{
 					throw new ReplicationException(MSG_CantSetColumnValue, ex)
-							.addParameter(I_AD_Column.COLUMNNAME_AD_Column_ID, line.getAD_Column_ID());
+							.setParameter(I_AD_Column.COLUMNNAME_AD_Column_ID, line.getAD_Column_ID());
 				}
 
 			}
@@ -1136,7 +1137,7 @@ public class ImportHelper implements IImportHelper
 				catch (final XPathExpressionException e)
 				{
 					throw new ReplicationException(MSG_CantGetUniqueFormatLine, e)
-							.addParameter(X_EXP_FormatLine.TYPE_XMLElement, xPath);
+							.setParameter(X_EXP_FormatLine.TYPE_XMLElement, xPath);
 				}
 				if (cols[col] == null || Check.isEmpty(cols[col].toString()))
 				{
@@ -1183,8 +1184,8 @@ public class ImportHelper implements IImportHelper
 					catch (final Exception e)
 					{
 						throw new ReplicationException(MSG_CantGetRecordID, e)
-								.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, referencedExpFormat)
-								.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine.getValue());
+								.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, referencedExpFormat)
+								.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine.getValue());
 					}
 				}
 				log.info("record_ID = " + record_ID);
@@ -1195,7 +1196,7 @@ public class ImportHelper implements IImportHelper
 			{
 				// Export Format Line is not one of two possible values...ERROR
 				throw new ReplicationException(MSG_EXPFormatLineNonValidType)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine.getValue());
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine.getValue());
 			}
 
 			// metas start: rc: task 03749
@@ -1258,8 +1259,8 @@ public class ImportHelper implements IImportHelper
 					{
 						throw new ReplicationException("Decoding failed at line " + uniqueFormatLine.getName()
 								+ ", at column number " + col, e)
-										.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine)
-										.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
+								.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine)
+								.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
 					}
 					// metas:rc: end
 				}
@@ -1358,15 +1359,14 @@ public class ImportHelper implements IImportHelper
 		{
 			//
 			// Do a lookup to find out if the DB contains a data record for the given XML data
-			final String lookupExMsg = MSG_EXPFormatLineDuplicatedObject + " : " + expFormat.getName() + "(" + formatLines + ")";
-			final ReplicationException lookupEx = new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup)
-					.addParameter("WhereClause", whereClause.toString())
-					.addParameter("Parameters", params)
-					.addParameter("Value", lookupValues)
-					.addParameter("MasterPO", masterPO != null ? masterPO : "NULL");
 
 			// further up, this exception might be caught and resolved by getSingleDefaultPO()
-			throw lookupEx;
+			final String lookupExMsg = MSG_EXPFormatLineDuplicatedObject + " : " + expFormat.getName() + "(" + formatLines + ")";
+			throw  new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup)
+					.setParameter("WhereClause", whereClause.toString())
+					.setParameter("Parameters", params)
+					.setParameter("Value", lookupValues)
+					.setParameter("MasterPO", masterPO != null ? masterPO : "NULL");
 		}
 		else if (lookupValues.isEmpty())              // Means that is a new record
 		{
@@ -1377,10 +1377,10 @@ public class ImportHelper implements IImportHelper
 				//
 				// the format definition wrongly assumed that there is already a record for the given XML data
 				throw new ReplicationException(MSG_PONotFound)
-						.addParameter(I_EXP_Format.COLUMNNAME_RplImportMode, importMode)
-						.addParameter("WhereClause", whereClause.toString())
-						.addParameter("Parameters", params)
-						.addParameter("MasterPO", masterPO != null ? masterPO : "NULL");
+						.setParameter(I_EXP_Format.COLUMNNAME_RplImportMode, importMode)
+						.setParameter("WhereClause", whereClause.toString())
+						.setParameter("Parameters", params)
+						.setParameter("MasterPO", masterPO != null ? masterPO : "NULL");
 			}
 			else
 			{
@@ -1552,8 +1552,8 @@ public class ImportHelper implements IImportHelper
 			catch (final ParseException e)
 			{
 				throw new ReplicationException(MSG_ParseException, e)
-						.addParameter(I_AD_Attribute_Value.COLUMNNAME_V_String, value)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_DateFormat, dateFormat);
+						.setParameter(I_AD_Attribute_Value.COLUMNNAME_V_String, value)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_DateFormat, dateFormat);
 			}
 			log.info("Parsed value = " + result.toString() + " (Format:" + df.toPattern() + ")");
 		}
@@ -1567,7 +1567,7 @@ public class ImportHelper implements IImportHelper
 			catch (final IllegalArgumentException e)
 			{
 				throw new ReplicationException(MSG_ParseException, e)
-						.addParameter(I_AD_Attribute_Value.COLUMNNAME_V_String, value);
+						.setParameter(I_AD_Attribute_Value.COLUMNNAME_V_String, value);
 			}
 		}
 
@@ -1620,8 +1620,8 @@ public class ImportHelper implements IImportHelper
 		catch (final NumberFormatException e)
 		{
 			throw new ReplicationException(MSG_InvalidArguments, e)
-					.addParameter("Attribute", attributeName)
-					.addParameter("AttributeValue", valueStr);
+					.setParameter("Attribute", attributeName)
+					.setParameter("AttributeValue", valueStr);
 		}
 	}
 
@@ -1668,7 +1668,7 @@ public class ImportHelper implements IImportHelper
 		if (!Env.containsKey(ctx, Env.CTXNAME_AD_Client_ID))
 		{
 			throw new ReplicationException(ReplicationHelper.MSG_XMLInvalidContext)
-					.addParameter(Env.CTXNAME_AD_Client_ID, null);
+					.setParameter(Env.CTXNAME_AD_Client_ID, null);
 		}
 
 		return ctx;
@@ -1689,12 +1689,12 @@ public class ImportHelper implements IImportHelper
 		catch (final Exception e)
 		{
 			throw new ReplicationException(MSG_XMLClientNotFound, e)
-					.addParameter(I_AD_Client.COLUMNNAME_Value, AD_Client_Value);
+					.setParameter(I_AD_Client.COLUMNNAME_Value, AD_Client_Value);
 		}
 		if (adClientId < 0)
 		{
 			throw new ReplicationException(MSG_XMLClientNotFound)
-					.addParameter(I_AD_Client.COLUMNNAME_Value, AD_Client_Value);
+					.setParameter(I_AD_Client.COLUMNNAME_Value, AD_Client_Value);
 		}
 
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, adClientId, false);
@@ -1707,20 +1707,20 @@ public class ImportHelper implements IImportHelper
 			s_log.debug("Skip because there is not AD_Session_ID");
 			return;
 		}
-		final MSession session = MSession.get(ctx, adSessionId);
+		final MFSession session = Services.get(ISessionBL.class).getSessionById(ctx, adSessionId);
 		if (session == null)
 		{
 			s_log.info("Skip because no session found for ID: {}", adSessionId);
 			return;
 		}
-		if (session.isProcessed())
+		if (session.isDestroyed())
 		{
 			s_log.info("Skip because session is already processed: {}", session);
 			return;
 		}
 
 		// Update context from session
-		session.updateContext(true); // force=true
+		session.updateContext(ctx);
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, session.getAD_Client_ID(), false);
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Session_ID, adSessionId, false);
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Role_ID, session.getAD_Role_ID(), true);

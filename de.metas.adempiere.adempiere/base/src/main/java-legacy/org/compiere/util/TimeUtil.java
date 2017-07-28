@@ -1,23 +1,24 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,6 +26,8 @@ import java.util.GregorianCalendar;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
+
+import lombok.NonNull;
 
 /**
  * Time Utilities
@@ -436,13 +439,27 @@ public class TimeUtil
 	}	// isAllDay
 
 	/**
+	 * Calculate the number of hours between start and end.
+	 * 
+	 * @param start start date
+	 * @param end end date
+	 * @return number of hours (0 = same)
+	 */
+	public static long getHoursBetween(Date date1, Date date2)
+	{
+
+		final int MILLI_TO_HOUR = 1000 * 60 * 60;
+		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
+	}
+
+	/**
 	 * Calculate the number of days between start and end.
 	 * 
 	 * @param start start date
 	 * @param end end date
 	 * @return number of days (0 = same)
 	 */
-	static public int getDaysBetween(Date start, Date end)
+	static public int getDaysBetween(@NonNull Date start, @NonNull Date end)
 	{
 		boolean negative = false;
 		if (end.before(start))
@@ -453,13 +470,14 @@ public class TimeUtil
 			end = temp;
 		}
 		//
-		GregorianCalendar cal = new GregorianCalendar();
+		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(start);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		GregorianCalendar calEnd = new GregorianCalendar();
+
+		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTime(end);
 		calEnd.set(Calendar.HOUR_OF_DAY, 0);
 		calEnd.set(Calendar.MINUTE, 0);
@@ -580,7 +598,7 @@ public class TimeUtil
 	 * 
 	 * @param day Day
 	 * @param offset day offset
-	 * @return Day + offset at 00:00
+	 * @return day + offset at 00:00
 	 */
 	static public Timestamp addDays(Date day, final int offset)
 	{
@@ -606,13 +624,63 @@ public class TimeUtil
 	}	// addDays
 
 	/**
+	 * Similar to {@link #addDays(Date, int)}, but the given {@code day} may not be {@code null},
+	 * and the return value has the same hours, minutes, records and milliseconds as the given day (i.e. it's not 00:00).
+	 * 
+	 * @param day
+	 * @param offset day offset
+	 * @return day + offset
+	 */
+	static public Timestamp addDaysExact(@NonNull final Date day, final int offset)
+	{
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(day);
+		cal.add(Calendar.DAY_OF_YEAR, offset);
+		return new Timestamp(cal.getTimeInMillis());
+	}
+
+	/**
 	 * Return DateTime + offset in minutes
 	 * 
 	 * @param dateTime Date and Time
 	 * @param offset minute offset
-	 * @return dateTime + offset in minutes
+	 * @return dateTime + offset in minutes; never returns {@code null}
 	 */
-	static public Timestamp addMinutess(Timestamp dateTime, int offset)
+	public static Date addMinutes(final Date dateTime, final int offset)
+	{
+		final Date dateTimeToUse = dateTime == null ? SystemTime.asDate() : dateTime;
+
+		if (offset == 0)
+		{
+			return dateTimeToUse;
+		}
+
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(dateTimeToUse);
+		cal.add(Calendar.MINUTE, offset);			// may have a problem with negative
+		return new Date(cal.getTimeInMillis());
+	}
+
+	/**
+	 * Like {@link #addMinutes(Date, int)}, but takes and returns a {@link Timestamp} and not a {@link Date}.
+	 * 
+	 * @param dateTime
+	 * @param offset
+	 * @return
+	 */
+	public static Timestamp addMinutes(final Timestamp dateTime, final int offset)
+	{
+		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
+	}
+
+	/**
+	 * Return DateTime + offset in millis
+	 * 
+	 * @param dateTime Date and Time
+	 * @param offset minute offset
+	 * @return dateTime + offset in millis
+	 */
+	static public Timestamp addMillis(Timestamp dateTime, int offset)
 	{
 		if (dateTime == null)
 			dateTime = new Timestamp(System.currentTimeMillis());
@@ -621,9 +689,9 @@ public class TimeUtil
 		//
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(dateTime);
-		cal.add(Calendar.MINUTE, offset);			// may have a problem with negative
+		cal.add(Calendar.MILLISECOND, offset);			// may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addMinutes
+	}	// addMillis
 
 	/**
 	 * Return DateTime + offset in hours
@@ -884,7 +952,7 @@ public class TimeUtil
 	{
 		return new Timestamp(truncToMillis(dayTime, trunc));
 	}
-	
+
 	public static long truncToMillis(Date dayTime, final String trunc)
 	{
 		if (dayTime == null)
@@ -948,12 +1016,11 @@ public class TimeUtil
 		cal.set(Calendar.DAY_OF_YEAR, 1);
 		return cal.getTimeInMillis();
 	}	// trunc
-	
+
 	public static final Timestamp truncToDay(final Date dayTime)
 	{
 		return dayTime == null ? null : trunc(dayTime, TRUNC_DAY);
 	}
-
 
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the
@@ -999,11 +1066,25 @@ public class TimeUtil
 	}
 
 	/** @return date as timestamp or null if the date is null */
-	public static Timestamp asTimestamp(Date date)
+	public static Timestamp asTimestamp(final Date date)
 	{
 		if (date instanceof Timestamp)
+		{
 			return (Timestamp)date;
+		}
 		return date == null ? null : new Timestamp(date.getTime());
+	}
+
+	/**
+	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
+	 */
+	public static Timestamp asTimestamp(final Instant instant)
+	{
+		if (instant == null)
+		{
+			return null;
+		}
+		return new Timestamp(Date.from(instant).getTime());
 	}
 
 	/**
@@ -1092,5 +1173,56 @@ public class TimeUtil
 	public static final Timestamp copyOf(final Timestamp timestamp)
 	{
 		return timestamp == null ? null : new Timestamp(timestamp.getTime());
+	}
+
+	/**
+	 * Get the week of year number for the given Date
+	 * 
+	 * The logic for calculating the week number is based on the ISO week date conventions.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getWeekNumber(final Date date)
+	{
+		// make sure the timing is not taken into account. The Timestamp will be set on the first millisecond of the given date.
+		final Calendar cal = asCalendar(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		// According to international standard ISO 8601, Monday is the first day of the week.
+		cal.setFirstDayOfWeek(Calendar.MONDAY);
+
+		// FIXME: This shall be taken from Locale, but Locale it is not reliable (doesn't always work the same way)
+		// It is the first week with a majority (4 or more) of its days in January.
+		cal.setMinimalDaysInFirstWeek(4);
+
+		final int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
+		return weekOfYear;
+	}
+
+	/**
+	 * Get the day of the week for the given date.
+	 * First day of the week is considered Monday, due to ISO 8601.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getDayOfWeek(final Date date)
+	{
+		final int dayOfWeek = asCalendar(date).get(Calendar.DAY_OF_WEEK);
+
+		// According to international standard ISO 8601, Monday is the first day of the week.
+		// The Calendar considers it to be Sunday, so this adjustment is needed.
+		// see java.util.Calendar.MONDAY
+		if (dayOfWeek == 1)
+		{
+			return 7;
+		}
+		return dayOfWeek - 1;
 	}
 }	// TimeUtil

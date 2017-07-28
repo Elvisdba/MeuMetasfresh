@@ -24,34 +24,34 @@ SELECT DISTINCT
 	o.DatePromised
 FROM
 	C_Order_MFGWarehouse_Report report
-	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID)
+	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'
 	INNER JOIN C_Order_MFGWarehouse_ReportLine reportLine on (reportLine.C_Order_MFGWarehouse_Report_ID=report.C_Order_MFGWarehouse_Report_ID)
-	INNER JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = reportLine.C_OrderLine_ID)
+	INNER JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = reportLine.C_OrderLine_ID) AND ol.isActive = 'Y'
 	--
-	LEFT OUTER JOIN C_OrderLine olpm ON ol.C_PackingMaterial_OrderLine_ID = olpm.C_OrderLine_ID
+	LEFT OUTER JOIN C_OrderLine olpm ON ol.C_PackingMaterial_OrderLine_ID = olpm.C_OrderLine_ID AND olpm.isActive = 'Y'
 
-	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID
+	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 
 	-- TAKE THE M_HU_PI_Item_Product_ID OF THE PACKING MATERIAL LINE
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON olpm.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
-	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID
+	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
+	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID AND pmi.isActive = 'Y'
 		AND pmi.ItemType= 'PM'
-	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID
+	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID AND pm.isActive = 'Y'
 
 	-- Product and its translation FROM THE ORIGINAL ORDER LINE BECAUSE WE NEED IT IN WHERECLAUSE
-	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID
+	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 
-	LEFT OUTER JOIN M_Product ppm ON olpm.M_Product_ID = ppm.M_Product_ID
+	LEFT OUTER JOIN M_Product ppm ON olpm.M_Product_ID = ppm.M_Product_ID AND ppm.isActive = 'Y'
 
 	-- JUST IN CASE THERE IS A BPP FOR THE PACKING MATERIAL
 	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
 		AND ppm.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 
-	LEFT OUTER JOIN M_Product_Category pc ON ppm.M_Product_Category_ID = pc.M_Product_Category_ID
+	LEFT OUTER JOIN M_Product_Category pc ON ppm.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 
 	-- Unit of measurement and its translation FROM THE PACKING MATERIAL LINE
-	LEFT OUTER JOIN C_UOM uom ON olpm.C_UOM_ID = uom.C_UOM_ID
+	LEFT OUTER JOIN C_UOM uom ON olpm.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 
 	-- ADR Attribute FROM THE PACKING MATERIAL LINE
 	LEFT OUTER JOIN	(
@@ -66,7 +66,7 @@ FROM
 WHERE
 	1=1
 	AND report.IsActive='Y' and reportLine.IsActive='Y'
-	AND pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', olpm.AD_Client_ID, olpm.AD_Org_ID)
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
 /*

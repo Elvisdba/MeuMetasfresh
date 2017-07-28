@@ -16,10 +16,13 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import org.compiere.model.MUser;
-import org.compiere.process.ProcessInfoParameter;
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
 import org.compiere.process.StateEngine;
-import org.compiere.process.SvrProcess;
+
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Manage Workflow Activity
@@ -27,7 +30,7 @@ import org.compiere.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: WFActivityManage.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class WFActivityManage extends SvrProcess
+public class WFActivityManage extends JavaProcess
 {
 	/**	Abort It				*/	
 	private boolean		p_IsAbort = false;
@@ -41,9 +44,10 @@ public class WFActivityManage extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -66,12 +70,13 @@ public class WFActivityManage extends SvrProcess
 	 *  @return Message (variables are parsed)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		MWFActivity activity = new MWFActivity (getCtx(), p_AD_WF_Activity_ID, get_TrxName());
 		log.info("doIt - " + activity);
 		
-		MUser user = MUser.get(getCtx(), getAD_User_ID());
+		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getAD_User_ID());
 		//	Abort
 		if (p_IsAbort)
 		{
@@ -89,8 +94,8 @@ public class WFActivityManage extends SvrProcess
 		//	Change User
 		if (p_AD_User_ID != 0 && activity.getAD_User_ID() != p_AD_User_ID)
 		{
-			MUser from = MUser.get(getCtx(), activity.getAD_User_ID());
-			MUser to = MUser.get(getCtx(), p_AD_User_ID);
+			I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), activity.getAD_User_ID());
+			I_AD_User to = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), p_AD_User_ID);
 			msg = user.getName() + ": " + from.getName() + " -> " + to.getName();
 			activity.setTextMsg(msg);
 			activity.setAD_User_ID(p_AD_User_ID);

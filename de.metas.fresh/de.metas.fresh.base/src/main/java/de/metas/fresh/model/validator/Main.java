@@ -49,11 +49,11 @@ import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAt
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.Language;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider;
+import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
 
@@ -128,8 +128,11 @@ public class Main extends AbstractModuleInterceptor
 		// task 09421
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client);
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
+		
+		// task FRESH-905: work with M_Transaction to update on each storage change
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE, client);
+		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
+		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
 
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.PMM_PurchaseCandidate.INSTANCE, client); // task FRESH-86
 	}

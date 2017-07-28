@@ -904,7 +904,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = Services.get(IInvoiceLineBL.class).calculatedQtyInPriceUOM(qtyInvoiced, invoiceLine, false);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, invoiceLine.getPrice_UOM(), qtyInvoiced);
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 

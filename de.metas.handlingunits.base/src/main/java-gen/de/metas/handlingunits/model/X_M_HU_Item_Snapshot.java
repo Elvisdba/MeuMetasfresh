@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Item_Snapshot
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -51550270L;
+	private static final long serialVersionUID = -1874399100L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Snapshot (Properties ctx, int M_HU_Item_Snapshot_ID, String trxName)
@@ -25,7 +24,7 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
       /** if (M_HU_Item_Snapshot_ID == 0)
         {
 			setM_HU_ID (0);
-			setM_HU_PI_Item_ID (0);
+			setM_HU_Item_Snapshot_ID (0);
 			setSnapshot_UUID (null);
         } */
     }
@@ -44,6 +43,36 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** 
+	 * ItemType AD_Reference_ID=540699
+	 * Reference name: M_HU_Item_ItemType
+	 */
+	public static final int ITEMTYPE_AD_Reference_ID=540699;
+	/** HandlingUnit = HU */
+	public static final String ITEMTYPE_HandlingUnit = "HU";
+	/** Material = MI */
+	public static final String ITEMTYPE_Material = "MI";
+	/** PackingMaterial = PM */
+	public static final String ITEMTYPE_PackingMaterial = "PM";
+	/** HUAggregate = HA */
+	public static final String ITEMTYPE_HUAggregate = "HA";
+	/** Set Positionsart.
+		@param ItemType Positionsart	  */
+	@Override
+	public void setItemType (java.lang.String ItemType)
+	{
+
+		set_Value (COLUMNNAME_ItemType, ItemType);
+	}
+
+	/** Get Positionsart.
+		@return Positionsart	  */
+	@Override
+	public java.lang.String getItemType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ItemType);
+	}
 
 	@Override
 	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
@@ -113,6 +142,62 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
 		return ii.intValue();
 	}
 
+	/** Set Handling Units (snapshot).
+		@param M_HU_Item_Snapshot_ID Handling Units (snapshot)	  */
+	@Override
+	public void setM_HU_Item_Snapshot_ID (int M_HU_Item_Snapshot_ID)
+	{
+		if (M_HU_Item_Snapshot_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Snapshot_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Snapshot_ID, Integer.valueOf(M_HU_Item_Snapshot_ID));
+	}
+
+	/** Get Handling Units (snapshot).
+		@return Handling Units (snapshot)	  */
+	@Override
+	public int getM_HU_Item_Snapshot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Item_Snapshot_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PackingMaterial getM_HU_PackingMaterial() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PackingMaterial_ID, de.metas.handlingunits.model.I_M_HU_PackingMaterial.class);
+	}
+
+	@Override
+	public void setM_HU_PackingMaterial(de.metas.handlingunits.model.I_M_HU_PackingMaterial M_HU_PackingMaterial)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PackingMaterial_ID, de.metas.handlingunits.model.I_M_HU_PackingMaterial.class, M_HU_PackingMaterial);
+	}
+
+	/** Set Packmittel.
+		@param M_HU_PackingMaterial_ID Packmittel	  */
+	@Override
+	public void setM_HU_PackingMaterial_ID (int M_HU_PackingMaterial_ID)
+	{
+		if (M_HU_PackingMaterial_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackingMaterial_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackingMaterial_ID, Integer.valueOf(M_HU_PackingMaterial_ID));
+	}
+
+	/** Get Packmittel.
+		@return Packmittel	  */
+	@Override
+	public int getM_HU_PackingMaterial_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackingMaterial_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item() throws RuntimeException
 	{
@@ -165,7 +250,7 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

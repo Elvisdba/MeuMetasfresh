@@ -1,41 +1,14 @@
 package de.metas.handlingunits.movement.api;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
 
 public interface IHUMovementBL extends ISingletonService
@@ -62,33 +35,9 @@ public interface IHUMovementBL extends ISingletonService
 	void setPackingMaterialCActivity(I_M_MovementLine movementLine);
 
 	/**
-	 * Generate empties movements from HUPackingMaterialDocumentLineCandidate entries
-	 *
-	 * @param warehouse
-	 * @param direction
-	 * @param lines
-	 * @return
+	 * Create movements to move given HUs to warehouseTo
 	 */
-	I_M_Movement generateMovementFromPackingMaterialCandidates(I_M_Warehouse warehouse, boolean direction, List<HUPackingMaterialDocumentLineCandidate> lines);
-
-	/**
-	 * Generate movements for the empties (Leergut) inOut. If the given <code>inout</code> is a receipt, the movement will be from inOut's warehouse to the empties-warehouse (Gebindelager). If the
-	 * inOut is a shipment, the movement will be in the opposite direction.
-	 *
-	 * @param inout
-	 * @return
-	 * @task 08070
-	 */
-	I_M_Movement generateMovementFromEmptiesInout(I_M_InOut inout);
-
-	/**
-	 * Move the given <code>hus</code>HUs to the given <code>destinationWarehouse</code>
-	 *
-	 * @param destinationWarehouse
-	 * @param hu
-	 * @return
-	 */
-	List<I_M_Movement> generateMovementsToWarehouse(I_M_Warehouse destinationWarehouse, Collection<I_M_HU> hus, IContextAware ctxAware);
+	HUMovementResult moveHUsToWarehouse(List<I_M_HU> hus, I_M_Warehouse warehouseTo);
 
 	/**
 	 * Method uses <code>AD_SysConfig</code> {@value #SYSCONFIG_DirectMove_Warehouse_ID} to get the {@link I_M_Warehouse} for direct movements.
@@ -111,6 +60,4 @@ public interface IHUMovementBL extends ISingletonService
 	 * @see IHUAssignmentBL#assignHU(Object, I_M_HU, boolean, String)
 	 */
 	void assignHU(org.compiere.model.I_M_MovementLine movementLine, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
-	
-	
 }

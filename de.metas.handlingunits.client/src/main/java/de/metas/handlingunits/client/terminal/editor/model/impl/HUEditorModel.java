@@ -24,6 +24,7 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,19 +35,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
@@ -58,8 +66,10 @@ import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.PropertiesPanelModelConfigurator;
+import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -71,12 +81,19 @@ import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssi
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplitModel;
+import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 public class HUEditorModel implements IDisposable
 {
+	private static final transient Logger logger = LogManager.getLogger(HUEditorModel.class);
+
 	// services
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -128,7 +145,7 @@ public class HUEditorModel implements IDisposable
 		@Override
 		public boolean evaluate(final IHUKey huKey)
 		{
-			// guard agaist null
+			// guard against null
 			if (huKey == null)
 			{
 				return false;
@@ -163,6 +180,11 @@ public class HUEditorModel implements IDisposable
 
 	private boolean disposed = false;
 
+	/**
+	 * Creates a new instance and adds itself to the given <code>terminalContext</code>'s disposable components.
+	 *
+	 * @param terminalContext
+	 */
 	public HUEditorModel(final ITerminalContext terminalContext)
 	{
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
@@ -778,6 +800,8 @@ public class HUEditorModel implements IDisposable
 			{
 				selectionChanged = true;
 			}
+			logger.debug("updateSelectedKey(): this-ID={}: added keyId={}, huKey={} to _selectedKeyIds; selectionChanged={}; this={}",
+					System.identityHashCode(this), keyId, huKey, selectionChanged, this);
 		}
 		else
 		{
@@ -786,6 +810,8 @@ public class HUEditorModel implements IDisposable
 			{
 				selectionChanged = true;
 			}
+			logger.debug("updateSelectedKey(): this-ID={}: removed keyId={}, huKey={} from _selectedKeyIds; selectionChanged={}; this={}",
+					System.identityHashCode(this), keyId, huKey, selectionChanged, this);
 		}
 
 		if (selectionChanged)
@@ -807,7 +833,7 @@ public class HUEditorModel implements IDisposable
 		final boolean selectedNew = !selectedOld;
 		setSelected0(huKey, selectedNew);
 
-		fireHUKeyStatusChangedRecursivelly(getRootHUKey());
+		fireHUKeyStatusChangedRecursively(getRootHUKey());
 
 		return selectedNew;
 	}
@@ -823,19 +849,20 @@ public class HUEditorModel implements IDisposable
 		{
 			// shall not happen
 			// return: not selected
+			logger.warn("setSelected(): this-ID={}: huKey={} is not selectable; this={}", System.identityHashCode(this), huKey, this);
 			return false;
 		}
 
 		final boolean selected = isSelected(huKey);
 		if (selected)
 		{
-			// already selected
-			return true;
+			logger.debug("setSelected(): this-ID={}: huKey={} is already selected; this={}", System.identityHashCode(this), huKey, this);
+			return true; // already selected
 		}
 
 		setSelected0(huKey, true);
 
-		fireHUKeyStatusChangedRecursivelly(getRootHUKey());
+		fireHUKeyStatusChangedRecursively(getRootHUKey());
 
 		return true;
 	}
@@ -852,6 +879,7 @@ public class HUEditorModel implements IDisposable
 		{
 			// shall not happen
 			// return: not selected
+			logger.warn("setSelected(): this-ID={} parameter 'hu' is null; this={}", System.identityHashCode(this), this);
 			return false;
 		}
 
@@ -862,8 +890,8 @@ public class HUEditorModel implements IDisposable
 		final IHUKey rootKey = getRootHUKey();
 		if (rootKey == null)
 		{
-			// no root key???
-			return false;
+			logger.warn("setSelected(): this-ID={} rootKey=null; this={}", System.identityHashCode(this), this);
+			return false; // no root key???
 		}
 
 		//
@@ -871,7 +899,6 @@ public class HUEditorModel implements IDisposable
 		final List<IHUKey> huKeysForId = new ArrayList<IHUKey>();
 		rootKey.iterate(new HUKeyVisitorAdapter()
 		{
-
 			@Override
 			public VisitResult beforeVisit(final IHUKey key)
 			{
@@ -888,6 +915,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Select what we found
+		logger.debug("setSelected(): this-ID={}m hu={}: found huKeysForId={}; this={}", System.identityHashCode(this), hu, huKeysForId, this);
 		boolean selected = false;
 		for (final IHUKey huKey : huKeysForId)
 		{
@@ -900,13 +928,13 @@ public class HUEditorModel implements IDisposable
 		return selected;
 	}
 
-	private void fireHUKeyStatusChangedRecursivelly(final IHUKey huKey)
+	private void fireHUKeyStatusChangedRecursively(final IHUKey huKey)
 	{
 		huKey.fireStatusChanged();
 		// TODO: consider getting only the loaded children because if they are not loaded for sure there is no status listener
 		for (final IHUKey child : huKey.getChildren())
 		{
-			fireHUKeyStatusChangedRecursivelly(child);
+			fireHUKeyStatusChangedRecursively(child);
 		}
 	}
 
@@ -915,57 +943,29 @@ public class HUEditorModel implements IDisposable
 		return !_selectedKeyIds.isEmpty();
 	}
 
+	/**
+	 *
+	 * @return the <code>M_HU_ID</code> for each selected {@link IHUKey}. See {@link #getSelectedHUKeys()} for details about which keys' HU-IDs are returned.
+	 */
 	public Set<Integer> getSelectedHUIds()
 	{
-		final Set<Integer> huIds = new HashSet<Integer>();
-		for (final IHUKey key : _selectedKeyIds.values())
-		{
-			if (!isSelected(key))
-			{
-				continue;
-			}
-
-			final HUKey huKey = HUKey.castIfPossible(key);
-			if (huKey == null)
-			{
-				continue;
-			}
-
-			final int huId = huKey.getM_HU().getM_HU_ID();
-			huIds.add(huId);
-		}
-
+		final Set<Integer> huIds = getSelectedHUKeys()
+				.stream()
+				.map(key -> key.getM_HU().getM_HU_ID())
+				.collect(Collectors.toSet());
 		return huIds;
 	}
 
+	/**
+	 *
+	 * @return the <code>M_HU</code> for each selected {@link IHUKey}. See {@link #getSelectedHUKeys()} for details about which keys' HUs are returned.
+	 */
 	public Set<I_M_HU> getSelectedHUs()
 	{
-		final Set<Integer> huIds = new HashSet<Integer>();
-		final Set<I_M_HU> hus = new HashSet<I_M_HU>();
-		for (final IHUKey key : _selectedKeyIds.values())
-		{
-			if (!isSelected(key))
-			{
-				continue;
-			}
-
-			final HUKey huKey = HUKey.castIfPossible(key);
-			if (huKey == null)
-			{
-				continue;
-			}
-
-			final I_M_HU hu = huKey.getM_HU();
-			final int huId = hu.getM_HU_ID();
-			if (!huIds.add(huId))
-			{
-				// already added
-				continue;
-			}
-
-			hus.add(hu);
-		}
-
+		final Set<I_M_HU> hus = getSelectedHUKeys()
+				.stream()
+				.map(key -> key.getM_HU())
+				.collect(Collectors.toSet());
 		return hus;
 	}
 
@@ -986,7 +986,6 @@ public class HUEditorModel implements IDisposable
 
 			productStorages.add(productStorage);
 		}
-
 		return productStorages;
 	}
 
@@ -1019,12 +1018,14 @@ public class HUEditorModel implements IDisposable
 		{
 			if (!isSelected(key))
 			{
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because it is not selected; this={}", System.identityHashCode(this), key, this);
 				continue;
 			}
 
 			final HUKey huKey = HUKey.castIfPossible(key);
 			if (huKey == null)
 			{
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because it does not wrap a HU; this={}", System.identityHashCode(this), key, this);
 				continue;
 			}
 
@@ -1034,15 +1035,18 @@ public class HUEditorModel implements IDisposable
 			if (!huIds.add(huId))
 			{
 				// already added
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because its M_HU_ID was already added to the selection; this={}", System.identityHashCode(this), key, this);
 				continue;
 			}
 
 			// If there is a filter, ask it we accepts current Key
 			if (filter != null && !filter.evaluate(key))
 			{
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because the given filter={} evaluated to false; this={}", System.identityHashCode(this), key, filter, this);
 				continue;
 			}
 
+			logger.debug("getSelectedHUKeys: this-ID={} adding key={} to the selection; this={}", System.identityHashCode(this), key, filter, this);
 			huKeys.add(huKey);
 		}
 
@@ -1148,7 +1152,7 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * Save changes (if any) to database. This methods starts by calling {@link #saveHUProperties()}.
 	 */
-	public void save()
+	public final void save()
 	{
 		saveHUProperties();
 
@@ -1241,12 +1245,200 @@ public class HUEditorModel implements IDisposable
 		setCurrentHUKey(getRootHUKey());
 	}
 
+	/**
+	 * Create vendor return inout
+	 */
+	public void createVendorReturn()
+	{
+		// services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+
+		try
+		{
+			// Extract the selected HUs to return back to vendor
+			final List<I_M_HU> husToReturn = getSelectedHUKeys().stream()
+					.map(HUKey::getM_HU)
+					.filter(hu -> !handlingUnitsBL.isPureVirtual(hu)) // Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+					.collect(GuavaCollectors.toImmutableList());
+
+			final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
+
+			final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(husToReturn, movementDate);
+
+			//
+			// Refresh the HUKeys if something changed (i.e. at least one vendor return was created)
+			if (!returnInOuts.isEmpty())
+			{
+				refreshSelectedHUKeys();
+			}
+
+		}
+		catch (Exception ex)
+		{
+			throw TerminalException.wrapIfNeeded(ex);
+		}
+	}
+
+	/**
+	 * Move products from the warehouse to garbage (waste disposal)
+	 * After this process an internal use inventory is created.
+	 * 
+	 * @param warehouseFrom
+	 */
+	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
+	{
+		final Set<I_M_HU> selectedHUs = getSelectedHUs();
+		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
+
+		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(selectedHUs, movementDate);
+
+		//
+		// Refresh the HUKeys
+		if (!inventories.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
+	}
+
+	/**
+	 * Refresh selected hu keys
+	 */
+	public void refreshSelectedHUKeys()
+	{
+
+		// Remove huKeys from their parents
+		for (final HUKey huKey : getSelectedHUKeys())
+		{
+			removeHUKeyFromParentRecursivelly(huKey);
+		}
+
+		// Move back to Root HU Key
+		setRootHUKey(getRootHUKey());
+
+		//
+		// Clear (attribute) cache (because it could be that we changed the attributes too)
+		clearCache();
+	}
+
+	protected final void removeHUKeyFromParentRecursivelly(final IHUKey huKey)
+	{
+		if (huKey == null)
+		{
+			return;
+		}
+
+		final IHUKey parentKey = huKey.getParent();
+		if (parentKey == null)
+		{
+			return;
+		}
+
+		// Remove child from it's parent
+		parentKey.removeChild(huKey);
+
+		// If after removing, the parent become empty then remove it from it's parent... and so on
+		if (parentKey.getChildren().isEmpty())
+		{
+			removeHUKeyFromParentRecursivelly(parentKey);
+		}
+		else
+		{
+			// Update parent's name recursivelly up to the top
+			// FIXME: this is a workaround because even though the name is updated, it's not udpated recursivelly up to the top
+			IHUKey p = parentKey;
+			while (p != null)
+			{
+				p.updateName();
+				p = p.getParent();
+			}
+
+		}
+	}
+
+	/**
+	 * 
+	 * Create vendor returns based on the selected hus
+	 */
+	public List<I_M_InOut> createVendorReturn0()
+	{
+		// services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+
+		final List<I_M_HU> husToReturn = getSelectedHUKeys().stream()
+				.map(HUKey::getM_HU)
+				.filter(hu -> !handlingUnitsBL.isPureVirtual(hu)) // Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+				.collect(GuavaCollectors.toImmutableList());
+
+		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
+
+		final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(husToReturn, movementDate);
+
+		return returnInOuts;
+	}
+
+	public List<I_M_Movement> doMoveToQualityWarehouse(Predicate<ReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
+	{
+		Check.assumeNotNull(editorCallback, "editorCallback not null");
+
+		final List<I_M_HU> hus = new ArrayList<>();
+		hus.addAll(getSelectedHUs());
+
+		if (Check.isEmpty(hus))
+		{
+			throw new TerminalException("@NoSelection@");
+		}
+
+		final de.metas.handlingunits.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(warehouseFrom, de.metas.handlingunits.model.I_M_Warehouse.class);
+		final ReturnsWarehouseModel returnsWarehouseModel = new ReturnsWarehouseModel(_terminalContext, warehouse, hus);
+
+		//
+		// Do nothing & keep selection if the user cancelled
+		final boolean edited = editorCallback.evaluate(returnsWarehouseModel);
+		if (!edited)
+		{
+			return Collections.emptyList();
+		}
+
+		final List<I_M_Movement> movementsToQualityWarehouse = returnsWarehouseModel.getMovements();
+		//
+		// Refresh the HUKeys
+		if (!movementsToQualityWarehouse.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
+
+		return returnsWarehouseModel.getMovements();
+
+	}
+
 	@Override
 	public String toString()
 	{
-		return "HUEditorModel [_terminalContext=" + _terminalContext + ", pcs=" + pcs + ", breadcrumbKeyLayout=" + breadcrumbKeyLayout + ", breadcrumbKeyLayoutListener=" + breadcrumbKeyLayoutListener + ", _huKeyFilterModel=" + _huKeyFilterModel + ", handlingUnitsKeyLayout=" + handlingUnitsKeyLayout + ", propertiesPanelModel=" + propertiesPanelModel + ", attributesEditableOnlyIfVHU="
-				+ attributesEditableOnlyIfVHU + ", rootHUKey=" + rootHUKey + ", _currentKey=" + _currentKey + ", changesTracker=" + changesTracker + ", _selectedKeyIds=" + _selectedKeyIds + ", displayBarcode=" + displayBarcode + ", updateHUAllocationsOnSave=" + updateHUAllocationsOnSave + ", allowSelectingReadonlyKeys=" + allowSelectingReadonlyKeys + ", disposed=" + disposed
-				+ ", _originalTopLevelHUs=" + _originalTopLevelHUs + "]";
+		final StringBuilder stringBuilder = new StringBuilder();
+
+		stringBuilder.append("HUEditorModel [_terminalContext=").append(_terminalContext)
+				.append(", pcs=").append(pcs)
+				.append(", breadcrumbKeyLayout=").append(breadcrumbKeyLayout)
+				.append(", breadcrumbKeyLayoutListener=").append(breadcrumbKeyLayoutListener)
+				.append(", _huKeyFilterModel=").append(_huKeyFilterModel)
+				.append(", handlingUnitsKeyLayout=").append(handlingUnitsKeyLayout)
+				.append(", propertiesPanelModel=").append(propertiesPanelModel)
+				.append(", attributesEditableOnlyIfVHU=").append(attributesEditableOnlyIfVHU)
+				.append(", rootHUKey=").append(rootHUKey)
+				.append(", _currentKey=").append(_currentKey)
+				.append(", changesTracker=").append(changesTracker)
+				.append(", _selectedKeyIds=").append(_selectedKeyIds)
+				.append(", displayBarcode=").append(displayBarcode)
+				.append(", updateHUAllocationsOnSave=").append(updateHUAllocationsOnSave)
+				.append(", allowSelectingReadonlyKeys=").append(allowSelectingReadonlyKeys)
+				.append(", disposed=").append(disposed)
+				.append(", _originalTopLevelHUs=").append(_originalTopLevelHUs)
+				.append("]");
+
+		return stringBuilder.toString();
 	}
 
 }

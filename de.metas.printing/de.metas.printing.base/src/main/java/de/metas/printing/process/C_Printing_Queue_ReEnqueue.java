@@ -27,21 +27,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.ad.dao.impl.SqlQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Re-enqueue {@link I_C_Printing_Queue} items.
@@ -49,7 +50,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/04468_Belege_erneut_in_Druckerwarteschlange_%282013062710000119%29
  */
-public class C_Printing_Queue_ReEnqueue extends SvrProcess
+public class C_Printing_Queue_ReEnqueue extends JavaProcess
 {
 	public static final String PARAM_IsSelected = "IsSelected";
 	private boolean p_IsSelected = false;
@@ -73,7 +74,7 @@ public class C_Printing_Queue_ReEnqueue extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -178,7 +179,7 @@ public class C_Printing_Queue_ReEnqueue extends SvrProcess
 
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			final ISqlQueryFilter modelFilter = new SqlQueryFilter(p_WhereClause);
+			final ISqlQueryFilter modelFilter = TypedSqlQueryFilter.<Object>of(p_WhereClause);
 			queueQuery.setModelFilter(modelFilter);
 		}
 

@@ -3,6 +3,8 @@
  */
 package org.adempiere.process;
 
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -27,18 +29,17 @@ package org.adempiere.process;
 
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_AD_Role;
+import org.adempiere.util.Services;
 import org.compiere.model.MRolePermRequest;
-import org.compiere.process.SvrProcess;
-import org.compiere.util.CacheMgt;
-import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Revoke Permission
  * @author Teo Sarca, teo.sarca@gmail.com
  *
  */
-public class AD_Role_RevokePermission extends SvrProcess
+public class AD_Role_RevokePermission extends JavaProcess
 {
 	private int p_AD_Role_PermRequest_ID = -1;
 	@Override
@@ -69,8 +70,7 @@ public class AD_Role_RevokePermission extends SvrProcess
 	{
 		if (success)
 		{
-			CacheMgt.get().reset(I_AD_Role.Table_Name);
-			Env.resetUserRolePermissions();
+			Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
 		}
 	}
 }

@@ -20,8 +20,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
@@ -38,7 +41,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  * 	Invoice Not realized Gain & Loss.
@@ -47,7 +49,7 @@ import org.compiere.util.Msg;
  *  @version $Id: InvoiceNGL.java,v 1.3 2006/08/04 03:53:59 jjanke Exp $
  *  FR: [ 2214883 ] Remove SQL code and Replace for Query - red1
  */
-public class InvoiceNGL extends SvrProcess
+public class InvoiceNGL extends JavaProcess
 {
 	/**	Mandatory Acct Schema			*/
 	private int				p_C_AcctSchema_ID = 0;
@@ -72,7 +74,7 @@ public class InvoiceNGL extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

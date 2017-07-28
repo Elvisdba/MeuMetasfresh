@@ -26,19 +26,18 @@ package de.metas.shipping.model.validator;
  */
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPackageLine;
 import org.compiere.model.MSysConfig;
-import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -52,6 +51,7 @@ import de.metas.email.impl.EMailSendException;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.shipping.model.MMShipperTransportation;
 import de.metas.shipping.model.MMShippingPackage;
@@ -86,19 +86,19 @@ public class ShipperTransportationMailNotification implements ModelValidator
 				for (MMShippingPackage sp : getShippingPackage(ship.getM_ShipperTransportation_ID()))
 				{
 					// get user for sendind mail
-					MUser user = null;
-					MUser orderUser = null;
+					I_AD_User user = null;
+					I_AD_User orderUser = null;
 					// check first user from order
 					MOrder order = (MOrder)sp.getM_InOut().getC_Order();
 					if (order != null)
-						user = (MUser)order.getAD_User();
+						user = order.getAD_User();
 					if (user == null)
-						user = (MUser)sp.getM_InOut().getAD_User();
+						user = sp.getM_InOut().getAD_User();
 					else
 						orderUser = user;
 					//
 					I_C_BPartner partnerPO = InterfaceWrapperHelper.create(user.getC_BPartner(), I_C_BPartner.class);
-					if (partnerPO.isShippingNotificationEmail() && user.get_ValueAsBoolean("IsDefaultContact"))
+					if (partnerPO.isShippingNotificationEmail() && user.isDefaultContact())
 					{
 						String message = sendEMail(text, (MInOut)sp.getM_InOut(), orderUser);
 						if (Check.isEmpty(message, true))
@@ -164,7 +164,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 		return null;
 	}
 
-	private String sendEMail(final MADBoilerPlate text, final MInOut io, final MUser orderUser)
+	private String sendEMail(final MADBoilerPlate text, final MInOut io, final I_AD_User orderUser)
 	{
 		final Properties ctx = Env.getCtx();
 		MADBoilerPlate.sendEMail(new IEMailEditor()
@@ -188,11 +188,13 @@ public class ShipperTransportationMailNotification implements ModelValidator
 			}
 
 			@Override
-			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
-				variables.put(MADBoilerPlate.VAR_UserPO, io);
+				final BoilerPlateContext attributesEffective = attributes.toBuilder()
+						.setSourceDocumentFromObject(io)
+						.build();
 				//
-				String message = text.getTextSnippetParsed(variables);
+				String message = text.getTextSnippetParsed(attributesEffective);
 				//
 				if (Check.isEmpty(message, true))
 					return null;

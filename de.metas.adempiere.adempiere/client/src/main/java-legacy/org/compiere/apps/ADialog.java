@@ -27,20 +27,19 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
-import org.compiere.model.MUser;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.SupportInfo;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.form.swing.SwingAskDialogBuilder;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -53,9 +52,9 @@ import de.metas.logging.LogManager;
 public final class ADialog
 {
 	/** Show ADialogADialog - if false use JOptionPane  */
-	public static final boolean	showDialog = true;
+	private static final boolean showDialog = true;
 	/**	Logger			*/
-	private static Logger log = LogManager.getLogger(ADialog.class);
+	private static final transient Logger log = LogManager.getLogger(ADialog.class);
 	
 	/**
 	 *	Show plain message
@@ -65,13 +64,16 @@ public final class ADialog
 	 *	@param	clearMessage	Translated message
 	 *	@param	clearText		Additional message
 	 */
-	public static void info (int WindowNo, Container c, String clearHeading, String clearMessage, String clearText)
+	public static void info (final int WindowNo, final Container c, final String clearHeading, final String clearMessage, final String clearText)
 	{
-		log.info(clearHeading 
-			+ ": " + clearMessage + " " + clearText);
+		log.info("{}: {} {}", clearHeading, clearMessage, clearText);
+		
 		String out = clearMessage;
-		if (clearText != null && !clearText.equals(""))
+		if(!Check.isEmpty(clearText, true))
+		{
 			out += "\n" + clearText;
+		}
+		
 		//
 		Window parent = Env.getParent(c);
 		if (parent == null)
@@ -80,21 +82,27 @@ public final class ADialog
 		if (showDialog  && parent != null)
 		{
 			if (parent instanceof JFrame)
+			{
 				new ADialogDialog ((JFrame)parent,
 					clearHeading,
 					out,
 					JOptionPane.INFORMATION_MESSAGE);
+			}
 			else
+			{
 				new ADialogDialog ((JDialog)parent,
 					clearHeading,
 					out,
 					JOptionPane.INFORMATION_MESSAGE);
+			}
 		}
 		else
+		{
 			JOptionPane.showMessageDialog(parent,
 				out + "\n",						//	message
 				clearHeading,					//	title
 				JOptionPane.INFORMATION_MESSAGE);
+		}
 	}	//	info
 
 	/**
@@ -104,14 +112,15 @@ public final class ADialog
 	 *	@param	AD_Message	Message to be translated
 	 *	@param	msg			Additional message
 	 */
-	public static void info (int WindowNo, Container c, String AD_Message, String msg)
+	public static void info (final int WindowNo, final Container c, final String AD_Message, final String msg)
 	{
-		log.info(AD_Message + " - " + msg);
-		Properties ctx = Env.getCtx();
-		StringBuffer out = new StringBuffer();
-		if (AD_Message != null && !AD_Message.equals(""))
+		log.info("{} - {}", AD_Message, msg);
+		
+		final Properties ctx = Env.getCtx();
+		final StringBuilder out = new StringBuilder();
+		if(!Check.isEmpty(AD_Message, true))
 			out.append(Services.get(IMsgBL.class).getMsg(ctx, AD_Message));
-		if (msg != null && msg.length() > 0)
+		if(!Check.isEmpty(msg, true))
 			out.append("\n").append(msg);
 		//
 		Window parent = Env.getParent(c);
@@ -121,21 +130,27 @@ public final class ADialog
 		if (showDialog && parent != null)
 		{
 			if (parent instanceof JFrame)
+			{
 				new ADialogDialog ((JFrame)parent,
 					Env.getHeader(ctx, WindowNo),
 					out.toString(),
 					JOptionPane.INFORMATION_MESSAGE);
+			}
 			else
+			{
 				new ADialogDialog ((JDialog)parent,
 					Env.getHeader(ctx, WindowNo),
 					out.toString(),
 					JOptionPane.INFORMATION_MESSAGE);
+			}
 		}
 		else
+		{
 			JOptionPane.showMessageDialog(parent,
 				out.toString() + "\n",			//	message
 				Env.getHeader(ctx, WindowNo),	//	title
 				JOptionPane.INFORMATION_MESSAGE);
+		}
 	}	//	info
 
 	/**
@@ -146,7 +161,8 @@ public final class ADialog
 	 */
 	public static void info (int WindowNo, Container c, String AD_Message)
 	{
-		info (WindowNo, c, AD_Message, null);
+		final String msg = null;
+		info (WindowNo, c, AD_Message, msg);
 	}	//	info
 
 
@@ -157,11 +173,12 @@ public final class ADialog
 	 *	@param	AD_Message	Message to be translated
 	 *	@param	msg			Additional message
 	 */
-	public static void warn (int WindowNo, Container c, String AD_Message, String msg)
+	public static void warn (final int WindowNo, final Container c, final String AD_Message, final String msg)
 	{
-		log.info(AD_Message + " - " + msg);
+		log.info("{} - {}", AD_Message, msg);
+		
 		Properties ctx = Env.getCtx();
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		if (AD_Message != null && !AD_Message.equals(""))
 			out.append(Services.get(IMsgBL.class).getMsg(ctx, AD_Message));
 		if (msg != null && msg.length() > 0)
@@ -174,21 +191,27 @@ public final class ADialog
 		if (showDialog  && parent != null)
 		{
 			if (parent instanceof JFrame)
+			{
 				new ADialogDialog ((JFrame)parent,
 					Env.getHeader(ctx, WindowNo),
 					out.toString(),
 					JOptionPane.WARNING_MESSAGE);
+			}
 			else
+			{
 				new ADialogDialog ((JDialog)parent,
 					Env.getHeader(ctx, WindowNo),
 					out.toString(),
 					JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		else
+		{
 			JOptionPane.showMessageDialog(parent,
 				out.toString() + "\n",  		//	message
 				Env.getHeader(ctx, WindowNo),	//	title
 				JOptionPane.WARNING_MESSAGE);
+		}
 	}	//	warn (int, String)
 
 	/**
@@ -197,10 +220,11 @@ public final class ADialog
 	 *  @param  c           Container (owner)
 	 *	@param	AD_Message	Message to be translated
 	 */
-	public static void warn (int WindowNo, Container c, String AD_Message)
+	public static void warn (final int WindowNo, final Container c, final String AD_Message)
 	{
-		warn (WindowNo, c, AD_Message, null);
-	}	//	warn (int, String)
+		final String msg = null;
+		warn (WindowNo, c, AD_Message, msg);
+	}
 
 	
 	/**************************************************************************
@@ -210,16 +234,17 @@ public final class ADialog
 	 *	@param	AD_Message	Message to be translated
 	 *	@param	msg			Additional message
 	 */
-	public static void error (int WindowNo, Container c, String AD_Message, String msg)
+	public static void error (final int WindowNo, final Container c, final String AD_Message, final String msg)
 	{
-		log.info(AD_Message + " - " + msg);
+		log.info("{} - {}", AD_Message, msg);
 		if (LogManager.isLevelFinest())
 			Trace.printStack();
-		Properties ctx = Env.getCtx();
-		StringBuffer out = new StringBuffer();
-		if (AD_Message != null && !AD_Message.equals(""))
+		
+		final Properties ctx = Env.getCtx();
+		final StringBuilder out = new StringBuilder();
+		if(!Check.isEmpty(AD_Message, true))
 			out.append(Services.get(IMsgBL.class).getMsg(ctx, AD_Message));
-		if (msg != null && msg.length() > 0)
+		if(!Check.isEmpty(msg, true))
 			out.append("\n").append(msg);
 		//
 		Window parent = Env.getParent(c);
@@ -229,22 +254,28 @@ public final class ADialog
 		if (showDialog && parent != null)
 		{
 			if (parent instanceof JFrame)
+			{
 				new ADialogDialog ((JFrame)parent,
 					Env.getHeader(ctx, WindowNo),
 					out.toString(),
 					JOptionPane.ERROR_MESSAGE);
+			}
 			else if (parent instanceof JDialog)
+			{
 				new ADialogDialog ((JDialog)parent,
 					Env.getHeader(ctx, WindowNo),
 					out.toString(),
 					JOptionPane.ERROR_MESSAGE);
+			}
 		}
 		else
+		{
 			JOptionPane.showMessageDialog(Env.getWindow(WindowNo),
 				out.toString() + "\n",			//	message
 				Env.getHeader(ctx, WindowNo),	//	title
 				JOptionPane.ERROR_MESSAGE);
-	}	//	error (int, String)
+		}
+	}
 
 	/**
 	 *	Display error with error icon
@@ -252,10 +283,11 @@ public final class ADialog
 	 *  @param  c           Container (owner)
 	 *	@param	AD_Message	Message to be translated
 	 */
-	public static void error (int WindowNo, Container c, String AD_Message)
+	public static void error (final int WindowNo, final Container c, final String AD_Message)
 	{
-		error (WindowNo, c, AD_Message, (String)null);
-	}	//	error (int, String)
+		final String msg = null;
+		error(WindowNo, c, AD_Message, msg);
+	}
 
 	
 	/**************************************************************************
@@ -288,73 +320,6 @@ public final class ADialog
 		return ask (WindowNo, c, AD_Message, null);
 	}	//	ask
 
-	
-	/**************************************************************************
-	 *	Display parsed development info Message string
-	 *	@param	WindowNo	Number of parent window (if zero, no parent window)
-	 *  @param  c           Container (owner)
-	 *	@param	ParseString	String to be parsed
-	 */
-	public static void clear (int WindowNo, Container c, String ParseString)
-	{
-		log.info( "Dialog.clear: " + ParseString);
-		Properties ctx = Env.getCtx();
-		String parse = Env.parseContext(ctx, WindowNo, ParseString, false);
-		if (parse.length() == 0)
-			parse = "ERROR parsing: " + ParseString;
-		//
-		Window parent = Env.getParent(c);
-		if (parent == null)
-			parent = Env.getWindow(WindowNo);
-		//
-		if (showDialog && parent != null)
-		{
-			if (parent instanceof JFrame)
-				new ADialogDialog ((JFrame)parent,
-					Env.getHeader(ctx, WindowNo),
-					"=> " + parse,
-					JOptionPane.INFORMATION_MESSAGE);
-			else
-				new ADialogDialog ((JDialog)parent,
-					Env.getHeader(ctx, WindowNo),
-					"=> " + parse,
-					JOptionPane.INFORMATION_MESSAGE);
-		}
-		else
-			JOptionPane.showMessageDialog(parent,
-				"=> " + parse + "\n",			//	message
-				Env.getHeader(ctx, WindowNo),	//	title
-				JOptionPane.INFORMATION_MESSAGE);
-	}	//	clear
-
-
-	/**
-	 *	Display parsed development info Message string <x> if condition is true
-	 *	@param	WindowNo	Number of parent window (if zero, no parent window)
-	 *  @param  c           Container (owner)
-	 *	@param	ParseString	Parsed Message
-	 *	@param	condition	to print must be true and debugging enabled
-	 */
-	public static void clear (int WindowNo, Container c, String ParseString, boolean condition)
-	{
-		if (!condition)
-			return;
-		clear(WindowNo, c, ParseString);
-		if (WindowNo == 0)
-			log.error("WIndowNo == 0");
-	}	//	clear
-
-	/**
-	 *	Display parsed development info Message string
-	 *	@param	ParseString	String to be parsed
-	 *  @deprecated
-	 */
-	@Deprecated
-	public static void clear (String ParseString)
-	{
-		clear(0, null, ParseString);
-	}	//	clear
-
 	/*************************************************************************
 
 	/**
@@ -363,13 +328,13 @@ public final class ADialog
 	 * @param subject subject
 	 * @param message message
 	 */
-	public static void createSupportEMail(Dialog owner, String subject, String message)
+	public static void createSupportEMail(final Dialog owner, final String subject, final String message)
 	{
-		log.info( "ADialog.createSupportEMail");
+		log.info("ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
-		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		//
-		StringBuffer myMessage = new StringBuffer(message);
+		StringBuilder myMessage = new StringBuilder(message);
 		myMessage.append("\n");
 		SupportInfo.getInfo(myMessage);
 		SupportInfo.getInfoDetail(myMessage, Env.getCtx());
@@ -386,13 +351,13 @@ public final class ADialog
 	 *  @param subject subject
 	 *  @param message message
 	 */
-	public static void createSupportEMail(Frame owner, String subject, String message)
+	public static void createSupportEMail(final Frame owner, final String subject, final String message)
 	{
-		log.info( "ADialog.createSupportEMail");
+		log.info("ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
-		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		//
-		StringBuffer myMessage = new StringBuffer(message);
+		StringBuilder myMessage = new StringBuilder(message);
 		myMessage.append("\n");
 		SupportInfo.getInfo(myMessage);
 		SupportInfo.getInfoDetail(myMessage, Env.getCtx());

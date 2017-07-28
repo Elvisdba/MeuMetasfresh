@@ -80,7 +80,7 @@ public class GuaranteedPOBufferedIterator_DBTest
 			System.setProperty("PropertyFile", propertyFile);
 		}
 
-		Env.getSingleAdempiereInstance().startup(RunMode.SWING_CLIENT);
+		Env.getSingleAdempiereInstance(null).startup(RunMode.SWING_CLIENT);
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class GuaranteedPOBufferedIterator_DBTest
 		final IQueryBuilder<I_Test> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Test.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_Test.COLUMNNAME_Test_ID, recordIds)
+				.addInArrayOrAllFilter(I_Test.COLUMNNAME_Test_ID, recordIds)
 				//
 				.orderBy()
 				.addColumn(I_Test.COLUMNNAME_Test_ID)

@@ -110,15 +110,15 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addOnlyActiveRecordsFilter();
 		if (m_Product_Category_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
 		}
 		if (m_Product_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
 		}
 		if (c_Charge_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
 		}
 
 		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder
@@ -156,13 +156,15 @@ public class FlatrateDAO implements IFlatrateDAO
 			final int flatrateConditionsId,
 			final String trxName)
 	{
-		final String wc = I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID + "=?";
-
-		return new Query(ctx, I_C_Flatrate_Matching.Table_Name, wc, trxName)
-				.setParameters(flatrateConditionsId)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Flatrate_Matching.COLUMNNAME_SeqNo + ", " + I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Matching_ID)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId)
+				.orderBy()
+				.addColumn(I_C_Flatrate_Matching.COLUMN_SeqNo)
+				.addColumn(I_C_Flatrate_Matching.COLUMN_C_Flatrate_Matching_ID)
+				.endOrderBy()
+				.create()
 				.list(I_C_Flatrate_Matching.class);
 	}
 
@@ -365,7 +367,10 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final boolean onlyNonSim)
 	{
-		return retrieveEntries(null, flatrateTerm, date, dataEntryType, null, onlyNonSim);
+		final I_C_Flatrate_Conditions fc = null;
+		final I_C_UOM uom = null;
+
+		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uom, onlyNonSim);
 	}
 
 	@Override
@@ -374,34 +379,27 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final I_C_UOM uom)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<Object> params = new ArrayList<Object>();
-
-		final StringBuilder wc = new StringBuilder();
-
-		wc.append(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID + "=? ");
-		params.add(term.getC_Flatrate_Term_ID());
+		final IQueryBuilder<I_C_Flatrate_DataEntry> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.addOnlyContextClient();
 
 		if (uom != null)
 		{
-			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=?");
-			params.add(uom.getC_UOM_ID());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uom.getC_UOM_ID());
 		}
 
-		if (dataEntryType != null)
+		if (!Check.isEmpty(dataEntryType, true))
 		{
-			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=?");
-			params.add(dataEntryType);
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_Type, dataEntryType);
 		}
 
-		return new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID)
-				.list(I_C_Flatrate_DataEntry.class);
+		return queryBuilder
+				.orderBy().addColumn(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID).endOrderBy()
+				.create()
+				.list();
 	}
 
 	@Override
@@ -516,7 +514,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
 			if (entryPeriod.getEndDate().before(dateFrom) // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().after(dateTo))   // entryPeriod begins after dateTo
+					|| entryPeriod.getStartDate().after(dateTo))      // entryPeriod begins after dateTo
 			{
 				continue;
 			}
@@ -543,16 +541,15 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Data data)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(data);
-		final String trxName = InterfaceWrapperHelper.getTrxName(data);
 
-		final String wc = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID + "=?";
-
-		return new Query(ctx, I_C_Flatrate_Term.Table_Name, wc, trxName)
-				.setParameters(data.getC_Flatrate_Data_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, data)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID, data.getC_Flatrate_Data_ID())
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
+				.endOrderBy()
+				.create()
 				.list(I_C_Flatrate_Term.class);
 	}
 

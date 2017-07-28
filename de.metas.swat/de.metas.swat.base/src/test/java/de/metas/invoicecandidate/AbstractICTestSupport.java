@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.pricing.model.I_M_PriceList_Version;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -50,12 +49,15 @@ import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
+import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -64,7 +66,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.C_Aggregation_Attribute_Builder;
@@ -473,6 +474,11 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_M_InOut inOut = inOut(documentNo, I_M_InOut.class);
 		inOut.setC_BPartner_ID(bpartnerId);
 		inOut.setC_Order_ID(orderId);
+
+		// gh #1566: inactive and reversed inouts will be ignored by IInvoiceCandDAO.retrieveICIOLAssociationsExclRE()
+		inOut.setDocStatus(DocAction.STATUS_Completed);
+		inOut.setIsActive(true);
+
 		InterfaceWrapperHelper.save(inOut);
 		return inOut;
 	}

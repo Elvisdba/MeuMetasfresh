@@ -15,27 +15,36 @@ package org.adempiere.exceptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableMap;
+
 import ch.qos.logback.classic.Level;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.logging.MetasfreshLastError;
+import lombok.NonNull;
 
 /**
  * Any exception that occurs inside the Adempiere core
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-public class AdempiereException extends RuntimeException implements IIssueReportableAware
+public class AdempiereException extends RuntimeException
+		implements IIssueReportableAware
 {
 	/**
 	 *
@@ -79,22 +88,22 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Extracts throwable message.
-	 * 
+	 *
 	 * @param throwable
 	 * @return message; never return null
 	 */
 	public static final String extractMessage(final Throwable throwable)
 	{
 		// guard against NPE, shall not happen
-		if(throwable == null)
+		if (throwable == null)
 		{
 			return "null";
 		}
-		
+
 		String message = throwable.getLocalizedMessage();
-		
+
 		// If throwable message is null or it's very short then it's better to use throwable.toString()
-		if(message == null || message.length() < 4)
+		if (message == null || message.length() < 4)
 		{
 			message = throwable.toString();
 		}
@@ -108,7 +117,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 * @param throwable
 	 * @return cause or throwable; never returns null
 	 */
-	protected static final Throwable extractCause(final Throwable throwable)
+	public static final Throwable extractCause(final Throwable throwable)
 	{
 		final Throwable cause = throwable.getCause();
 		if (cause == null)
@@ -157,6 +166,8 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	private Integer adIssueId = null;
 
+	private Map<String, Object> parameters = null;
+
 	/**
 	 * Default Constructor (saved logger error will be used as message)
 	 */
@@ -176,6 +187,8 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	public AdempiereException(final String language, final String adMessage, final Object[] params)
 	{
 		super(Services.get(IMsgBL.class).getMsg(language, adMessage, params));
+		setParameter("AD_Language", language);
+		setParameter("AD_Message", adMessage);
 	}
 
 	public AdempiereException(final Properties ctx, final String adMessage, final Object[] params)
@@ -264,6 +277,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 */
 	protected String buildMessage()
 	{
+		// NOTE: by default we are not appending the parameterss
 		return super.getMessage();
 	}
 
@@ -376,9 +390,9 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * If developer mode is active, it logs a warning with given exception.
-	 * 
+	 *
 	 * If the developer mode is not active, this method does nothing
-	 * 
+	 *
 	 * @param logger
 	 * @param exceptionSupplier {@link AdempiereException} supplier
 	 */
@@ -392,7 +406,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		final boolean throwIt = false;
 		final AdempiereException exception = exceptionSupplier.get();
 		exception.throwOrLog(throwIt, Level.WARN, logger);
-	}	
+	}
 
 	/**
 	 * Sets if {@link #getLocalizedMessage()} shall parse the translations.
@@ -415,5 +429,100 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	{
 		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
+	}
+
+	/**
+	 * Sets parameter.
+	 * 
+	 * @param name parameter name
+	 * @param value parameter value or <code>null</code> if you want the parameter to be removed.
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public AdempiereException setParameter(@NonNull final String name, final Object value)
+	{
+		// avoid setting null values because it will fail on getParameters() which is returning an ImmutableMap
+		if (value == null)
+		{
+			// remove the parameter if any
+			if (parameters != null)
+			{
+				parameters.remove(name);
+			}
+
+			return this;
+		}
+
+		if (parameters == null)
+		{
+			parameters = new LinkedHashMap<>();
+		}
+
+		parameters.put(name, value);
+		resetMessageBuilt();
+
+		return this;
+	}
+
+	public final Map<String, Object> getParameters()
+	{
+		if (parameters == null)
+		{
+			return ImmutableMap.of();
+		}
+		return ImmutableMap.copyOf(parameters);
+	}
+
+	/**
+	 * Utility method that can be used by both external callers and subclasses'
+	 * {@link AdempiereException#buildMessage()} or
+	 * {@link #getMessage()} methods to create a string from this instance's parameters.
+	 * 
+	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere,
+	 * but instead add another method that can take a format string as parameter.
+	 * 
+	 * @return an empty sting if this instance has no parameters or otherwise something like
+	 * 
+	 *         <pre>
+	 * Additional parameters:
+	 * name1: value1
+	 * name2: value2
+	 *         </pre>
+	 */
+	protected final String buildParametersString()
+	{
+		final Map<String, Object> parameters = getParameters();
+		if (parameters.isEmpty())
+		{
+			return "";
+		}
+
+		final StringBuilder message = new StringBuilder();
+		message.append("Additional parameters:");
+		for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
+		{
+			message.append("\n ").append(paramName2Value.getKey()).append(": ").append(paramName2Value.getValue());
+		}
+
+		return message.toString();
+	}
+
+	/**
+	 * Utility method to convert parameters to string and append them to given <code>message</code>
+	 * 
+	 * @see #buildParametersString()
+	 */
+	protected final void appendParameters(final StringBuilder message)
+	{
+		final String parametersStr = buildParametersString();
+		if (Check.isEmpty(parametersStr, true))
+		{
+			return;
+		}
+
+		if (message.length() > 0)
+		{
+			message.append("\n");
+		}
+		message.append(parametersStr);
 	}
 }

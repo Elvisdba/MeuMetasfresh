@@ -13,15 +13,14 @@ package de.metas.printing.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,6 +35,7 @@ import java.util.UUID;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -51,25 +51,23 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.junit.Assert;
 import org.junit.rules.TestName;
 
-import com.google.common.base.Suppliers;
-
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
-import de.metas.document.archive.api.IArchiveDAO;
-import de.metas.document.archive.api.impl.PlainArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.api.impl.PlainDocOutboundDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.i18n.Language;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
@@ -101,7 +99,7 @@ import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.printing.spi.IPrintJobMonitor;
 
-//there is high amount of methods because it's a helper...
+// there is high amount of methods because it's a helper...
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class Helper
 {
@@ -156,7 +154,7 @@ public class Helper
 		AdempiereTestHelper.get().staticInit();
 
 		// de.metas.document.archive
-		Services.registerService(IArchiveDAO.class, new PlainArchiveDAO());
+		Services.registerService(IDocOutboundDAO.class, new PlainDocOutboundDAO());
 
 		// de.metas.printing (this module):
 		Services.registerService(IPrintingDAO.class, printingDAO);
@@ -203,7 +201,7 @@ public class Helper
 
 		//
 		// Base Language
-		Language.setBaseLanguage(Suppliers.ofInstance(Language.getLanguage("de_DE")));
+		Language.setBaseLanguage(() -> "de_DE");
 	}
 
 	public Properties getCtx()
@@ -213,7 +211,7 @@ public class Helper
 
 	public String getSessionHostKey()
 	{
-		return printingDAO.retrieveCurrentSession(ctx).getHostKey();
+		return Services.get(ISessionBL.class).getCurrentSession(ctx).getHostKey(ctx);
 	}
 
 	public POJOLookupMap getDB()

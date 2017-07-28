@@ -44,8 +44,7 @@ FROM
 				SELECT 	iol.M_InOut_ID,
 					p.M_Product_Category_ID =
 					(
-						SELECT value::numeric FROM AD_SysConfig
-						WHERE name = 'PackingMaterialProductCategoryID'
+						 getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 					) as IsHULine,
 					COALESCE(ic.PriceEntered_Override, ic.PriceEntered) AS PriceEntered,
 					COALESCE(ic.Discount_Override, ic.Discount) AS Discount,
@@ -53,21 +52,22 @@ FROM
 					iol.QtyEntered * COALESCE (multiplyrate, 1) AS QtyEntered,
 					ic.C_Currency_ID
 				FROM 	M_InOutLine iol
-					INNER JOIN C_InvoiceCandidate_InOutLine ic_iol ON ic_iol.M_InOutLine_ID=iol.M_InOutLine_ID
-					INNER JOIN C_Invoice_Candidate ic ON ic_iol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID
-					INNER JOIN M_Product p ON iol.M_product_ID = p.M_Product_ID
+					INNER JOIN C_InvoiceCandidate_InOutLine ic_iol ON ic_iol.M_InOutLine_ID=iol.M_InOutLine_ID AND ic_iol.isActive = 'Y'
+					INNER JOIN C_Invoice_Candidate ic ON ic_iol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
+					INNER JOIN M_Product p ON iol.M_product_ID = p.M_Product_ID AND p.isActive = 'Y'
 					LEFT OUTER JOIN C_UOM_Conversion conv ON conv.C_UOM_ID = iol.C_UOM_ID
 						AND conv.C_UOM_To_ID = ic.Price_UOM_ID
 						AND iol.M_Product_ID = conv.M_Product_ID
 						AND conv.isActive = 'Y'
+					WHERE iol.isActive = 'Y'
 			) presum
-			LEFT OUTER JOIN M_InOut io ON presum.M_InOut_ID = io.M_InOut_ID
-			LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
+			LEFT OUTER JOIN M_InOut io ON presum.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+			LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 		GROUP BY 	presum.M_InOut_ID, presum.C_Currency_ID
 	) sum ON io.M_InOut_ID = sum.M_InOut_ID
-	LEFT OUTER JOIN C_Currency cur ON sum.C_Currency_ID = cur.C_Currency_ID
+	LEFT OUTER JOIN C_Currency cur ON sum.C_Currency_ID = cur.C_Currency_ID AND cur.isActive = 'Y'
 WHERE
-	io.M_InOut_ID = $1
+	io.M_InOut_ID = $1 AND io.isActive = 'Y'
 $$
 LANGUAGE sql STABLE
 ;

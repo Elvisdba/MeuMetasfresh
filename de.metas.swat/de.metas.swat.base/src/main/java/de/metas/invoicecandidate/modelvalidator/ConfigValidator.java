@@ -28,6 +28,7 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import java.util.Properties;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -38,7 +39,6 @@ import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -50,6 +50,7 @@ import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.event.IEventBusFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
@@ -81,9 +82,9 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	};
 
 	@Override
-	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	public void onAfterInit()
 	{
-		super.onInit(engine, client);
+		//super.onInit(engine, client);
 
 		if (!Ini.isClient())
 		{
@@ -133,6 +134,14 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	protected void registerTabCallouts(final ITabCalloutFactory tabCalloutsRegistry)
 	{
 		tabCalloutsRegistry.registerTabCalloutForTable(I_C_Invoice_Candidate.Table_Name, C_Invoice_Candidate_TabCallout.class);
+	}
+	
+	@Override
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
+	{
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.invoicecandidate.callout.C_Invoice_Candidate());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.invoicecandidate.callout.C_Invoice_Candidate_Agg());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.invoicecandidate.callout.C_ILCandHandler());
 	}
 
 	/**

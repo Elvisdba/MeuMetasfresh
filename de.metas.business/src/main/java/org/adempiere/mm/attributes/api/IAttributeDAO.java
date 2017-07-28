@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -68,8 +67,8 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
 	 * 
-	 * @param attributeSetInstance
-	 * @return
+	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by {@code M_Attribute_ID}. Never {@code null}
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
@@ -180,10 +179,26 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
 	 * 
-	 * @param asi
+	 * @param fromASI
 	 * @return asi copy
 	 */
-	I_M_AttributeSetInstance copy(I_M_AttributeSetInstance asi);
+	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
+	{
+		return ASICopy.newInstance(fromASI).copy();
+	}
+
+
+	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI, int overrideM_AttributeSet_ID)
+	{
+		return ASICopy.newInstance(fromASI)
+				.overrideM_AttributeSet_ID(overrideM_AttributeSet_ID)
+				.copy();
+	}
+	
+	default ASICopy prepareCopy(final I_M_AttributeSetInstance fromASI)
+	{
+		return ASICopy.newInstance(fromASI);
+	}
 
 	/**
 	 * @param attribute

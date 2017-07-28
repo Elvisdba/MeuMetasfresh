@@ -18,7 +18,10 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
 
 /**
  *	Org Ownership Process
@@ -26,7 +29,7 @@ import org.compiere.util.Msg;
  *  @author Jorg Janke
  *  @version $Id: OrgOwnership.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class OrgOwnership extends SvrProcess
+public class OrgOwnership extends JavaProcess
 {
 	/**	Organization Parameter		*/
 	private int		p_AD_Org_ID = -1;
@@ -44,7 +47,7 @@ public class OrgOwnership extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

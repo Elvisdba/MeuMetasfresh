@@ -1,38 +1,15 @@
 package de.metas.handlingunits.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -41,46 +18,42 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
-import de.metas.handlingunits.movement.api.impl.EmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 
@@ -237,8 +210,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					huTrxBL.setParentHU(huContext,
 							null, // New Parent = null
 							currentHU, // HU which we are changing
-							destroyOldParentIfEmptyStorage
-							);
+							destroyOldParentIfEmptyStorage);
 					//
 					// Mark current HU as destroyed
 					markDestroyed(huContext, currentHU);
@@ -321,8 +293,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder()
-				.setM_HU(hu);
+		return new HUDisplayNameBuilder(hu);
 	}
 
 	@Override
@@ -411,6 +382,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final String huUnitType = getHU_UnitType(hu);
 		final String huUnitTypeStr = Check.isEmpty(huUnitType, true) ? "not set" : huUnitType;
 		throw new HUException("HU " + getDisplayName(hu) + " shall be a Loading Unit(LU) but it is '" + huUnitTypeStr + "'");
+	}
+
+	@Override
+	public boolean isTransportUnitOrAggregate(final I_M_HU hu)
+	{
+		return isAggregateHU(hu) || isTransportUnit(hu);
 	}
 
 	@Override
@@ -566,6 +543,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public String getItemType(final I_M_HU_Item huItem)
 	{
 		Check.assumeNotNull(huItem, "huItem not null");
+		final String itemType = huItem.getItemType();
+		if (itemType != null)
+		{
+			return itemType;
+		}
+
+		// FIXME: remove it after we migrate all HUs
 		return huItem.getM_HU_PI_Item().getItemType();
 	}
 
@@ -573,7 +557,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public boolean isTopLevel(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-		final boolean topLevel = hu.getM_HU_Item_Parent_ID() <= 0;
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final boolean topLevel = handlingUnitsDAO.retrieveParentItem(hu) == null;
 		return topLevel;
 	}
 
@@ -745,59 +731,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return lastTU;
 	}
 
-	/**
-	 * Iterates the given <code>piVersion</code>'s active packing material items and sums of the weights of the attached <code>M_Product</code>s (if any).
-	 * <p>
-	 * NOTE: does <b>not</b> descent into sub-HUs, which is good, because this value is used in bottom-up/top-down propagation, i.e. the childrens' tare values are added during propagation.
-	 */
-	@Override
-	public BigDecimal getWeightTare(final I_M_HU_PI_Version piVersion)
-	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		BigDecimal weightTareTotal = BigDecimal.ZERO;
-
-		final I_C_BPartner partner = null; // FIXME: get context C_BPartner
-
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partner))
-		{
-			final String itemType = piItem.getItemType();
-			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
-			{
-				continue;
-			}
-
-			final I_M_HU_PackingMaterial huPackingMaterial = piItem.getM_HU_PackingMaterial();
-			if (huPackingMaterial == null)
-			{
-				continue;
-			}
-
-			final BigDecimal weightTare = getWeightTare(huPackingMaterial);
-			weightTareTotal = weightTareTotal.add(weightTare);
-		}
-
-		return weightTareTotal;
-	}
-
-	private BigDecimal getWeightTare(final I_M_HU_PackingMaterial huPackingMaterial)
-	{
-		if (!huPackingMaterial.isActive())
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final I_M_Product product = huPackingMaterial.getM_Product();
-		if (product == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal weightTare = product.getWeight();
-
-		return weightTare;
-	}
-
 	@Override
 	public boolean isPhysicalHU(final String huStatus)
 	{
@@ -826,55 +759,86 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
+	public boolean isAggregateHU(final I_M_HU hu)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
-		// services
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-
-		// In case the requirements will change and the empties ditribution network
-		// will be product based, here we will need to get the product gebinde
-		// and send it as parameter in the method above
-		final I_DD_NetworkDistribution emptiesNetworkDistribution = handlingUnitsDAO.retrieveEmptiesDistributionNetwork(ctx,
-				null, // Product
-				trxName);
-		if (emptiesNetworkDistribution == null)
+		if (hu == null)
 		{
-			throw new AdempiereException("@NotFound@ @DD_NetworkDistribution_ID@ (@IsHUDestroyed@=@Y@)");
+			return false;
 		}
 
-		final List<I_DD_NetworkDistributionLine> lines = distributionNetworkDAO.retrieveNetworkLinesBySourceWarehouse(emptiesNetworkDistribution, warehouse.getM_Warehouse_ID());
-
-		if (lines.isEmpty())
+		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
+		if (parentItem == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
-					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution);
+			return false;
 		}
 
-		return lines.get(0).getM_Warehouse();
-
+		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus)
+	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
+	{
+		if (!isAggregateHU(hu))
+		{
+			return hu.getM_HU_PI_Version();
+		}
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+
+		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
+	}
+
+	@Override
+	public I_M_HU_PI getEffectivePI(final I_M_HU hu)
+	{
+		if (!isAggregateHU(hu))
+		{
+			return hu.getM_HU_PI_Version().getM_HU_PI();
+		}
+
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+		return included_HU_PI;
+	}
+
+	@Override
+	public void setHUStatus(final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String huStatus)
 	{
 		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
 		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext,
-			final I_M_HU hu,
-			final String huStatus,
+	public void setHUStatus(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String huStatus,
 			final boolean forceFetchPackingMaterial)
 	{
 		// keep this so we can compare it with the new one and make sure the moving to/from
 		// gebindelager is done only when needed
 		final String initialHUStatus = hu.getHUStatus();
 
-		if (Check.equals(huStatus, initialHUStatus))
+		if (Objects.equals(huStatus, initialHUStatus))
 		{
 			// do nothing
 			return;
@@ -901,14 +865,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			{
 				// collect the "destroyed" HUs in case they were already physical (active)
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.addHURecursively(hu, null);
 			}
 			else
 			{
 				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.removeHURecursively(hu);
 			}
 		}
@@ -924,14 +888,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			if (initialHUStatus == null)
 			{
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.removeHURecursively(hu);
 			}
 			// only collect the destroyed HUs in case they were already physical (active)
 			else if (isPhysicalHU(initialHUStatus))
 			{
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.addHURecursively(hu, null);
 			}
 			else
@@ -953,8 +917,42 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public IEmptiesMovementBuilder createEmptiesMovementBuilder()
+	public void setHUStatusActive(final Collection<I_M_HU> hus)
 	{
-		return new EmptiesMovementBuilder();
+		if (hus == null || hus.isEmpty())
+		{
+			return;
+		}
+
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		huTrxBL.process(huContext -> {
+			for (final I_M_HU hu : hus)
+			{
+				final boolean isPhysicalHU = isPhysicalHU(hu.getHUStatus());
+				if (isPhysicalHU)
+				{
+					// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
+					// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
+					// ... but when you get to verteilung the boxes are already there
+					return;
+				}
+
+				setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+				InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
+
+				//
+				// Ask the API to get the packing materials needed to the HU which we just activate it
+				// TODO: i think we can remove this part because it's done automatically ?! (NOTE: this one was copied from swing UI, de.metas.handlingunits.client.terminal.pporder.receipt.view.HUPPOrderReceiptHUEditorPanel.onDialogOkBeforeSave(ITerminalDialog))
+				huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
+			}
+		});
+
+	}
+
+	@Override
+	public boolean isShipped(final I_M_HU hu)
+	{
+		return X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus());
 	}
 }

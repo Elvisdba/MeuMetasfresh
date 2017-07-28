@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Instance_Properties_v
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -133403747L;
+	private static final long serialVersionUID = 1851984908L;
 
     /** Standard Constructor */
     public X_M_HU_Instance_Properties_v (Properties ctx, int M_HU_Instance_Properties_v_ID, String trxName)
@@ -214,7 +213,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

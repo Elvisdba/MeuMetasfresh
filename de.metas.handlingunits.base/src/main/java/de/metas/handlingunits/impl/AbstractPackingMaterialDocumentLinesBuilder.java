@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -28,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -122,6 +126,17 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			}
 		}
 	}
+	
+	public final void addSources(final Collection<IPackingMaterialDocumentLineSource> sources)
+	{
+		if(sources == null || sources.isEmpty())
+		{
+			return;
+		}
+		
+		sources.forEach(this::addSource);
+	}
+
 
 	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
 	{
@@ -158,7 +173,8 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	protected abstract IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial);
 
 	@Override
-	public final void create()
+	@OverridingMethodsMustInvokeSuper
+	public AbstractPackingMaterialDocumentLinesBuilder create()
 	{
 		//
 		// Process all packing material lines
@@ -175,6 +191,8 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			final IPackingMaterialDocumentLine pmLine = null; // no packing material line
 			linkSourceToDocumentLine(source, pmLine);
 		}
+		
+		return this;
 	}
 
 	/**

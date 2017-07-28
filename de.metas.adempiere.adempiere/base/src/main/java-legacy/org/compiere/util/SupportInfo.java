@@ -9,12 +9,12 @@ import java.util.Properties;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /*
@@ -67,11 +67,11 @@ public class SupportInfo
 	 * @param sb buffer to append or null
 	 * @return Info as multiple Line String
 	 */
-	public static StringBuffer getInfo(StringBuffer sb)
+	public static StringBuilder getInfo(StringBuilder sb)
 	{
 		if (sb == null)
 		{
-			sb = new StringBuffer();
+			sb = new StringBuilder();
 		}
 		final String eq = " = ";
 		sb.append(getMsg("Host")).append(eq).append(getServerInfo()).append(NL);
@@ -91,8 +91,8 @@ public class SupportInfo
 		sb.append(getMsg("ImplementationVendor")).append(eq).append(org.compiere.Adempiere.getImplementationVendor()).append(NL);
 		sb.append(getMsg("ImplementationVersion")).append(eq).append(org.compiere.Adempiere.getImplementationVersion()).append(NL);
 		//
-		sb.append("AdempiereHome = ").append(Adempiere.getAdempiereHome()).append(NL);
-		sb.append("AdempiereProperties = ").append(Ini.getPropertyFileName()).append(NL);
+		sb.append("MetasfreshHome = ").append(Ini.getMetasfreshHome()).append(NL);
+		sb.append("MetasfreshProperties = ").append(Ini.getPropertyFileName()).append(NL);
 		sb.append(Env.getLanguage(Env.getCtx())).append(NL);
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(Env.getCtx());
 		sb.append(client).append(NL);
@@ -145,11 +145,11 @@ public class SupportInfo
 	 * @param ctx Environment
 	 * @return System Info
 	 */
-	public static StringBuffer getInfoDetail(StringBuffer sb, Properties ctx)
+	public static StringBuilder getInfoDetail(StringBuilder sb, Properties ctx)
 	{
 		if (sb == null)
 		{
-			sb = new StringBuffer();
+			sb = new StringBuilder();
 		}
 		if (ctx == null)
 		{

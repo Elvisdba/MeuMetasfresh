@@ -31,21 +31,21 @@ SELECT
 	bpg.IsPrintTax
 FROM
 	C_InvoiceLine il
-	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
-	INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-	LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+	INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	-- Product and its translation
-	LEFT OUTER JOIN M_Product p 			ON il.M_Product_ID = p.M_Product_ID
-	LEFT OUTER JOIN M_Product_Trl pt 		ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
-	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+	LEFT OUTER JOIN M_Product p 			ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt 		ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom			ON il.C_UOM_ID = uom.C_UOM_ID
-	LEFT OUTER JOIN C_UOM_Trl uomt			ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2
+	LEFT OUTER JOIN C_UOM uom			ON il.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt			ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
 	-- Tax rate
-	LEFT OUTER JOIN C_Tax t			ON il.C_Tax_ID = t.C_Tax_ID
+	LEFT OUTER JOIN C_Tax t			ON il.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
 WHERE
-	il.C_Invoice_ID = $1
-	AND pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	il.C_Invoice_ID = $1 AND il.isActive = 'Y'
+	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
 GROUP BY
 	COALESCE(pt.Name, p.Name), COALESCE(uom.UOMSymbol, uomt.UOMSymbol), il.PriceEntered,
 	t.rate,

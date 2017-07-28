@@ -34,22 +34,22 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.JavaProcess;
 
 /**
  * task 09373
  */
-public class C_Payment_DiscountAllocation_Process extends SvrProcess
+public class C_Payment_DiscountAllocation_Process extends JavaProcess
 {
 	public static final String MSG_AllocationCreated = "MSG_AllocationCreated";
 

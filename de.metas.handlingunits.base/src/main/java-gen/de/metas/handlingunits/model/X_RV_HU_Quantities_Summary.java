@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_HU_Quantities_Summary
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1340576426L;
+	private static final long serialVersionUID = -1018620139L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities_Summary (Properties ctx, int RV_HU_Quantities_Summary_ID, String trxName)
@@ -205,7 +204,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAvailable);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -227,7 +226,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHand);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -249,7 +248,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -271,7 +270,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

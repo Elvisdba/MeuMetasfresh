@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -36,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_InfoColumn;
@@ -45,15 +45,16 @@ import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.model.X_AD_User_SortPref_Hdr;
-import org.compiere.process.SvrProcess;
+
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
+import de.metas.i18n.IMsgBL;
 
 /**
  * @task http://dewiki908/mediawiki/index.php/08924_Sortierung_Zählliste-Sortierbegriffe_(101643853730)
  */
-public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
+public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 {
 
 	private static final transient Logger logger = LogManager.getLogger(Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref.class);
@@ -82,7 +83,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
 		final I_Fresh_QtyOnHand onHand = getProcessInfo().getRecord(I_Fresh_QtyOnHand.class);
 		final Timestamp dateDoc = onHand.getDateDoc();
 
-		final PlainContextAware contextProviderForNewRecords = new PlainContextAware(getCtx(), getTrxName());
+		final PlainContextAware contextProviderForNewRecords = PlainContextAware.newWithTrxName(getCtx(), getTrxName());
 
 		final I_AD_User_SortPref_Line newLine = resetAndRetrieveSortPrefLineOrNull(contextProviderForNewRecords, dateDoc);
 		if (newLine == null)

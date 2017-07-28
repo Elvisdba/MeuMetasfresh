@@ -28,16 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.SqlQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -50,14 +45,17 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
 
 /**
  * Send EDI documents for selected entries.
  *
  * @author al
  */
-public class EDIExportDocOutboundLog extends SvrProcess
+public class EDIExportDocOutboundLog extends JavaProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
@@ -66,27 +64,23 @@ public class EDIExportDocOutboundLog extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-
-		final String tableName = I_C_Doc_Outbound_Log.Table_Name;
-
 		final ProcessInfo pi = getProcessInfo();
-		final SqlQueryFilter piQueryFilter = (SqlQueryFilter)pi.getQueryFilter();
-		final String whereClause = piQueryFilter.getSql();
 
 		final int pInstanceId = getAD_PInstance_ID();
 		logger.info("AD_Pinstance_ID={}", pInstanceId);
 
 		//
 		// Create selection for PInstance and make sure we're enqueuing something
-		final int selectionCount = new Query(ctx, tableName, whereClause, trxName)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
+				.addOnlyActiveRecordsFilter()
+				.filter(pi.getQueryFilter())
+				.create()
 				.createSelection(pInstanceId);
+
 		if (selectionCount == 0)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ctx, MSG_No_DocOutboundLog_Selection));
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_No_DocOutboundLog_Selection));
 		}
 	}
 
@@ -142,14 +136,14 @@ public class EDIExportDocOutboundLog extends SvrProcess
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
-				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
+				.addInArrayOrAllFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
 						I_C_Invoice.Table_ID)
 				.setOnlySelection(pInstanceId);
 
 		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
 				.list(I_C_Doc_Outbound_Log.class);
 
-		final List<I_EDI_Document_Extension> filteredDocuments = new ArrayList<I_EDI_Document_Extension>();
+		final List<I_EDI_Document_Extension> filteredDocuments = new ArrayList<>();
 		logger.info("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
 
 		for (final I_C_Doc_Outbound_Log log : logs)

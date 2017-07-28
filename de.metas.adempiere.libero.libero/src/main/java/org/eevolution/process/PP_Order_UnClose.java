@@ -27,19 +27,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -47,6 +43,11 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Unclose a manufacturing order.
@@ -54,7 +55,7 @@ import de.metas.document.engine.IDocActionBL;
  * @author tsa
  * @task 08731
  */
-public class PP_Order_UnClose extends SvrProcess implements ISvrProcessPrecondition
+public class PP_Order_UnClose extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
@@ -64,10 +65,10 @@ public class PP_Order_UnClose extends SvrProcess implements ISvrProcessPrecondit
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(gridTab, I_PP_Order.class);
-		return isEligible(ppOrder);
+		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
+		return ProcessPreconditionsResolution.acceptIf(isEligible(ppOrder));
 	}
 
 	private boolean isEligible(I_PP_Order ppOrder)
@@ -142,7 +143,7 @@ public class PP_Order_UnClose extends SvrProcess implements ISvrProcessPrecondit
 
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{
-			if (docActionBL.isStatusReversedOrVoided(cc))
+			if (docActionBL.isDocumentReversedOrVoided(cc))
 			{
 				continue;
 			}
@@ -153,7 +154,7 @@ public class PP_Order_UnClose extends SvrProcess implements ISvrProcessPrecondit
 				continue;
 			}
 
-			if (docActionBL.isStatusOneOf(cc, DocAction.STATUS_Closed))
+			if (docActionBL.isDocumentStatusOneOf(cc, DocAction.STATUS_Closed))
 			{
 				cc.setDocStatus(DocAction.STATUS_Completed);
 				InterfaceWrapperHelper.save(cc);

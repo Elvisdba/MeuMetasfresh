@@ -43,7 +43,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.proxy.WeakWrapper;
@@ -92,6 +91,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.jmx.JMXSwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.adempiere.form.terminal.table.swing.SwingTerminalTable2;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -717,28 +717,18 @@ public class SwingTerminalFactory implements ITerminalFactory
 	}
 
 	@Override
-	public ITerminalDialog createModalDialog(final IComponent parent, final String title, final IComponent content)
-	{
-		final boolean maintainOwnContextReferences = true; // the default
-		return createModalDialog(parent, title, content, maintainOwnContextReferences);
-	}
-
-	@Override
 	public ITerminalDialog createModalDialog(
 			final IComponent parent,
 			final String title,
-			final IComponent content,
-			final boolean maintainOwnContextReferences)
+			final IComponent content)
 	{
-		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content, maintainOwnContextReferences);
+		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content);
 		dialog.setTitle(title);
 
-		if (!maintainOwnContextReferences)
-		{
-			// only register if it does not maintain its own references, because otherwise, we would add 'dialog' to its own contextReferences which it just created in its constructor.
-			// that would lead to a stack overflow on dispose. Also check out the SwingTerminalDialog constructor for details.
-			addToDisposableComponents(dialog);
-		}
+		// only register if it does not maintain its own references, because otherwise, we would add 'dialog' to its own contextReferences which it just created in its constructor.
+		// that would lead to a stack overflow on dispose. Also check out the SwingTerminalDialog constructor for details.
+		addToDisposableComponents(dialog);
+
 		return dialog;
 	}
 

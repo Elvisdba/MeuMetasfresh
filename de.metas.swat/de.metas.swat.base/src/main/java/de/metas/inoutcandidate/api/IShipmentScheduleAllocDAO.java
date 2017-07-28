@@ -35,9 +35,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
 	/**
-	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.
-	 * <p>
+	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.<br>
 	 * Records are ordered by ID. Only active records are returned.
+	 * <br>
+	 * Important: also return records which reference destroyed HUs, since this BL doesn't know or care about HUs.
 	 *
 	 * @param shipmentSchedule
 	 * @param clazz
@@ -47,7 +48,8 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz);
 
 	/**
-	 * Retrieves delivered ONLY QtyPicked records for given <code>shipmentSchedule</code>.
+	 * Return a query builder for those {@link I_M_ShipmentSchedule_QtyPicked} records that reference the given shipmentSchedule and that do also reference an
+	 * {@link I_M_InOutLine}.
 	 * <p>
 	 * Records are ordered by ID. Only active records are returned.
 	 *

@@ -827,10 +827,12 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private int AD_Form_ID = -1;
 	private int AD_Workflow_ID = -1;
 	private int AD_Task_ID = -1;
+	private int WEBUI_Board_ID = -1;
 	private boolean isCreateNewRecord = false;
 	private String webuiNameBrowse;
 	private String webuiNameNew;
 	private String webuiNameNewBreadcrumb;
+	private String mainTableName;
 
 	public int getAD_Window_ID()
 	{
@@ -881,6 +883,16 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	{
 		AD_Task_ID = aD_Task_ID;
 	}
+	
+	public int getWEBUI_Board_ID()
+	{
+		return WEBUI_Board_ID;
+	}
+	
+	public void setWEBUI_Board_ID(final int WEBUI_Board_ID)
+	{
+		this.WEBUI_Board_ID = WEBUI_Board_ID;
+	}
 
 	public void setIsCreateNewRecord(final boolean isCreateNewRecord)
 	{
@@ -922,5 +934,17 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		return webuiNameNewBreadcrumb;
 	}
 
-
+	/**
+	 * @param mainTableName table name of main tab or null
+	 */
+	public void setMainTableName(String mainTableName)
+	{
+		this.mainTableName = mainTableName;
+	}
+	
+	/** @return table name of main tab or null */
+	public String getMainTableName()
+	{
+		return mainTableName;
+	}
 }   // MTreeNode

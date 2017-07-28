@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,7 +19,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -37,11 +38,11 @@ import de.metas.procurement.base.model.I_PMM_Product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -69,19 +70,17 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.flatrate.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
-				//
-				// Collect linked C_Flatrate_Terms
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				//
-				// Running contract restriction
+				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
+
+				// completed contract restriction
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend)
-				//
-				;
+
+				// gh #1241: we don't maintain the contract status for procurement contracts; in particular, we do not set it to "running" "sometimes, but not if a contract is extended
+				// also, even if a contract's current status is not running, it doesn't mean that it's not valid within the period if time between its start and end date! 
+				// .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend) 
+		;
 
 		// Date restriction
 		if (date != null)
@@ -135,5 +134,19 @@ public class PMMContractsDAO implements IPMMContractsDAO
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public I_C_Flatrate_Term retrieveTermForPartnerAndProduct(final Date date, final int bPartnerID, final int pmmProductId)
+	{
+		return retrieveAllRunningContractsOnDateQuery(date)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bPartnerID)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID, pmmProductId)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first(I_C_Flatrate_Term.class);
 	}
 }

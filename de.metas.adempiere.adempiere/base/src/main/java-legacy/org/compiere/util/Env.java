@@ -22,16 +22,14 @@ import java.awt.Graphics;
 import java.awt.Window;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -40,10 +38,10 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.model.IWindowNoAware;
@@ -58,16 +56,16 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MSession;
-import org.compiere.model.PO;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
-import org.springframework.util.CollectionUtils;
+import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -144,9 +142,7 @@ public final class Env
 		if (DB.isConnected())
 		{
 			// End Session
-			MSession session = MSession.get(Env.getCtx(), false);	// finish
-			if (session != null)
-				session.logout();
+			Services.get(ISessionBL.class).logoutCurrentSession();
 		}
 		//
 		reset(true);	// final cache reset
@@ -168,9 +164,7 @@ public final class Env
 	public static void logout()
 	{
 		// End Session
-		MSession session = MSession.get(getCtx(), false);	// finish
-		if (session != null)
-			session.logout();
+		Services.get(ISessionBL.class).logoutCurrentSession();
 		//
 		reset(true);	// final cache reset
 	}
@@ -398,7 +392,25 @@ public final class Env
 		Check.assumeNotNull(ctx, "ctx not null");
 
 		final Properties newCtx = new Properties();
-		CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
+
+		// we can't use this great tool, because it (reasonably) assumes that the given ctx doews not have null values
+		// org.springframework.util.CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
+
+		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
+		{
+			final String key = (String)en.nextElement();
+			Object value = ctx.get(key);
+			if (value == null)
+			{
+				// Allow for defaults fallback or potentially overridden accessor
+				value = newCtx.getProperty(key);
+			}
+			if (value == null)
+			{
+				continue; // the given ctx might have null values, so this check is crucial
+			}
+			newCtx.put(key, value);
+		}
 
 		return newCtx;
 	}
@@ -1101,7 +1113,7 @@ public final class Env
 			return null;
 		}
 
-		return "Y".equals(s);
+		return DisplayType.toBoolean(s);
 	}	// isSOTrx
 
 	/**
@@ -1188,10 +1200,10 @@ public final class Env
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}	// getAD_Role_ID
 
-//	public static void setAD_Role_ID(Properties ctx, final int adRoleId)
-//	{
-//		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
-//	}	// getAD_Role_ID
+	// public static void setAD_Role_ID(Properties ctx, final int adRoleId)
+	// {
+	// Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
+	// } // getAD_Role_ID
 
 	public static IUserRolePermissions getUserRolePermissions()
 	{
@@ -1214,12 +1226,6 @@ public final class Env
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
-	}
-
-
-	public static void resetUserRolePermissions()
-	{
-		Services.get(IUserRolePermissionsDAO.class).resetCache();
 	}
 
 	public static int getAD_Session_ID(final Properties ctx)
@@ -1391,6 +1397,11 @@ public final class Env
 		return null;
 	}	// getAD_Language
 
+	public static String getAD_Language()
+	{
+		return getAD_Language(getCtx());
+	}
+
 	/**
 	 * Get System Language.
 	 *
@@ -1441,11 +1452,13 @@ public final class Env
 
 		//
 		// Get available languages, having BaseLanguage first and then System Language
-		final List<String> AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableAD_LanguagesForMatching(getCtx());
+		final Set<String> AD_Languages = Services.get(ILanguageDAO.class)
+				.retrieveAvailableLanguages()
+				.getAD_Languages();
 
 		//
 		// Check if we have a perfect match
-		if(AD_Languages.contains(searchAD_Language))
+		if (AD_Languages.contains(searchAD_Language))
 		{
 			return;
 		}
@@ -1622,112 +1635,10 @@ public final class Env
 		return parseContext(ctx, WindowNo, expression, onlyWindow, ignoreUnparsable);
 	}	// parseContext
 
-	/**
-	 * Parse expression, replaces global or PO properties @tag@ with actual value.
-	 *
-	 * @param expression
-	 * @param po
-	 * @param trxName
-	 * @return String
-	 */
-	public static String parseVariable(String expression, PO po, String trxName, boolean keepUnparseable)
-	{
-		if (expression == null || expression.length() == 0)
-			return "";
-
-		String token;
-		String inStr = new String(expression);
-		StringBuilder outStr = new StringBuilder();
-
-		int i = inStr.indexOf('@');
-		while (i != -1)
-		{
-			outStr.append(inStr.substring(0, i));			// up to @
-			inStr = inStr.substring(i + 1, inStr.length());	// from first @
-
-			int j = inStr.indexOf('@');						// next @
-			if (j < 0)
-			{
-				s_log.error("No second tag: {}", inStr);
-				return "";						// no second tag
-			}
-
-			token = inStr.substring(0, j);
-
-			// format string
-			String format = "";
-			int f = token.indexOf('<');
-			if (f > 0 && token.endsWith(">"))
-			{
-				format = token.substring(f + 1, token.length() - 1);
-				token = token.substring(0, f);
-			}
-
-			if (token.startsWith("#") || token.startsWith("$"))
-			{
-				// take from context
-				Properties ctx = po != null ? po.getCtx() : Env.getCtx();
-				String v = Env.getContext(ctx, token);
-				if (v != null && v.length() > 0)
-					outStr.append(v);
-				else if (keepUnparseable)
-					outStr.append("@" + token + "@");
-			}
-			else if (po != null)
-			{
-				// take from po
-				Object v = po.get_Value(token);
-				if (v != null)
-				{
-					if (format != null && format.length() > 0)
-					{
-						if (v instanceof Integer && token.endsWith("_ID"))
-						{
-							int tblIndex = format.indexOf(".");
-							String table = tblIndex > 0 ? format.substring(0, tblIndex) : token.substring(0, token.length() - 3);
-							String column = tblIndex > 0 ? format.substring(tblIndex + 1) : format;
-							outStr.append(DB.getSQLValueString(trxName,
-									"select " + column + " from  " + table + " where " + table + "_id = ?", (Integer)v));
-						}
-						else if (v instanceof Date)
-						{
-							SimpleDateFormat df = new SimpleDateFormat(format);
-							outStr.append(df.format((Date)v));
-						}
-						else if (v instanceof Number)
-						{
-							DecimalFormat df = new DecimalFormat(format);
-							outStr.append(df.format(((Number)v).doubleValue()));
-						}
-						else
-						{
-							MessageFormat mf = new MessageFormat(format);
-							outStr.append(mf.format(v));
-						}
-					}
-					else
-					{
-						outStr.append(v.toString());
-					}
-				}
-				else if (keepUnparseable)
-				{
-					outStr.append("@" + token + "@");
-				}
-			}
-
-			inStr = inStr.substring(j + 1, inStr.length());	// from second @
-			i = inStr.indexOf('@');
-		}
-		outStr.append(inStr);						// add the rest of the string
-
-		return outStr.toString();
-	}
-
 	/*************************************************************************/
 
 	// Array of active Windows
-	private static ArrayList<Container> s_windows = new ArrayList<Container>(20);
+	private static ArrayList<Container> s_windows = new ArrayList<>(20);
 
 	/**
 	 * Add Container and return WindowNo. The container is a APanel, AWindow or JFrame/JDialog
@@ -1954,7 +1865,7 @@ public final class Env
 	}	// isWindows
 
 	/** Array of hidden Windows */
-	private static ArrayList<CFrame> s_hiddenWindows = new ArrayList<CFrame>();
+	private static ArrayList<CFrame> s_hiddenWindows = new ArrayList<>();
 	/** Closing Window Indicator */
 	private static boolean s_closingWindows = false;
 
@@ -2071,7 +1982,7 @@ public final class Env
 	 */
 	public static Set<Window> updateUI()
 	{
-		Set<Window> updated = new HashSet<Window>();
+		Set<Window> updated = new HashSet<>();
 		for (Container c : s_windows)
 		{
 			Window w = getFrame(c);
@@ -2588,8 +2499,12 @@ public final class Env
 
 	// metas: end
 
-	public static Adempiere getSingleAdempiereInstance()
+	public static Adempiere getSingleAdempiereInstance(@Nullable final ApplicationContext applicationContext)
 	{
+		if (applicationContext != null)
+		{
+			Adempiere.instance.setApplicationContext(applicationContext);
+		}
 		return Adempiere.instance;
 	}
 

@@ -19,12 +19,15 @@ package org.compiere.process;
 import java.util.ArrayList;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MPaySelection;
 import org.compiere.model.MPaySelectionCheck;
 import org.compiere.model.MPaySelectionLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.IMsgBL;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Checks from Payment Selection Line
@@ -32,7 +35,7 @@ import org.compiere.util.AdempiereUserError;
  * @author Jorg Janke
  * @version $Id: PaySelectionCreateCheck.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class PaySelectionCreateCheck extends SvrProcess
+public class PaySelectionCreateCheck extends JavaProcess
 {
 	/** Target Payment Rule */
 	private String p_PaymentRule = null;
@@ -49,7 +52,7 @@ public class PaySelectionCreateCheck extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

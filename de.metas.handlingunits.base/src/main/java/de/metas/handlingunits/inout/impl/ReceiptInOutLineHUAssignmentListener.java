@@ -13,15 +13,14 @@ package de.metas.handlingunits.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -36,12 +35,12 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 
@@ -59,7 +58,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 	private ReceiptInOutLineHUAssignmentListener()
 	{
-		super();
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Get running context
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final IContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		Services.get(ITrxManager.class).assertTrxNameNotNull(trxName);
 
 		//
@@ -102,7 +100,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		huTrxBL.createHUContextProcessorExecutor(contextProvider)
 				.run(new IHUContextProcessor()
 				{
-
 					@Override
 					public IMutableAllocationResult process(final IHUContext huContext)
 					{
@@ -214,4 +211,4 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		// Sets the ex-Vendor BPartner ID as SubProducer.
 		huAttributeStorage.setValue(attribute_subProducer, bpartnerId);
 	}
-}
+		}

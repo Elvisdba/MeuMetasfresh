@@ -47,6 +47,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.Throwables;
+
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -460,6 +462,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 
 		//
+
 		// C_Async_Batch_ID - get it from context if available
 		// set olny if is not new workpackage; the first new one is allways for the the async batch itself and we do want to track it
 		if (!asyncBatchForNewWorkpackagesSet)
@@ -469,8 +472,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			workPackage.setC_Async_Batch_ID(asyncBatchId);
 		}
 
-		//
-		// Set User/Role
+		// increase enqueued counter
+		final int enqueuedCount = asyncBatchBL.increaseEnqueued(workPackage);
+		workPackage.setBatchEnqueuedCount(enqueuedCount);
+
+ 		// Set User/Role
 		workPackage.setAD_User_ID(Env.getAD_User_ID(ctx));
 		workPackage.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
@@ -480,11 +486,18 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		{
 			workPackage.setAD_User_InCharge(userInCharge);
 		}
-		dao.saveInLocalTrx(workPackage);
 
-		// increase enqueued counter
-		asyncBatchBL.increaseEnqueued(workPackage);
-
+		//
+		// Save the workpackage
+		try
+		{
+			dao.saveInLocalTrx(workPackage);
+		}
+		catch (Throwable e)
+		{
+			asyncBatchBL.decreaseEnqueued(workPackage);
+			throw Throwables.propagate(e);
+		}
 		localPackagecount++; // task 09049
 
 		//
@@ -563,6 +576,13 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		final I_C_Queue_Block block = enqueueBlock(ctx);
 		final I_C_Queue_WorkPackage workPackage = enqueueWorkPackage(block, PRIORITY_AUTO); // default priority
+		
+		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.C_Async_Batch);
+		if (asyncBatch != null)
+		{
+			workPackage.setC_Async_Batch(asyncBatch);	
+		}
+		
 		final I_C_Queue_Element element = enqueueElement(workPackage, model);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);

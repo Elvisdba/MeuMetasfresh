@@ -30,30 +30,29 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 
 /**
  * Product Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MProduct.java,v 1.5 2006/07/30 00:51:05 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>FR [ 1885153 ] Refactor: getMMPolicy code <li>BF [ 1885414 ] ASI should be always mandatory if CostingLevel is Batch/Lot <li>FR [ 2093551 ]
  *         Refactor/Add org.compiere.model.MProduct.getCostingLevel <li>FR [ 2093569 ] Refactor/Add org.compiere.model.MProduct.getCostingMethod <li>BF [ 2824795 ] Deleting Resource product should be
  *         forbidden https://sourceforge.net/tracker/?func=detail&aid=2824795&group_id=176962&atid=879332
- * 
+ *
  * @author Mark Ostermann (mark_o), metas consult GmbH <li>BF [ 2814628 ] Wrong evaluation of Product inactive in beforeSave()
  */
 public class MProduct extends X_M_Product
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 285926961771269935L;
 
 	/**
 	 * Get MProduct from Cache
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_Product_ID id
 	 * @return MProduct or null
@@ -72,7 +71,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Get MProduct from Cache
-	 * 
+	 *
 	 * @param ctx context
 	 * @param whereClause sql where clause
 	 * @param trxName trx
@@ -89,7 +88,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Get MProduct using UPC/EAN (case sensitive)
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param upc The upc to look for
 	 * @return List of MProduct
@@ -103,38 +102,8 @@ public class MProduct extends X_M_Product
 	}
 
 	/**
-	 * Get Product from Cache
-	 * 
-	 * @param ctx context
-	 * @param S_Resource_ID resource ID
-	 * @return MProduct or null if not found
-	 * @deprecated Please use {@link IProductDAO#retrieveForResourceId(Properties, int, String)}
-	 */
-	@Deprecated
-	public static MProduct forS_Resource_ID(Properties ctx, int S_Resource_ID)
-	{
-		return forS_Resource_ID(ctx, S_Resource_ID, null);
-	}
-
-	/**
-	 * Get Product from Cache
-	 * 
-	 * @param ctx context
-	 * @param S_Resource_ID resource ID
-	 * @param trxName
-	 * @return MProduct or null if not found
-	 * @deprecated Please use {@link IProductDAO#retrieveForResourceId(Properties, int, String)}
-	 */
-	@Deprecated
-	public static MProduct forS_Resource_ID(Properties ctx, int S_Resource_ID, String trxName)
-	{
-		final I_M_Product product = Services.get(IProductDAO.class).retrieveForResourceId(ctx, S_Resource_ID, trxName);
-		return LegacyAdapters.convertToPO(product);
-	}
-
-	/**
 	 * Is Product Stocked
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_Product_ID id
 	 * @return true if found and stocked - false otherwise
@@ -149,7 +118,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Product is an Item and Stocked
-	 * 
+	 *
 	 * @param product
 	 * @return true if stocked and item
 	 * @deprecated Please use {@link IProductBL#isStocked(I_M_Product)}
@@ -165,7 +134,7 @@ public class MProduct extends X_M_Product
 
 	/**************************************************************************
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_Product_ID id
 	 * @param trxName transaction
@@ -178,7 +147,6 @@ public class MProduct extends X_M_Product
 			// setValue (null);
 			// setName (null);
 			// setM_Product_Category_ID (0);
-			// setC_TaxCategory_ID (0);
 			// setC_UOM_ID (0);
 			//
 			setProductType(PRODUCTTYPE_Item);	// I
@@ -200,7 +168,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Load constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -212,7 +180,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Parent Constructor
-	 * 
+	 *
 	 * @param et parent
 	 */
 	public MProduct(MExpenseType et)
@@ -222,24 +190,24 @@ public class MProduct extends X_M_Product
 		setExpenseType(et);
 	}	// MProduct
 
-	/**
-	 * Parent Constructor
-	 * 
-	 * @param resource parent
-	 * @param resourceType resource type
-	 */
-	public MProduct(MResource resource, MResourceType resourceType)
-	{
-		this(resource.getCtx(), 0, resource.get_TrxName());
-		setAD_Org_ID(resource.getAD_Org_ID());
-		setProductType(X_M_Product.PRODUCTTYPE_Resource);
-		setResource(resource);
-		setResource(resourceType);
-	}	// MProduct
+//	/**
+//	 * Parent Constructor
+//	 *
+//	 * @param resource parent
+//	 * @param resourceType resource type
+//	 */
+//	public MProduct(MResource resource, MResourceType resourceType)
+//	{
+//		this(resource.getCtx(), 0, resource.get_TrxName());
+//		setAD_Org_ID(resource.getAD_Org_ID());
+//		setProductType(X_M_Product.PRODUCTTYPE_Resource);
+//		setResource(resource);
+//		setResource(resourceType);
+//	}	// MProduct
 
 	/**
 	 * Import Constructor
-	 * 
+	 *
 	 * @param impP import
 	 */
 	public MProduct(I_I_Product impP)
@@ -269,7 +237,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Set Expense Type
-	 * 
+	 *
 	 * @param parent expense type
 	 * @return true if changed
 	 */
@@ -318,104 +286,17 @@ public class MProduct extends X_M_Product
 			setM_Product_Category_ID(parent.getM_Product_Category_ID());
 			changed = true;
 		}
-		// metas 05129 start (commented out)
-		// if (parent.getC_TaxCategory_ID() != getC_TaxCategory_ID())
-		// {
-		// setC_TaxCategory_ID(parent.getC_TaxCategory_ID());
-		// changed = true;
-		// }
-		//
+
 		// metas 05129 end
 		return changed;
 	}	// setExpenseType
-
-	/**
-	 * Set Resource
-	 * 
-	 * @param parent resource
-	 * @return true if changed
-	 */
-	public boolean setResource(MResource parent)
-	{
-		boolean changed = false;
-		if (!PRODUCTTYPE_Resource.equals(getProductType()))
-		{
-			setProductType(PRODUCTTYPE_Resource);
-			changed = true;
-		}
-		if (parent.getS_Resource_ID() != getS_Resource_ID())
-		{
-			setS_Resource_ID(parent.getS_Resource_ID());
-			changed = true;
-		}
-		if (parent.isActive() != isActive())
-		{
-			setIsActive(parent.isActive());
-			changed = true;
-		}
-		//
-		if (!parent.getValue().equals(getValue()))
-		{
-			setValue(parent.getValue());
-			changed = true;
-		}
-		if (!parent.getName().equals(getName()))
-		{
-			setName(parent.getName());
-			changed = true;
-		}
-		if ((parent.getDescription() == null && getDescription() != null)
-				|| (parent.getDescription() != null && !parent.getDescription().equals(getDescription())))
-		{
-			setDescription(parent.getDescription());
-			changed = true;
-		}
-		//
-		return changed;
-	}	// setResource
-
-	/**
-	 * Set Resource Type
-	 * 
-	 * @param parent resource type
-	 * @return true if changed
-	 */
-	public boolean setResource(MResourceType parent)
-	{
-		boolean changed = false;
-		if (PRODUCTTYPE_Resource.equals(getProductType()))
-		{
-			setProductType(PRODUCTTYPE_Resource);
-			changed = true;
-		}
-		//
-		if (parent.getC_UOM_ID() != getC_UOM_ID())
-		{
-			setC_UOM_ID(parent.getC_UOM_ID());
-			changed = true;
-		}
-		if (parent.getM_Product_Category_ID() != getM_Product_Category_ID())
-		{
-			setM_Product_Category_ID(parent.getM_Product_Category_ID());
-			changed = true;
-		}
-		// metas 05129 start (commented out)
-		// if (parent.getC_TaxCategory_ID() != getC_TaxCategory_ID())
-		// {
-		// setC_TaxCategory_ID(parent.getC_TaxCategory_ID());
-		// changed = true;
-		// }
-		//
-		// metas 05129 end
-		return changed;
-	}	// setResource
 
 	/** UOM Precision */
 	private Integer m_precision = null;
 
 	/**
 	 * Get UOM Standard Precision
-	 * 
+	 *
 	 * @return UOM Standard Precision
 	 * @deprecated Please use {@link IProductBL#getUOMPrecision(I_M_Product)}
 	 */
@@ -427,14 +308,14 @@ public class MProduct extends X_M_Product
 			int C_UOM_ID = getC_UOM_ID();
 			if (C_UOM_ID == 0)
 				return 0;	// EA
-			m_precision = new Integer(MUOM.getPrecision(getCtx(), C_UOM_ID));
+			m_precision = MUOM.getPrecision(getCtx(), C_UOM_ID);
 		}
 		return m_precision.intValue();
 	}	// getUOMPrecision
 
 	/**
 	 * Create Asset Group for this product
-	 * 
+	 *
 	 * @return asset group id
 	 */
 	public int getA_Asset_Group_ID()
@@ -445,7 +326,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Create Asset for this product
-	 * 
+	 *
 	 * @return true if asset is created
 	 */
 	public boolean isCreateAsset()
@@ -456,7 +337,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Get Attribute Set
-	 * 
+	 *
 	 * @return set or null
 	 * @deprecated Please use {@link IProductBL#getM_AttributeSet(I_M_Product)}
 	 */
@@ -468,7 +349,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Has the Product Instance Attribute
-	 * 
+	 *
 	 * @return true if instance attributes
 	 */
 	public boolean isInstanceAttribute()
@@ -484,7 +365,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Create One Asset Per UOM
-	 * 
+	 *
 	 * @return individual asset
 	 */
 	public boolean isOneAssetPerUOM()
@@ -497,32 +378,8 @@ public class MProduct extends X_M_Product
 	}	// isOneAssetPerUOM
 
 	/**
-	 * Product is Item
-	 * 
-	 * @return true if item
-	 * @deprecated please use {@link IProductBL#isItem(I_M_Product)}
-	 */
-	@Deprecated
-	public boolean isItem()
-	{
-		return Services.get(IProductBL.class).isItem(this);
-	}	// isItem
-
-	/**
-	 * Is Service
-	 * 
-	 * @return true if service (resource, online)
-	 * @deprecated Please use {@link IProductBL#isService(I_M_Product)}
-	 */
-	@Deprecated
-	public boolean isService()
-	{
-		return Services.get(IProductBL.class).isService(this);
-	}	// isService
-
-	/**
 	 * Get UOM Symbol
-	 * 
+	 *
 	 * @return UOM Symbol
 	 */
 	public String getUOMSymbol()
@@ -535,7 +392,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Get Active(!) Product Downloads
-	 * 
+	 *
 	 * @param requery requery
 	 * @return array of downloads
 	 */
@@ -555,7 +412,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Does the product have downloads
-	 * 
+	 *
 	 * @return true if downloads exists
 	 */
 	public boolean hasDownloads()
@@ -626,7 +483,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * HasInventoryOrCost
-	 * 
+	 *
 	 * @return true if it has Inventory or Cost
 	 */
 	protected boolean hasInventoryOrCost()
@@ -749,9 +606,9 @@ public class MProduct extends X_M_Product
 		 * MAcctSchema[] mass = MAcctSchema.getClientAcctSchema(getCtx(),getAD_Client_ID(), get_TrxName()); for(int i=0; i<mass.length; i++) { // Get Cost Elements MCostElement[] ces =
 		 * MCostElement.getMaterialWithCostingMethods(this); MCostElement ce = null; for(int j=0; j<ces.length; j++) { if(MCostElement.COSTINGMETHOD_StandardCosting.equals(ces[i].getCostingMethod()))
 		 * { ce = ces[i]; break; } }
-		 * 
+		 *
 		 * if(ce == null) continue;
-		 * 
+		 *
 		 * MCost mcost = MCost.get(this, 0, mass[i], 0, ce.getM_CostElement_ID()); mcost.delete(true, get_TrxName()); }
 		 */
 
@@ -769,7 +626,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Gets Material Management Policy. Tries: Product Category, Client (in this order)
-	 * 
+	 *
 	 * @return Material Management Policy
 	 * @deprecated Please use {@link IProductBL#getMMPolicy(I_M_Product)}
 	 */
@@ -781,7 +638,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Check if ASI is mandatory
-	 * 
+	 *
 	 * @param isSOTrx is outgoing trx?
 	 * @return true if ASI is mandatory, false otherwise
 	 */
@@ -831,7 +688,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Get Product Costing Level
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return product costing level
 	 * @deprecated Please use {@link IProductBL#getCostingLevel(I_M_Product, I_C_AcctSchema)}.
@@ -844,7 +701,7 @@ public class MProduct extends X_M_Product
 
 	/**
 	 * Get Product Costing Method
-	 * 
+	 *
 	 * @param C_AcctSchema_ID accounting schema ID
 	 * @return product costing method
 	 * @deprecated Please use {@link IProductBL#getCostingMethod(I_M_Product, I_C_AcctSchema)}.

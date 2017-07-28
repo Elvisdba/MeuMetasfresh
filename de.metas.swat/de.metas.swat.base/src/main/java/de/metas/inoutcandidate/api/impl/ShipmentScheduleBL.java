@@ -54,10 +54,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_BPartner_Location;
@@ -78,18 +76,16 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
@@ -143,7 +139,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		final IInOutCandHandlerBL inOutCandHandlerBL = Services.get(IInOutCandHandlerBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
@@ -280,47 +275,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			if (saveSchedules)
 			{
-				final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-
 				InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 
 				if (!docActionBL.isStatusCompletedOrClosedOrReversed(orderDocStatus) // task 07355: thread closed orders like completed orders
-						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won'T work ^^
-						&& sched.getQtyDelivered().signum() == 0 // also don'T try to delete if there is already a picked or delivered Qty.
+						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
+						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
 						&& sched.getQtyPickList().signum() == 0)
 				{
-					final List<I_M_IolCandHandler_Log> olHandlerLogs = inOutCandHandlerBL.retrieveOLHandlerLogs(ctx, sched.getM_IolCandHandler_ID(), sched.getC_OrderLine_ID(), trxName);
-					for (final I_M_IolCandHandler_Log logRecord : olHandlerLogs)
-					{
-						// we can s this log now
-						InterfaceWrapperHelper.delete(logRecord);
-					}
-					logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
+						logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
 							+ "; QtyReserved=" + sched.getQtyReserved()
 							+ "; DocStatus=" + orderDocStatus
 							+ "; => Deleting " + sched);
 
-					// Retrieve the M_ShipmentSchedule_QtyPicked entries for this schedule
-					final List<I_M_ShipmentSchedule_QtyPicked> allocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(sched, I_M_ShipmentSchedule_QtyPicked.class);
-					for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
-					{
-						// delete the qtyPicked entries
-
-						if (alloc.getQtyPicked().signum() != 0)
-						{
-							final String msg = "Found QtyPicked record with non-zero qty even if the shipment schedule has QtyDelivered=0"
-									+ "\n M_ShipmentSchedule_ID = " + sched.getM_ShipmentSchedule_ID()
-									+ "\n QtyPicked = " + alloc.getQtyPicked();
-							ILoggable.THREADLOCAL.getLoggable().addLog(msg);
-
-							final AdempiereException ex = new AdempiereException(msg);
-							logger.warn(ex.getLocalizedMessage(), ex);
-
-							continue;
-						}
-						InterfaceWrapperHelper.delete(alloc);
-					}
-					// we can delete this schedule now
 					InterfaceWrapperHelper.delete(sched);
 					continue;
 				}
@@ -401,7 +367,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
 				final int bpLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
 
-				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(contextAwareSched, isSOTrx, deliveryDate, bpLocationId);
+				final Timestamp dateOrdered = sched.getCreated();
+				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(contextAwareSched, isSOTrx, dateOrdered, deliveryDate, bpLocationId);
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
 				sched.setPreparationDate_Override(preparationDate);
@@ -538,7 +505,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final ShipmentCandidates candidates = mkCandidatesToUse(lines, firstRun);
 
 		final ShipmentScheduleQtyOnHandStorage qtyOnHands = new ShipmentScheduleQtyOnHandStorage();
-		qtyOnHands.setContext(new PlainContextAware(ctx, trxName));
+		qtyOnHands.setContext(PlainContextAware.newWithTrxName(ctx, trxName));
 		qtyOnHands.setDate(date);
 		qtyOnHands.setCachedObjects(co);
 
@@ -742,7 +709,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (toDeliver.signum() < 0)
 		{
-			toDeliver = Env.ZERO;
+			toDeliver = BigDecimal.ZERO;
 			logInfo.append(" (set to 0)");
 		}
 		logger.debug(logInfo.toString());
@@ -758,7 +725,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return firstRun;
 		}
 
-		final Map<Integer, I_C_OrderLine> olCache = new HashMap<Integer, I_C_OrderLine>();
+		final Map<Integer, I_C_OrderLine> olCache = new HashMap<>();
 		for (final OlAndSched olAndSched : lines)
 		{
 			olCache.put(olAndSched.getOl().getC_OrderLine_ID(), olAndSched.getOl());
@@ -837,7 +804,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(inOutPA.createNewLine(candidate, trxName), I_M_InOutLine.class);
 
 			final int locatorId = 0;
-			inOutPA.setLineOrderLine(inoutLine, orderLine, locatorId, Env.ZERO);
+			inOutPA.setLineOrderLine(inoutLine, orderLine, locatorId, BigDecimal.ZERO);
 			inOutPA.setLineQty(inoutLine, qty); // Correct UOM
 
 			// 05292 : Propagate ASI to InOutLine
@@ -934,7 +901,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final I_M_Locator locator = storage.getLocator();
 				final int M_Locator_ID = locator.getM_Locator_ID();
-				inOutPA.setLineOrderLine(inoutLine, orderLine, M_Locator_ID, order.isSOTrx() ? deliver : Env.ZERO);
+				inOutPA.setLineOrderLine(inoutLine, orderLine, M_Locator_ID, order.isSOTrx() ? deliver : BigDecimal.ZERO);
 				inOutPA.setLineQty(inoutLine, deliver);
 
 				inoutLines.add(inoutLine);
@@ -1060,7 +1027,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-		final Set<Integer> alreadyDone = new HashSet<Integer>();
+		final Set<Integer> alreadyDone = new HashSet<>();
 
 		for (final I_C_OrderLine currentLine : orderLines)
 		{
@@ -1183,6 +1150,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		// FIXME: introduce M_ShipmentSchedule.C_UOM_ID
 		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
+		// when changing also pls check/fix M_Packageable_V view
 
 		// return sched.getC_OrderLine().getC_UOM();
 		return sched.getM_Product().getC_UOM();

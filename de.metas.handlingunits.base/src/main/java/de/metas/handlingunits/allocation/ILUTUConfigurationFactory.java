@@ -13,19 +13,17 @@ package de.metas.handlingunits.allocation;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -33,11 +31,19 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.quantity.Quantity;
 
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, I_M_Product cuProduct, I_C_UOM cuUOM, I_C_BPartner bpartner);
 
+	/**
+	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
+	 * 
+	 * @param lutuConfiguration
+	 * 
+	 * @return
+	 */
 	ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	/**
@@ -50,6 +56,13 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 */
 	I_M_HU_LUTU_Configuration copy(I_M_HU_LUTU_Configuration lutuConfiguration);
 
+	/**
+	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface.
+	 * 
+	 * @param lutuConfiguration1
+	 * @param lutuConfiguration2
+	 * @return
+	 */
 	boolean isSameForHUProducer(I_M_HU_LUTU_Configuration lutuConfiguration1, I_M_HU_LUTU_Configuration lutuConfiguration2);
 
 	/**
@@ -104,6 +117,14 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyCUsTotal, I_C_UOM qtyCUsTotalUOM);
 
 	/**
+	 * Calculates how many CUs (in total).
+	 * 
+	 * @param lutuConfiguration
+	 * @return quantity; could be infinite or zero.
+	 */
+	Quantity calculateQtyCUsTotal(I_M_HU_LUTU_Configuration lutuConfiguration);
+
+	/**
 	 * Converts given quantity to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 * 
 	 * @param qty
@@ -112,4 +133,5 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
 	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);
+
 }
