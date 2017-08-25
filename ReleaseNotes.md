@@ -10,9 +10,109 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.24 (2017-35)
+
+**upcoming release for week 2017-35**
+
+#Features
+* metasfresh-app
+  * [#2050](https://github.com/metasfresh/metasfresh/issues/2050) Window Design WebUI : Purchase candidate
+    * Adopting the Purchase Candidate Window to the current Design Guidelines.
+  * [#2169](https://github.com/metasfresh/metasfresh/issues/2169) Window Design WebUI : Attributes
+    * Adopting the Attributes Window to the current Design Guidelines.
+  * [#2170](https://github.com/metasfresh/metasfresh/issues/2170) Window Design WebUI : Bill of Materials
+    * Adopting the Bill of Material Window to the current Design Guidelines.
+  * [#2173](https://github.com/metasfresh/metasfresh/issues/2173) Window Design WebUI : Discount Schema
+    * Adopting the Discount Schema Window to the current Design Guidelines.
+  * [#2174](https://github.com/metasfresh/metasfresh/issues/2174) Window Design WebUI : Unit of Measure
+    * Adopting the Product Unit of measure Window to the current Design Guidelines.
+  * #[2175](https://github.com/metasfresh/metasfresh/issues/2175) Window Design WebUI : Product Category
+    * Adopting the Product Category Window to the current Design Guidelines.
+  * [#2183](https://github.com/metasfresh/metasfresh/issues/2183) Window Design WebUI : Sales Order
+    * Adopting the Sales Order Window to the current Design Guidelines.
+  * [#2184](https://github.com/metasfresh/metasfresh/issues/2184) Window Design WebUI : Order Candidates
+    * Minor change in Order Candidates Window removing processed Flag from Advanced Edit.
+  * [#2193](https://github.com/metasfresh/metasfresh/issues/2193) Window Design WebUI: Vendor Returns Improvements
+    * Adaption of Vendor Returns Window to current WebUI Guidelines.
+  * [#2194](https://github.com/metasfresh/metasfresh/issues/2194) Shipment Candidates dropship vendor ID missing
+    * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
+  * [#2196](https://github.com/metasfresh/metasfresh/issues/2196) Window Design WebUI : Bank Statement
+    * Minor detail and adjustments and adding missing Translations to the Product window.
+  * [#2198](https://github.com/metasfresh/metasfresh/issues/2198) New Window for filtered Bank Statement Line References
+    * New prototype Window for filtered Bank Statement References.
+  * [#2200](https://github.com/metasfresh/metasfresh/issues/2200) Window Design WebUI : Payment
+    * Additional detailed adjustments to the Payment Window in WebUI, adopting to current design Guidelines.
+  * [#2201](https://github.com/metasfresh/metasfresh/issues/2201) Window Design WebUI : GL Journal
+    * Adding the GL Journal Window Layout to WebUI.
+  * [#2202](https://github.com/metasfresh/metasfresh/issues/2202) Window Design WebUI : Tour Version
+    * Minor detail adjustments, missing Translations to the Tour Version Window in WebUI.
+  * [#2203](https://github.com/metasfresh/metasfresh/issues/2203) Window Design WebUI : Delivery Days
+    * Adapting the Delivery Days Window to the current Design Guidelines.
+  * [#2204](https://github.com/metasfresh/metasfresh/issues/2204) Window Design WebUI : Contract
+    * Adopting the Contract Window in Webui to the current Design Guidelines.
+  * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
+    * Adding adjustments to the Product window in WebUI adapting it to our current design guidelines.
+  *[#2217](https://github.com/metasfresh/metasfresh/issues/2217) Window Design WebUI : Tour Version Improvements
+    * Improvement of the Tour Version Window in WebUI, details changed to fit better to design guidlelines.
+  * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
+    * New Window for GL Journal in WebUI, without Journal Batch level.
+
+* metasfresh-webui-api
+  * [#545](https://github.com/metasfresh/metasfresh-webui-api/issues/545) Notification Persisting
+    * Now persisting the User Notifications.
+
+* metasfresh-webui-frontend
+
+#Fixes
+* metasfresh-app
+* metasfresh-webui-api
+* metasfresh-webui-frontend
+
 # metasfresh 5.23 (2017-34)
 
-**upcoming release for week 2017-34**
+**release for week 2017-34**
+#Features
+* metasfresh-app
+  * [#2048](https://github.com/metasfresh/metasfresh/issues/2048) Window Design WebUI: Sales Order Candidates
+    * New Window Sales Order Candidates for WebUI.
+  * [#2051](https://github.com/metasfresh/metasfresh/issues/2051) Window Design WebUI: Material Tracking
+    * Adjusted Window Configuration for Material Tracking in WebUI, including Translations for en_US.
+  * [#2084](https://github.com/metasfresh/metasfresh/issues/2084) Window Design WebUI: Vendor Returns
+    * Adjusted Window Configuration for Vendor Returns Window in WebUI.
+  * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
+    * Migrating the current static elements from w101 to base.
+  * [#2140](https://github.com/metasfresh/metasfresh/issues/2140) Window Design WebUI: Shipment Schedule
+    * Adjusted Window Configuration for Shipment Schedule in WebUI, including Translations for en_US.
+  * [#2150](https://github.com/metasfresh/metasfresh/issues/2150) Window Design WebUI: Shipment
+    * Adjusted Window Configuration for Shipment Window in WebUI, including Translations for en_US.
+  * [#2159](https://github.com/metasfresh/metasfresh/issues/2159) Add date field to request
+    * New updateable Field in Request Window, allowing the user to maintain the Request Date seperately from DateCreated.
+  * [#2161](https://github.com/metasfresh/metasfresh/issues/2161) Window Design WebUI : Business Partner Group
+    * Adjusted Window Configuration for Businesspartner Group Window in WebUI, adopting the current window Guidelines.
+  * [#2162](https://github.com/metasfresh/metasfresh/issues/2162) Window Design WebUI : Outbound Documents Config
+    * Adjusted Window Configuration for the Document Outbound Config Window in WebUI. Adding Translations.
+  * [#2167](https://github.com/metasfresh/metasfresh/issues/2167) Window Design WebUI : Product
+    * Adjusted Window Configuration for Product Window in WebUI. Main View and Advanced Edit.
+
+* metasfresh-webui-frontend
+  * [#1139](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1139) Ellipses when breadcrumb too long & Tooltip
+    * Adjustment to the Breadcrumb navigation. Now adding ellipses when the header exceeds the possible space.
+
+#Fixes
+* metasfresh-app
+  * [#2163](https://github.com/metasfresh/metasfresh/issues/2163) Do not show new button in B2C tab customer
+    * Minor Fix in the new Businesspartner B2C window, now not showing the new Button for Included Tab Customer/ Vendor anymore.
+* metasfresh-webui-frontend
+  * [#1071](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1071) Fix frontend memory leaks
+    * Fixes Memory Leaks in WebUI.
+  * [#1129](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1129) cannot receive second time
+    * Fix for Bug in Action Receipt o Manufacturing Window in WebUI.
+  * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
+    * Fixes a focus Bug in lookup Field Workflow.
+  * [#1135](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1135) Browse Whole Tree Caption not refreshed
+    * Fix for the Sitemap Message in Navigation Menu. Now receiving a translated Message when changing the locale in Avatar Settings.
+  * [#1141](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1141) Sort indicator triangle missing in Grid Header
+    * Fix for the new Tooltip and ellipses functionality in Grid Header. Now showing the Sort indicator again.
 
 # metasfresh 5.22 (2017-33)
 
@@ -27,30 +127,32 @@ Here come the actual release notes:
   * [#2118](https://github.com/metasfresh/metasfresh/issues/2118) ESR - add sysconfig to ignore non-credit lines
     * Improvement of the ESR Import action, now processing all ESR Lines also when individual Lines fail.
   * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
-    * Adding a Transaction control amount to ESR Imports coming from SEPA camt.54 file and presenting to the user.
-
-* metasfresh-webui-api
+    * Adding a Transaction control amount to ESR Imports coming from SEPA camt54 file and presenting to the user.
+  * [#2122](https://github.com/metasfresh/metasfresh/issues/2122) allow creating requests from B2C window with new button
+    * Now it's able to create Requests from Businesspartner B2C WIndow directly via new Button.
 
 * metasfresh-webui-frontend
   * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
     * Adjusting the Header Names of Grid View Columns in included Subtabs. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
   * [#1127](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1127) Allow copy to clipboard of selected grid lines
+    * New feature to select Grid View lines and copy/ paste as comma seperated data.
 
 ## Fixes
 * metasfresh-app
-  * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) cant save purchase order
+  * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) Can't save purchase order
     * Fixes a minor Bug that occured in Purchase Order under certain circumstances, avoiding the record save.
-
-* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
     * Fix for the new Kanban Board. Now the cards are removed from card selection List, as soon as they are dragged & dropped on the Board.
-  * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Fix localization of missing phrases related to attachment upload
+  * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Localize remaining static elements
+    * Fix localization of missing phrases related to attachment upload
   * [#1124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1124) issue in manufacturing won't close
+    * Fix in Window for Manufacturing Issue and Receipt.
 
 * others
-  * [metasfresh/metasfresh-dist-orgs#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
+  * [#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
+    * Activation of Role WebUI in dist orgs environment.
 
 # metasfresh 5.21 (2017-32)
 
