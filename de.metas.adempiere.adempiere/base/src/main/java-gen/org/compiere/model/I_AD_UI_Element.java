@@ -127,29 +127,6 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
 
 	/**
-	 * Set UI Element.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_UI_Element_ID (int AD_UI_Element_ID);
-
-	/**
-	 * Get UI Element.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_UI_Element_ID();
-
-    /** Column definition for AD_UI_Element_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_Element_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "AD_UI_Element_ID", null);
-    /** Column name AD_UI_Element_ID */
-    public static final String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
-
-	/**
 	 * Set UI Element Group.
 	 *
 	 * <br>Type: Search
@@ -175,6 +152,52 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_UI_ElementGroup> COLUMN_AD_UI_ElementGroup_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_UI_ElementGroup>(I_AD_UI_Element.class, "AD_UI_ElementGroup_ID", org.compiere.model.I_AD_UI_ElementGroup.class);
     /** Column name AD_UI_ElementGroup_ID */
     public static final String COLUMNNAME_AD_UI_ElementGroup_ID = "AD_UI_ElementGroup_ID";
+
+	/**
+	 * Set UI Element.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_UI_Element_ID (int AD_UI_Element_ID);
+
+	/**
+	 * Get UI Element.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_UI_Element_ID();
+
+    /** Column definition for AD_UI_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_Element_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "AD_UI_Element_ID", null);
+    /** Column name AD_UI_Element_ID */
+    public static final String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
+
+	/**
+	 * Set Element type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_UI_ElementType (java.lang.String AD_UI_ElementType);
+
+	/**
+	 * Get Element type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_UI_ElementType();
+
+    /** Column definition for AD_UI_ElementType */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_ElementType = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "AD_UI_ElementType", null);
+    /** Column name AD_UI_ElementType */
+    public static final String COLUMNNAME_AD_UI_ElementType = "AD_UI_ElementType";
 
 	/**
 	 * Get Erstellt.
@@ -328,6 +351,31 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
+	 * Set Displayed in Grid.
+	 * Determines, if this field is displayed in grid mode
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDisplayedGrid (boolean IsDisplayedGrid);
+
+	/**
+	 * Get Displayed in Grid.
+	 * Determines, if this field is displayed in grid mode
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDisplayedGrid();
+
+    /** Column definition for IsDisplayedGrid */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayedGrid = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsDisplayedGrid", null);
+    /** Column name IsDisplayedGrid */
+    public static final String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
+
+	/**
 	 * Set Displayed in Side List.
 	 * Determines, if this field is displayed in Side list
 	 *
@@ -353,29 +401,58 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_IsDisplayed_SideList = "IsDisplayed_SideList";
 
 	/**
-	 * Set Displayed in Grid.
-	 * Determines, if this field is displayed in grid mode
+	 * Set Labels selector field.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: Table
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDisplayedGrid (boolean IsDisplayedGrid);
+	public void setLabels_Selector_Field_ID (int Labels_Selector_Field_ID);
 
 	/**
-	 * Get Displayed in Grid.
-	 * Determines, if this field is displayed in grid mode
+	 * Get Labels selector field.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: Table
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDisplayedGrid();
+	public int getLabels_Selector_Field_ID();
 
-    /** Column definition for IsDisplayedGrid */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayedGrid = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsDisplayedGrid", null);
-    /** Column name IsDisplayedGrid */
-    public static final String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
+	public org.compiere.model.I_AD_Field getLabels_Selector_Field();
+
+	public void setLabels_Selector_Field(org.compiere.model.I_AD_Field Labels_Selector_Field);
+
+    /** Column definition for Labels_Selector_Field_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field> COLUMN_Labels_Selector_Field_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field>(I_AD_UI_Element.class, "Labels_Selector_Field_ID", org.compiere.model.I_AD_Field.class);
+    /** Column name Labels_Selector_Field_ID */
+    public static final String COLUMNNAME_Labels_Selector_Field_ID = "Labels_Selector_Field_ID";
+
+	/**
+	 * Set Labels content tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLabels_Tab_ID (int Labels_Tab_ID);
+
+	/**
+	 * Get Labels content tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLabels_Tab_ID();
+
+	public org.compiere.model.I_AD_Tab getLabels_Tab();
+
+	public void setLabels_Tab(org.compiere.model.I_AD_Tab Labels_Tab);
+
+    /** Column definition for Labels_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_Labels_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab>(I_AD_UI_Element.class, "Labels_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name Labels_Tab_ID */
+    public static final String COLUMNNAME_Labels_Tab_ID = "Labels_Tab_ID";
 
 	/**
 	 * Set Name.
@@ -430,29 +507,6 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Reihenfolge (Side List).
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setSeqNo_SideList (int SeqNo_SideList);
-
-	/**
-	 * Get Reihenfolge (Side List).
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getSeqNo_SideList();
-
-    /** Column definition for SeqNo_SideList */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo_SideList = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNo_SideList", null);
-    /** Column name SeqNo_SideList */
-    public static final String COLUMNNAME_SeqNo_SideList = "SeqNo_SideList";
-
-	/**
 	 * Set Reihenfolge (grid).
 	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
@@ -478,6 +532,29 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNoGrid = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNoGrid", null);
     /** Column name SeqNoGrid */
     public static final String COLUMNNAME_SeqNoGrid = "SeqNoGrid";
+
+	/**
+	 * Set Reihenfolge (Side List).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo_SideList (int SeqNo_SideList);
+
+	/**
+	 * Get Reihenfolge (Side List).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo_SideList();
+
+    /** Column definition for SeqNo_SideList */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo_SideList = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNo_SideList", null);
+    /** Column name SeqNo_SideList */
+    public static final String COLUMNNAME_SeqNo_SideList = "SeqNo_SideList";
 
 	/**
 	 * Set UI Style.

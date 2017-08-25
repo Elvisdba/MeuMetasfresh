@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 311245024L;
+	private static final long serialVersionUID = 1164314526L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -24,21 +24,15 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
         {
 			setAD_Tab_ID (0);
 			setAD_UI_Element_ID (0);
-			setIsAdvancedField (false);
-// N
-			setIsDisplayed (true);
-// Y
-			setIsDisplayed_SideList (false);
-// N
-			setIsDisplayedGrid (false);
-// N
+			setAD_UI_ElementType (null); // F
+			setIsAdvancedField (false); // N
+			setIsDisplayed (true); // Y
+			setIsDisplayedGrid (false); // N
+			setIsDisplayed_SideList (false); // N
 			setName (null);
-			setSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_Element WHERE AD_UI_ElementGroup_ID=@AD_UI_ElementGroup_ID@
-			setSeqNo_SideList (0);
-// 0
-			setSeqNoGrid (0);
-// 0
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_Element WHERE AD_UI_ElementGroup_ID=@AD_UI_ElementGroup_ID@
+			setSeqNoGrid (0); // 0
+			setSeqNo_SideList (0); // 0
         } */
     }
 
@@ -131,28 +125,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return ii.intValue();
 	}
 
-	/** Set UI Element.
-		@param AD_UI_Element_ID UI Element	  */
-	@Override
-	public void setAD_UI_Element_ID (int AD_UI_Element_ID)
-	{
-		if (AD_UI_Element_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, Integer.valueOf(AD_UI_Element_ID));
-	}
-
-	/** Get UI Element.
-		@return UI Element	  */
-	@Override
-	public int getAD_UI_Element_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UI_Element_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_AD_UI_ElementGroup getAD_UI_ElementGroup() throws RuntimeException
 	{
@@ -185,6 +157,54 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set UI Element.
+		@param AD_UI_Element_ID UI Element	  */
+	@Override
+	public void setAD_UI_Element_ID (int AD_UI_Element_ID)
+	{
+		if (AD_UI_Element_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, Integer.valueOf(AD_UI_Element_ID));
+	}
+
+	/** Get UI Element.
+		@return UI Element	  */
+	@Override
+	public int getAD_UI_Element_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UI_Element_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * AD_UI_ElementType AD_Reference_ID=540736
+	 * Reference name: AD_UI_ElementType
+	 */
+	public static final int AD_UI_ELEMENTTYPE_AD_Reference_ID=540736;
+	/** Field = F */
+	public static final String AD_UI_ELEMENTTYPE_Field = "F";
+	/** Labels = L */
+	public static final String AD_UI_ELEMENTTYPE_Labels = "L";
+	/** Set Element type.
+		@param AD_UI_ElementType Element type	  */
+	@Override
+	public void setAD_UI_ElementType (java.lang.String AD_UI_ElementType)
+	{
+
+		set_Value (COLUMNNAME_AD_UI_ElementType, AD_UI_ElementType);
+	}
+
+	/** Get Element type.
+		@return Element type	  */
+	@Override
+	public java.lang.String getAD_UI_ElementType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_UI_ElementType);
 	}
 
 	/** Set Beschreibung.
@@ -271,6 +291,32 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return false;
 	}
 
+	/** Set Displayed in Grid.
+		@param IsDisplayedGrid 
+		Determines, if this field is displayed in grid mode
+	  */
+	@Override
+	public void setIsDisplayedGrid (boolean IsDisplayedGrid)
+	{
+		set_Value (COLUMNNAME_IsDisplayedGrid, Boolean.valueOf(IsDisplayedGrid));
+	}
+
+	/** Get Displayed in Grid.
+		@return Determines, if this field is displayed in grid mode
+	  */
+	@Override
+	public boolean isDisplayedGrid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDisplayedGrid);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Displayed in Side List.
 		@param IsDisplayed_SideList 
 		Determines, if this field is displayed in Side list
@@ -297,30 +343,72 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return false;
 	}
 
-	/** Set Displayed in Grid.
-		@param IsDisplayedGrid 
-		Determines, if this field is displayed in grid mode
-	  */
 	@Override
-	public void setIsDisplayedGrid (boolean IsDisplayedGrid)
+	public org.compiere.model.I_AD_Field getLabels_Selector_Field() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_IsDisplayedGrid, Boolean.valueOf(IsDisplayedGrid));
+		return get_ValueAsPO(COLUMNNAME_Labels_Selector_Field_ID, org.compiere.model.I_AD_Field.class);
 	}
 
-	/** Get Displayed in Grid.
-		@return Determines, if this field is displayed in grid mode
-	  */
 	@Override
-	public boolean isDisplayedGrid () 
+	public void setLabels_Selector_Field(org.compiere.model.I_AD_Field Labels_Selector_Field)
 	{
-		Object oo = get_Value(COLUMNNAME_IsDisplayedGrid);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		set_ValueFromPO(COLUMNNAME_Labels_Selector_Field_ID, org.compiere.model.I_AD_Field.class, Labels_Selector_Field);
+	}
+
+	/** Set Labels selector field.
+		@param Labels_Selector_Field_ID Labels selector field	  */
+	@Override
+	public void setLabels_Selector_Field_ID (int Labels_Selector_Field_ID)
+	{
+		if (Labels_Selector_Field_ID < 1) 
+			set_Value (COLUMNNAME_Labels_Selector_Field_ID, null);
+		else 
+			set_Value (COLUMNNAME_Labels_Selector_Field_ID, Integer.valueOf(Labels_Selector_Field_ID));
+	}
+
+	/** Get Labels selector field.
+		@return Labels selector field	  */
+	@Override
+	public int getLabels_Selector_Field_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Labels_Selector_Field_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Tab getLabels_Tab() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Labels_Tab_ID, org.compiere.model.I_AD_Tab.class);
+	}
+
+	@Override
+	public void setLabels_Tab(org.compiere.model.I_AD_Tab Labels_Tab)
+	{
+		set_ValueFromPO(COLUMNNAME_Labels_Tab_ID, org.compiere.model.I_AD_Tab.class, Labels_Tab);
+	}
+
+	/** Set Labels content tab.
+		@param Labels_Tab_ID Labels content tab	  */
+	@Override
+	public void setLabels_Tab_ID (int Labels_Tab_ID)
+	{
+		if (Labels_Tab_ID < 1) 
+			set_Value (COLUMNNAME_Labels_Tab_ID, null);
+		else 
+			set_Value (COLUMNNAME_Labels_Tab_ID, Integer.valueOf(Labels_Tab_ID));
+	}
+
+	/** Get Labels content tab.
+		@return Labels content tab	  */
+	@Override
+	public int getLabels_Tab_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Labels_Tab_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Name.
@@ -364,25 +452,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return ii.intValue();
 	}
 
-	/** Set Reihenfolge (Side List).
-		@param SeqNo_SideList Reihenfolge (Side List)	  */
-	@Override
-	public void setSeqNo_SideList (int SeqNo_SideList)
-	{
-		set_Value (COLUMNNAME_SeqNo_SideList, Integer.valueOf(SeqNo_SideList));
-	}
-
-	/** Get Reihenfolge (Side List).
-		@return Reihenfolge (Side List)	  */
-	@Override
-	public int getSeqNo_SideList () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo_SideList);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Reihenfolge (grid).
 		@param SeqNoGrid 
 		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
@@ -400,6 +469,25 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public int getSeqNoGrid () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNoGrid);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge (Side List).
+		@param SeqNo_SideList Reihenfolge (Side List)	  */
+	@Override
+	public void setSeqNo_SideList (int SeqNo_SideList)
+	{
+		set_Value (COLUMNNAME_SeqNo_SideList, Integer.valueOf(SeqNo_SideList));
+	}
+
+	/** Get Reihenfolge (Side List).
+		@return Reihenfolge (Side List)	  */
+	@Override
+	public int getSeqNo_SideList () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo_SideList);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
