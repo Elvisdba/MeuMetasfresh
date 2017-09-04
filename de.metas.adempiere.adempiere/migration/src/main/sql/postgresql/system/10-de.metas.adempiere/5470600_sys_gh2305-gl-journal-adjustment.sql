@@ -1,0 +1,15 @@
+-- 2017-09-04T07:59:47.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Menu_Trl WHERE AD_Menu_ID=1000082
+;
+
+-- 2017-09-04T07:59:47.778
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Menu WHERE AD_Menu_ID=1000082
+;
+
+-- 2017-09-04T07:59:47.783
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_TreeNodeMM n WHERE Node_ID=1000082 AND EXISTS (SELECT * FROM AD_Tree t WHERE t.AD_Tree_ID=n.AD_Tree_ID AND t.AD_Table_ID=116)
+;
+
