@@ -249,6 +249,8 @@ node('agent && linux')
 			{
 				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
 				junit '**/target/surefire-reports/*.xml'
+
+        // thx to https://github.com/jenkinsci/jacoco-plugin/pull/83
         jacoco exclusionPattern: '**/src/main/java-gen'
 			}
 
