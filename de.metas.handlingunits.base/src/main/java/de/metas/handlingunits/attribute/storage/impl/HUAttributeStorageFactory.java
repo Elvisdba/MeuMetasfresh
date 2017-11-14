@@ -28,9 +28,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheIgnore;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -71,12 +68,11 @@ public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFact
 		return createAttributeStorageCached(ctx, huId, trxName, model);
 	}
 
-	// @Cached // commented out because it's not applied anyways
-	/* package */HUAttributeStorage createAttributeStorageCached(
-			@CacheCtx final Properties ctx,
+	private HUAttributeStorage createAttributeStorageCached(
+			final Properties ctx,
 			final int huId,
-			@CacheTrx final String trxName,
-			@CacheIgnore final I_M_HU hu)
+			final String trxName,
+			final I_M_HU hu)
 	{
 		final HUAttributeStorage storage = new HUAttributeStorage(this, hu);
 		return storage;

@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,7 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import lombok.NonNull;
 
 public class AttributeStorageFactoryService implements IAttributeStorageFactoryService
 {
@@ -36,9 +37,6 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 
 	public AttributeStorageFactoryService()
 	{
-		super();
-
-		//
 		// Setup Default Attribute Storage Factories
 		addAttributeStorageFactory(HUAttributeStorageFactory.class);
 		addAttributeStorageFactory(ASIAttributeStorageFactory.class);
@@ -53,7 +51,7 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 	}
 
 	@Override
-	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUAttributesDAO huAttributesDAO)
+	public IAttributeStorageFactory createHUAttributeStorageFactory(@NonNull final IHUAttributesDAO huAttributesDAO)
 	{
 		final CompositeAttributeStorageFactory factory = new CompositeAttributeStorageFactory();
 		factory.setHUAttributesDAO(huAttributesDAO);

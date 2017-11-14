@@ -197,7 +197,7 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	}
 
 	/**
-	 * Deletes if not yet invoiced, just updates the M_MAterialTRracking_ID otherwise.
+	 * Deletes if not yet invoiced, just updates the M_MaterialTracking_ID otherwise.
 	 *
 	 * @param ics
 	 * @param materialTracking
