@@ -10,24 +10,81 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.37 (2017-48)
+
+**release for week 2017-48**
+
+## Features
+* metasfresh-app
+  * [#2976](https://github.com/metasfresh/metasfresh/issues/2976) Translate Processname to de_DE in Procurement Candidates
+    * Improved Translation and Naming in Procurement Planning window.
+  * [#2982](https://github.com/metasfresh/metasfresh/issues/2982) Filter for Shipment Documentstatus is missing in WebUI
+    * New filter criteria "documentstatus" added to Shipment window.
+  * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
+    * New window for Handling Unit transaction in WebUI.
+  * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
+    * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
+  * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
+    * Additional, new filter criteria in manufacturing order.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
+    * Fix for Dropdown Fields, now allowing to select empty values again.
+
 # metasfresh 5.36 (2017-47)
 
 **release for week 2017-47**
 
 ## Features
-* metasfresh
+* metasfresh-app
+  * [#1964](https://github.com/metasfresh/metasfresh/issues/1964) ESR Import w/o Invoice reference (w/ reversed Invoice)
   * [#2871](https://github.com/metasfresh/metasfresh/issues/2871) Window Design Webui: Improve windows with Posted field
     * Adding missing default Values for Posted columns in various Table Definitions.
   * [#2872](https://github.com/metasfresh/metasfresh/issues/2872) Window Design Webui : Improve Distribution Order window
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
+  * [#2908](https://github.com/metasfresh/metasfresh/issues/2908) Provide Doc Action voiding for contract period
+  * [#2911](https://github.com/metasfresh/metasfresh/issues/2911) Create Action for changing price and qty for a contract
+  * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) standalone report / jasper service
+  * [#2937](https://github.com/metasfresh/metasfresh/issues/2937) Jasper Reports: New Purchase Order, Inout and Invoice Layout
+  * [#2940](https://github.com/metasfresh/metasfresh/issues/2940) Shipment Date = Promised Date
+  * [#2942](https://github.com/metasfresh/metasfresh/issues/2942) Fix the message for PrintJob_Done
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
+  * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) flatrate: use datepromised instead of order data for master and startdate
   * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
     * New Field Warehouse anf Filter in Distribution Editor.
+  * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) sales invoice jasper: group products by product category
+  * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
+    * New Window for EDI DESADV records in WebUI.
   * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
     * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
+  * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
+    * Adding the GAP Filter to Businesspartner Window.
+  * [#2980](https://github.com/metasfresh/metasfresh/issues/2980) Date Filter missing in Order Control Window
+    * New Filter in Order Control Window for Date, CreatedBy and more.
+  * [#2981](https://github.com/metasfresh/metasfresh/issues/2981) Action translation in Invoice Candidates Window
+    * Improved Translation for Action Menu in invoice candidate window.
+  * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
+    * Adaption of Field Names to current WebUI Guidelines.
+
+* metasfresh-webui-api
+  * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) views: backend shall specify which columns are editable and how to render the editor
+
+* metasfresh-webui-frontend
+  * [#1222](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1222) Keyboard Shortcut for "Select all"/ "Select all x rows"
+  * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) views: backend shall specify which columns are editable and how to render the editor (frontend)
 
 ## Fixes
+* metasfesh-app
+  * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) error for HU changing locator if status E
+  * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) error in console when creating customer return
+
+* metasfresh-webui-api
+  * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
+  * [#678](https://github.com/metasfresh/metasfresh-webui-api/issues/678) HU that was taken out in Picking Try Clearing shall remain Picked
+  * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
+
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
     * The modal process panel is now remaining open if an error pops up when starting the action.
@@ -40,26 +97,26 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included Subtabs of Contract Window in WebUI
-    * New Translation for en_US in Contract Subtab view for Subscription History and Forecast..
-  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
-    * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
-  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup Function for old AD_Issue records
-    * New Function that allows to cleanup old and not needed Issue Records.
-  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
-    * New Grouping Functionality in Sales Order Jasper, now able to group by Product Category.
-  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material Dispo - include storage-relevant attributes
-    * Including the Attributes into Material Dispo, now allowing the Product Planning to be done on detailed Attributes Level.
-  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
-    * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
+  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included subtabs of contract window in WebUI
+    * New Translation for en_US in contract subtab view for subscription history and forecast.
+  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) WebUI design: Improve window material schedule
+    * Minor additional field translation for en_US added to material schedule window subtab.
+  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup function for old AD_Issue records
+    * New function that allows to cleanup old and not needed issue records.
+  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order jasper reports: group products by product category
+    * New grouping functionality in sales order jasper, now able to group by product category.
+  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material dispo - include storage-relevant attributes
+    * Including the attributes into material dispo, now allowing the product planning to be done on detailed attributes level.
+  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys config to set waiting time for async
+    * Improving the waiting time handling for asynch after backend start. Now able to set the time via sysconfig.
   * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
-    * Improvement in mass printing Functionality and workflow. Removing the User confirmation for printing when splitting.
+    * Improvement in mass printing functionality and workflow. Removing the user confirmation for printing when splitting.
   * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
-    * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
+    * Application dictionary adjustment for AD_Ref_Table, setting lower case statements for the column SQL.
   * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
-    * Internal Housekeeping issue, replacing legacy code with java class substitute.
-  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
-    * Internal Housekeepign improvement for Transaction handlign.
+    * Internal housekeeping issue, replacing legacy code with java class substitute.
+  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) Trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+    * Internal housekeeping improvement for transaction handling.
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
@@ -70,49 +127,49 @@ Here come the actual release notes:
     * Improved Layout of Role Window in WebUI, adapted now to current WebUI Guidelines.
 
 * metasfresh-webui-api
-  * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create Purchase Order Line by Line via Sales Order Lines
-    * New Functionality in WebUI, allowing to create Purchase Orders directly from Sales Order Lines. This feature was wanted from trade companies with very short delivery time requirements.
+  * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create purchase order line by line via sales order lines
+    * New functionality in WebUI, allowing to create purchase orders directly from sales order lines. This feature was wanted from trade companies with very short delivery time requirements.
   * [#666](https://github.com/metasfresh/metasfresh-webui-api/issues/666) Change the JSONLookupValue format
-    * Internal Housekeeping,  adjusting the JSON lookup value format.
-  * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling Unit Editor Action Internal Usage not possible for more than 1 Page
-    * Extended Functionality for the Internal Usage Action in Handling Unit Editor. Now possible to select all rows and start the action.
+    * Internal housekeeping, adjusting the JSON lookup value format.
+  * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling unit editor action internal usage not possible for more than 1 Page
+    * Extended functionality for the Internal usage action in handling unit editor. Now possible to select all rows and start the action.
 
 * metasfresh-webui-frontend
-  * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking Window unselect line in modal overlay
-    * Improved Usability/ Behavior in Picking Window WebUI when un-selecting rows in modal overlay.
+  * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking window unselect line in modal overlay
+    * Improved usability/ behavior in picking window WebUI when un-selecting rows in modal overlay.
   * [#1308](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1308) Closing a document with changes shall discard those changes
-    * New Feature that discards uncomplete Data rows in WebUI Frontend.
-  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) Frontend: Change the JSONLookupValue format
+    * New feature that discards uncomplete data rows in WebUI frontend.
+  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) Frontend: change the JSONLookupValue format
     * Adjustment of the JSON lookup value format in WebUI frontend.
 
 ## Fixes
 * metasfresh
   * [#2905](https://github.com/metasfresh/metasfresh/issues/2905) Referenced documents: sales order to invoice candidates
-    * Fixing the missing reference between Invoice Candidates and Sales Order when Inouts are created before Invoice Candidate.
+    * Fixing the missing reference between invoice candidates and sales order when inouts are created before invoice candidate.
   * [#2917](https://github.com/metasfresh/metasfresh/issues/2917) Allow reactivating procurement contracts
     * Allowing the document action for reactivation of procurement contracts.
 
 * metasfresh-webui-api
-  * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty Delivered and Qty Picked not updated correctly in shipment schedule
+  * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty delivered and qty picked not updated correctly in shipment schedule
     * Fix for Qty fields in shipment schedule. Now field contend is updated correctly in WebUI.
   * [#660](https://github.com/metasfresh/metasfresh-webui-api/issues/660) JSONUserSessionChangesEvent not fired when currently logged in user is changed
-    * Internal Housekeeping Issue solving the firing of session change events after chainging the login user.
+    * Internal housekeeping issue solving the firing of session change events after chainging the login user.
   * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
-    * Fix for the source HU View in Manufacturing Order.
+    * Fix for the source HU View in manufacturing order.
 
 * metasfresh-webui-frontend
-  * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) menu actions for included row broken
+  * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) Menu actions for included row broken
     * Fix for the usage of menu actions when opening from included rows.
   * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
-    * Quick Fix for the broken shortcut Handling in Documents.
+    * Quick fix for the broken shortcut handling in documents.
   * [#1286](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1286) Error when maximize subtab which does not support quick input
-    * Fixes a Bug that occured for included subtabs when maximizing and not supporting quick input.
+    * Fixes a bug that occurred for included subtabs when maximizing and not supporting quick input.
   * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
-    * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
-  * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
-    * Improved error handling and user information when entering an invalif date in Date picker via keyboard.
-  * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) view: Edit field value is broken
-    * Fix for the Edit Mode in Main Grid view.
+    * Quick fix for the action handling in material receipt when using keyboard shortcuts.
+  * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date error
+    * Improved error handling and user information when entering an invalif date in date picker via keyboard.
+  * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) View: Edit field value is broken
+    * Fix for the edit mode in main grid view.
 
 # metasfresh 5.34 (2017-45)
 
