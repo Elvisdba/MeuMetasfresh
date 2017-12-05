@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -62,6 +64,13 @@ import lombok.NonNull;
 @Service
 public class DDOrderPojoSupplier
 {
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	public DDOrderPojoSupplier(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	/**
 	 *
 	 * @param request
@@ -119,7 +128,7 @@ public class DDOrderPojoSupplier
 
 		int M_Shipper_ID = -1;
 		// I_DD_Order order = null;
-		DDOrder.DDOrderBuilder orderBuilder = null;
+		DDOrder.DDOrderBuilder ddOrderBuilder = null;
 
 		BigDecimal qtyToSupplyRemaining = request.getQtyToSupply();
 		for (final I_DD_NetworkDistributionLine networkLine : networkLines)
@@ -147,7 +156,6 @@ public class DDOrderPojoSupplier
 						.addParameter(I_DD_NetworkDistributionLine.COLUMNNAME_M_Warehouse_ID, warehouseTo.getName())
 						.setComment("No locators found for source or target warehouse")
 						.collect();
-				//
 				continue;
 			}
 
@@ -194,7 +202,7 @@ public class DDOrderPojoSupplier
 				//
 				// Try to find some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
-				orderBuilder = DDOrder.builder()
+				ddOrderBuilder = DDOrder.builder()
 						.orgId(warehouseTo.getAD_Org_ID())
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
@@ -202,7 +210,7 @@ public class DDOrderPojoSupplier
 						.shipperId(networkLine.getM_Shipper_ID())
 						.advisedToCreateDDrder(productPlanningData.isCreatePlan());
 
-				builders.add(orderBuilder);
+				builders.add(ddOrderBuilder);
 
 				M_Shipper_ID = networkLine.getM_Shipper_ID();
 			}
@@ -211,7 +219,7 @@ public class DDOrderPojoSupplier
 			// Crate DD order line
 			final BigDecimal qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getPercent());
 			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, supplyDateFinishSchedule, request);
-			orderBuilder.line(ddOrderLine);
+			ddOrderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
 		} // end of the for-loop over networkLines
@@ -267,14 +275,17 @@ public class DDOrderPojoSupplier
 	{
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
-		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
+		final PlainAttributeSetInstanceAware asiAware = PlainAttributeSetInstanceAware
+				.forProductIdAndAttributeSetInstanceId(
+						mrpContext.getM_Product_ID(),
+						mrpContext.getM_AttributeSetInstance_ID());
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(asiAware);
 
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductIdAndAttributeSetInstanceId(
-				mrpContext.getM_Product_ID(),
-				mrpContext.getM_AttributeSetInstance_ID());
+		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
+				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
 				.qty(qtyToMove)
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())

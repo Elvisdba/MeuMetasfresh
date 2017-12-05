@@ -23,12 +23,12 @@ import lombok.experimental.FieldDefaults;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,49 +43,34 @@ import lombok.experimental.FieldDefaults;
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
-	public static ProductDescriptor forProductIdAndAttributeSetInstanceId(final int productId, final int attributeSetInstanceId)
+	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		throw new UnsupportedOperationException();
-	}
-
-	public static final ProductDescriptor forProductIdOnly(final int productId)
-	{
-		return new ProductDescriptor(false, // complete == false
-				productId,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED,
-				-1);
-	}
-
-	public static final ProductDescriptor forProductIdAndEmptyAttribute(final int productId)
-	{
-		return new ProductDescriptor(true, productId, "", 0); // complete == true
+		return new ProductDescriptor(productId,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
+				0);
 	}
 
 	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
-			@NonNull final String storageAttributesKey,
+			@NonNull final StorageAttributesKey storageAttributesKey,
 			final int attributeSetInstanceId)
 	{
-		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
+		return new ProductDescriptor(productId, storageAttributesKey, attributeSetInstanceId);
 	}
 
-	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("");
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_ALL = StorageAttributesKey.ofAttributeValueIds(-1000);
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_STORAGE_ATTRIBUTES_KEYS>";
 
-	/**
-	 * The delimiter should not contain any character that has a "regexp" meaning
-	 * and would interfere with {@link String#replaceAll(String, String)}.
-	 */
-	public static final String STORAGE_ATTRIBUTES_KEY_DELIMITER = "§&§";
-
-	@JsonProperty
-	boolean productDescriptorComplete;
+	/** This key's meaning depends on the other keys it comes with. */
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofAttributeValueIds(-1001);
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
 
 	@Getter
 	int productId;
 
 	@Getter
-	String storageAttributesKey;
-	
+	StorageAttributesKey storageAttributesKey;
+
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
 	 */
@@ -94,36 +79,20 @@ public class ProductDescriptor
 
 	@JsonCreator
 	public ProductDescriptor(
-			@JsonProperty("productDescriptorComplete") final boolean complete,
 			@JsonProperty("productId") final int productId,
-			@JsonProperty("storageAttributesKey") @NonNull final String storageAttributesKey,
+			@JsonProperty("storageAttributesKey") @NonNull final StorageAttributesKey storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
-		this.productDescriptorComplete = complete;
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
-		asssertCompleteness();
+		Preconditions.checkArgument(productId > 0,
+				"Given parameter productId=%s needs to be >0", productId);
+		Preconditions.checkArgument(attributeSetInstanceId >= 0,
+				"Given parameter attributeSetInstanceId needs to >=0");
+		Preconditions.checkNotNull(storageAttributesKey,
+				"Given storageAttributeKey date needs to not-null");
 	}
 
-	public ProductDescriptor asssertCompleteness()
-	{
-		if (productDescriptorComplete)
-		{
-			Preconditions.checkArgument(productId > 0,
-					"Given parameter productId=%s needs to be >0, because complete=true", productId);
-			Preconditions.checkArgument(attributeSetInstanceId >= 0,
-					"Given parameter attributeSetInstanceId needs to >=0, because complete=true");
-			Preconditions.checkNotNull(storageAttributesKey,
-					"Given storageAttributeKey date needs to not-null, because complete=true");
-		}
-		return this;
-	}
-
-	@JsonProperty("productDescriptorComplete")
-	public boolean isComplete()
-	{
-		return productDescriptorComplete;
-	}
 }

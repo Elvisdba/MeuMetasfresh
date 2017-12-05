@@ -10,12 +10,12 @@ import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 
 /*
  * #%L
@@ -47,22 +47,21 @@ public class SupplyRequiredEventCreatorTest
 		final Candidate demandCandidate = Candidate.builderForEventDescr(new EventDescriptor(20, 30))
 				.id(10)
 				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.status(CandidateStatus.doc_closed)
 				.groupId(40)
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.quantity(BigDecimal.TEN)
 						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
-		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
+		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
 		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);
-		assertThat(result.getMaterialDemandDescriptor().getDemandCandidateId()).isEqualTo(10);
+		assertThat(result.getSupplyRequiredDescriptor().getDemandCandidateId()).isEqualTo(10);
 	}
 }

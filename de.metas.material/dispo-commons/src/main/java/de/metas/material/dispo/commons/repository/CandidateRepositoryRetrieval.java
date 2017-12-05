@@ -1,9 +1,7 @@
 package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -13,21 +11,17 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
@@ -40,8 +34,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.product.IProductBL;
-import de.metas.product.model.I_M_Product;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 
 /*
@@ -69,15 +62,6 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryRetrieval
 {
-	@VisibleForTesting
-	static final String SQL_SELECT_AVAILABLE_STOCK = "SELECT COALESCE(SUM(Qty),0) "
-			+ "FROM de_metas_material_dispo.MD_Candidate_Latest_v "
-			+ "WHERE "
-			+ "(M_Warehouse_ID=? OR ? <= 0) AND "
-			+ "M_Product_ID=? AND "
-			+ "StorageAttributesKey LIKE ? AND "
-			+ "DateProjected <= ?";
-
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
 	 *
@@ -128,21 +112,21 @@ public class CandidateRepositoryRetrieval
 	@VisibleForTesting
 	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
-		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull))
+		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull) || candidateRecordOrNull.getMD_Candidate_ID() <= 0)
 		{
 			return Optional.empty();
 		}
 
 		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
 
-		final CandidateSubType subType = getSubTypeOrNull(candidateRecordOrNull);
-		builder.subType(subType);
+		final CandidateBusinessCase businessCase = getSubTypeOrNull(candidateRecordOrNull);
+		builder.businessCase(businessCase);
 
-		if (subType == CandidateSubType.PRODUCTION)
+		if (businessCase == CandidateBusinessCase.PRODUCTION)
 		{
 			builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
 		}
-		else if (subType == CandidateSubType.DISTRIBUTION)
+		else if (businessCase == CandidateBusinessCase.DISTRIBUTION)
 		{
 			builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
 		}
@@ -154,12 +138,12 @@ public class CandidateRepositoryRetrieval
 		return Optional.of(builder.build());
 	}
 
-	private CandidateSubType getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private CandidateBusinessCase getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		CandidateSubType subType = null;
+		CandidateBusinessCase subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
 		{
-			subType = CandidateSubType.valueOf(candidateRecord.getMD_Candidate_SubType());
+			subType = CandidateBusinessCase.valueOf(candidateRecord.getMD_Candidate_SubType());
 		}
 		return subType;
 	}
@@ -172,19 +156,17 @@ public class CandidateRepositoryRetrieval
 		final String md_candidate_type = Preconditions.checkNotNull(candidateRecord.getMD_Candidate_Type(),
 				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
 				candidateRecord);
-		final String storageAttributesKey = Preconditions.checkNotNull(candidateRecord.getStorageAttributesKey(),
-				"Given parameter storageAttributesKey needs to have a not-null StorageAttributesKey; candidateRecord=%s",
-				candidateRecord);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
-				storageAttributesKey,
+				getEfferciveStorageAttributesKey(candidateRecord),
 				candidateRecord.getM_AttributeSetInstance_ID());
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
+				.bPartnerId(candidateRecord.getC_BPartner_ID())
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(new Date(dateProjected.getTime()))
 				.build();
@@ -205,6 +187,20 @@ public class CandidateRepositoryRetrieval
 			candidateBuilder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
 		}
 		return candidateBuilder;
+	}
+
+	private StorageAttributesKey getEfferciveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final StorageAttributesKey storageAttributesKey;
+		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))
+		{
+			storageAttributesKey = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+		}
+		else
+		{
+			storageAttributesKey = StorageAttributesKey.ofString(candidateRecord.getStorageAttributesKey());
+		}
+		return storageAttributesKey;
 	}
 
 	private ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
@@ -276,14 +272,14 @@ public class CandidateRepositoryRetrieval
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 
-		final I_MD_Candidate candidateRecordOrNull = addOrderingLastestFirst(queryBuilderWithoutOrdering)
+		final I_MD_Candidate candidateRecordOrNull = addOrderingLatestFirst(queryBuilderWithoutOrdering)
 				.create()
 				.first();
 
 		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
 	}
 
-	private IQueryBuilder<I_MD_Candidate> addOrderingLastestFirst(
+	private IQueryBuilder<I_MD_Candidate> addOrderingLatestFirst(
 			@NonNull final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{
 		return queryBuilderWithoutOrdering
@@ -317,39 +313,4 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	@NonNull
-	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
-	{
-		return retrieveAvailableStock(MaterialDescriptorQuery.builder()
-				.warehouseId(materialDescriptor.getWarehouseId())
-				.date(materialDescriptor.getDate())
-				.productId(materialDescriptor.getProductId())
-				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.build());
-	}
-
-	@NonNull
-	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptorQuery query)
-	{
-		final String storageAttributesKeyLikeExpression = RepositoryCommons
-				.prepareStorageAttributesKeyForLikeExpression(
-						query.getStorageAttributesKey());
-
-		final BigDecimal result = DB.getSQLValueBDEx(
-				ITrx.TRXNAME_ThreadInherited,
-				SQL_SELECT_AVAILABLE_STOCK,
-				new Object[] {
-						query.getWarehouseId(), query.getWarehouseId(),
-						query.getProductId(),
-						"%" + storageAttributesKeyLikeExpression + "%",
-						query.getDate() });
-
-		return result;
-	}
-
-	public I_C_UOM getStockingUOM(final int productId)
-	{
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
-		return uom;
-	}
 }
